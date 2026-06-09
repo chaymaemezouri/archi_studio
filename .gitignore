@@ -12,3 +12,12 @@ uploads/
 *.log
 coverage/
 .DS_Store
+
+
+# Ignore runtime uploaded files
+uploads/
+backend/uploads/
+
+# But keep NestJS uploads source module
+!backend/src/uploads/
+!backend/src/uploads/**
