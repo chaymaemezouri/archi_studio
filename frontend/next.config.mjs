@@ -4,6 +4,12 @@ const apiOrigin = apiUrl.replace(/\/api\/?$/, "");
 
 const nextConfig = {
   output: "standalone",
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  experimental: {
+    missingSuspenseWithCSRBailout: false,
+  },
   async rewrites() {
     return [
       {

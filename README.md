@@ -30,9 +30,13 @@ docker compose up --build
 | **Amini Architects** | `admin@amini.architects` | `Archi2026!` |
 | **Maouni Architecture** | `admin@maouni.architecture` | `Archi2026!` |
 
-Chaque compte a son propre dashboard, logo et données isolées.
+Chaque compte a son propre dashboard, logo et données isolées. Les admins peuvent changer email et mot de passe dans Paramètres.
 
-Codes invitation (nouveaux comptes) : `AMINI2026` · `MAOUNI2026`
+Le seed crée **uniquement** ces 2 comptes (pas de données de démo).
+
+## Déploiement production (VPS + domaine)
+
+Voir **[deploy/DEPLOY-a2workspace.md](./deploy/DEPLOY-a2workspace.md)** (domaine `a2workspace.studio`) ou **[DEPLOY.md](./DEPLOY.md)** pour la procédure générique.
 
 ## Développement local
 

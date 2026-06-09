@@ -13,7 +13,7 @@ const STUDIOS = [
     name: 'Amini Architects',
     logoUrl: '/studios/amini.png',
     email: 'admin@amini.architects',
-    adminName: 'Amini Admin',
+    adminName: 'Amini El Mehdi',
     settingsId: 'settings_amini',
   },
   {
@@ -49,7 +49,10 @@ async function main() {
     await pool.query(
       `INSERT INTO "User" ("id", "email", "name", "password", "role", "studioId", "createdAt")
        VALUES (gen_random_uuid()::text, $1, $2, $3, 'OWNER', $4, NOW())
-       ON CONFLICT ("email") DO UPDATE SET "name" = $2, "role" = 'OWNER', "studioId" = $4`,
+       ON CONFLICT ("email") DO UPDATE SET
+         "name" = $2,
+         "role" = 'OWNER',
+         "studioId" = $4`,
       [studio.email, studio.adminName, hash, studio.id],
     );
   }
