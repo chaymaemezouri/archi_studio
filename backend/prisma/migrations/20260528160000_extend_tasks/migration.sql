@@ -1,0 +1,17 @@
+ALTER TYPE "TaskStatus" ADD VALUE IF NOT EXISTS 'CANCELLED';
+
+ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "studioId" TEXT;
+ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "clientId" TEXT;
+ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "notes" TEXT;
+ALTER TABLE "Task" ADD COLUMN IF NOT EXISTS "completedAt" TIMESTAMP(3);
+
+ALTER TABLE "Task" ADD CONSTRAINT "Task_studioId_fkey"
+    FOREIGN KEY ("studioId") REFERENCES "Studio"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+ALTER TABLE "Task" ADD CONSTRAINT "Task_clientId_fkey"
+    FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+UPDATE "Task" t
+SET "studioId" = p."studioId"
+FROM "Project" p
+WHERE t."projectId" = p."id" AND t."studioId" IS NULL;

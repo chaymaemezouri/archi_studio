@@ -1,0 +1,627 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  OWNER
+  USER
+}
+
+enum ProjectPhase {
+  ESQUISSE
+  CONSULTATION
+  APS
+  APD
+  CPS
+  AUTORISATION
+  DOSSIER_EXECUTION
+  DCE
+  EXECUTION
+  CHANTIER
+  LIVRE
+}
+
+enum ProjectCategory {
+  PRIVATE
+  PUBLIC
+  STATE
+}
+
+enum ProjectScale {
+  SMALL
+  LARGE
+}
+
+enum ChecklistItemStatus {
+  MISSING
+  UPLOADED
+  VALIDATED
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  UNPAID
+  PARTIAL
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum DevisStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  REFUSED
+  EXPIRED
+}
+
+enum TenderStatus {
+  OPEN
+  WON
+  LOST
+  ARCHIVED
+}
+
+enum PaymentMethod {
+  VIREMENT
+  CHEQUE
+  ESPECES
+  CARTE
+  AUTRE
+}
+
+enum ClientStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+enum CalendarEventType {
+  DEADLINE_PROJECT
+  DEADLINE_TASK
+  MEETING
+  SITE_VISIT
+  INVOICE_REMINDER
+  PAYMENT_REMINDER
+  CUSTOM_EVENT
+}
+
+enum CalendarEventPriority {
+  NORMAL
+  URGENT
+}
+
+enum CalendarEventStatus {
+  ACTIVE
+  DONE
+  CANCELLED
+}
+
+enum NotifType {
+  TASK_TODAY
+  TASK_TOMORROW
+  TASK_OVERDUE
+  MEETING_TODAY
+  MEETING_SOON
+  DEADLINE_7D
+  DEADLINE_3D
+  DEADLINE_TODAY
+  DEADLINE_OVERDUE
+  INVOICE_DUE
+  INVOICE_OVERDUE
+  PAYMENT_RECEIVED
+  DOCUMENT_ADDED
+  PROJECT_UPDATED
+}
+
+model Studio {
+  id        String     @id @default(cuid())
+  slug      String     @unique
+  name      String
+  logoUrl   String?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  users     User[]
+  settings  Settings?
+  projects  Project[]
+  clients   Client[]
+  tenders   Tender[]
+  calendarEvents CalendarEvent[]
+  tasks         Task[]
+  documents     Document[]
+  planRenders   PlanRender[]
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String
+  password      String
+  role          Role           @default(USER)
+  avatar        String?
+  studioId      String
+  studio        Studio         @relation(fields: [studioId], references: [id])
+  createdAt     DateTime       @default(now())
+  tasks         Task[]
+  meetings      Meeting[]
+  projects      Project[]
+  notifications Notification[]
+  activityLogs  ActivityLog[]
+}
+
+model Client {
+  id             String           @id @default(cuid())
+  studioId       String
+  studio         Studio           @relation(fields: [studioId], references: [id])
+  name           String
+  company        String?
+  type           String?
+  email          String?
+  phone          String?
+  secondaryPhone String?
+  address        String?
+  city           String?
+  country        String?
+  ice            String?
+  taxId          String?
+  rc             String?
+  cnss           String?
+  source         String?
+  status         ClientStatus     @default(ACTIVE)
+  notes          String?
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  projects       Project[]
+  devis          Devis[]
+  invoices       Invoice[]
+  payments       Payment[]
+  clientNotes    ClientNote[]
+  clientDocuments ClientDocument[]
+  documents       Document[]
+  planRenders     PlanRender[]
+  activityLogs   ActivityLog[]
+  calendarEvents CalendarEvent[]
+  tasks          Task[]
+}
+
+model ClientNote {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ClientDocument {
+  id        String   @id @default(cuid())
+  clientId  String
+  client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  name      String
+  url       String
+  mimeType  String
+  size      Int      @default(0)
+  docType   String   @default("OTHER")
+  createdAt DateTime @default(now())
+}
+
+model Document {
+  id           String   @id @default(cuid())
+  studioId     String
+  studio       Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  name         String
+  originalName String?
+  type         String   @default("OTHER")
+  mimeType     String
+  size         Int      @default(0)
+  url          String
+  category     String   @default("OTHER")
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  tags         String[] @default([])
+  description  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model PlanRender {
+  id           String   @id @default(cuid())
+  studioId     String
+  studio       Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  name         String
+  originalName String?
+  kind         String
+  category     String   @default("AUTRE")
+  mimeType     String
+  fileType     String   @default("OTHER")
+  size         Int      @default(0)
+  url          String
+  thumbnailUrl String?
+  projectId    String?
+  project      Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  clientId     String?
+  client       Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  tags         String[] @default([])
+  description  String?
+  version      String?
+  isMainImage  Boolean  @default(false)
+  isFavorite   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Project {
+  id            String          @id @default(cuid())
+  studioId      String
+  studio        Studio          @relation(fields: [studioId], references: [id])
+  name          String
+  address       String?
+  city          String?
+  country       String?
+  url           String?
+  type            String?
+  projectNature   String?
+  projectCategory ProjectCategory @default(PRIVATE)
+  projectScale    ProjectScale?
+  phase           ProjectPhase    @default(ESQUISSE)
+  status          ProjectStatus   @default(ACTIVE)
+  intakeDate      DateTime?
+  deadline        DateTime?
+  budget          Float?
+  surface         Float?
+  titleSurface    Float?
+  description   String?
+  notes         String?
+  imageUrl      String?
+  progress      Int             @default(0)
+  isFavorite    Boolean         @default(false)
+  clientId      String?
+  client        Client?         @relation(fields: [clientId], references: [id])
+  managerId     String?
+  manager       User?           @relation(fields: [managerId], references: [id])
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  files         ProjectFile[]
+  tasks         Task[]
+  deadlines     Deadline[]
+  meetings      Meeting[]
+  chantierLogs  ChantierLog[]
+  devis         Devis[]
+  invoices      Invoice[]
+  payments      Payment[]
+  phaseProgress PhaseProgress[]
+  activityLogs  ActivityLog[]
+  calendarEvents CalendarEvent[]
+  documents     Document[]
+  planRenders     PlanRender[]
+  checklistItems  ProjectChecklistItem[]
+  projectNotes    ProjectNote[]
+}
+
+model ProjectNote {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title     String?
+  content   String
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+}
+
+model ProjectChecklistItem {
+  id         String              @id @default(cuid())
+  projectId  String
+  project    Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  title      String
+  status     ChecklistItemStatus @default(MISSING)
+  fileUrl    String?
+  documentId String?
+  uploadedAt DateTime?
+  notes      String?
+  sortOrder  Int                 @default(0)
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@index([projectId])
+}
+
+model PhaseProgress {
+  id        String       @id @default(cuid())
+  project   Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId String
+  phase     ProjectPhase
+  progress  Int          @default(0)
+
+  @@unique([projectId, phase])
+}
+
+model ProjectFile {
+  id         String   @id @default(cuid())
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  projectId  String
+  name       String
+  url        String
+  mimeType   String
+  size       Int
+  fileType   String
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+}
+
+model Task {
+  id          String     @id @default(cuid())
+  studioId    String?
+  studio      Studio?    @relation(fields: [studioId], references: [id])
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  priority    Priority   @default(MEDIUM)
+  dueDate     DateTime?
+  scheduledAt DateTime?
+  projectId   String?
+  project     Project?   @relation(fields: [projectId], references: [id])
+  clientId    String?
+  client      Client?    @relation(fields: [clientId], references: [id])
+  notes       String?
+  completedAt DateTime?
+  assignedTo  String?
+  assignee    User?      @relation(fields: [assignedTo], references: [id])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Deadline {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime
+  priority  Priority @default(MEDIUM)
+  done      Boolean  @default(false)
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model Meeting {
+  id        String   @id @default(cuid())
+  title     String
+  date      DateTime
+  startTime String?
+  endTime   String?
+  location  String?
+  notes     String?
+  decisions String?
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  attendees User[]
+  createdAt DateTime @default(now())
+}
+
+model ChantierLog {
+  id          String   @id @default(cuid())
+  date        DateTime
+  description String
+  progress    Int?
+  issues      String?
+  nextSteps   String?
+  photos      String[]
+  projectId   String
+  project     Project  @relation(fields: [projectId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model CalendarEvent {
+  id        String                @id @default(cuid())
+  studioId  String
+  studio    Studio                @relation(fields: [studioId], references: [id])
+  title     String
+  type      CalendarEventType     @default(CUSTOM_EVENT)
+  date      DateTime
+  startTime String?
+  endTime   String?
+  projectId String?
+  project   Project?              @relation(fields: [projectId], references: [id])
+  clientId  String?
+  client    Client?               @relation(fields: [clientId], references: [id])
+  priority  CalendarEventPriority @default(NORMAL)
+  status    CalendarEventStatus   @default(ACTIVE)
+  notes     String?
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+}
+
+model Tender {
+  id                 String       @id @default(cuid())
+  studioId           String
+  studio             Studio       @relation(fields: [studioId], references: [id])
+  name               String
+  client             String?
+  budget             Float?
+  deadline           DateTime?
+  status             TenderStatus @default(OPEN)
+  probability        Int?
+  notes              String?
+  convertedProjectId String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+}
+
+model Devis {
+  id         String      @id @default(cuid())
+  number     String      @unique
+  status     DevisStatus @default(DRAFT)
+  clientId   String?
+  client     Client?     @relation(fields: [clientId], references: [id])
+  projectId  String?
+  project    Project?    @relation(fields: [projectId], references: [id])
+  items      DevisItem[]
+  tva        Float       @default(20)
+  totalHT    Float       @default(0)
+  totalTTC   Float       @default(0)
+  object     String?
+  paymentTerms String?
+  notes      String?
+  validUntil DateTime?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  invoices   Invoice[]
+}
+
+model DevisItem {
+  id          String @id @default(cuid())
+  devisId     String
+  devis       Devis  @relation(fields: [devisId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float  @default(1)
+  unitPrice   Float
+  total       Float
+  order       Int    @default(0)
+}
+
+model Invoice {
+  id            String              @id @default(cuid())
+  number        String              @unique
+  status        InvoiceStatus       @default(DRAFT)
+  clientId      String?
+  client        Client?             @relation(fields: [clientId], references: [id])
+  projectId     String?
+  project       Project?            @relation(fields: [projectId], references: [id])
+  devisId       String?
+  devis         Devis?              @relation(fields: [devisId], references: [id], onDelete: SetNull)
+  phase         String?
+  items         InvoiceItem[]
+  payments      Payment[]
+  attachments   InvoiceAttachment[]
+  tva           Float               @default(20)
+  totalHT       Float               @default(0)
+  totalTTC      Float               @default(0)
+  paidAmount    Float               @default(0)
+  issueDate     DateTime            @default(now())
+  dueDate       DateTime?
+  paymentMethod PaymentMethod?
+  object        String?
+  bankTransferBy String?
+  notes         String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  description String
+  quantity    Float   @default(1)
+  unitPrice   Float
+  total       Float
+  order       Int     @default(0)
+}
+
+model InvoiceAttachment {
+  id        String  @id @default(cuid())
+  invoiceId String
+  invoice   Invoice @relation(fields: [invoiceId], references: [id])
+  name      String
+  url       String
+}
+
+model Payment {
+  id        String        @id @default(cuid())
+  invoiceId String?
+  invoice   Invoice?      @relation(fields: [invoiceId], references: [id])
+  clientId  String?
+  client    Client?       @relation(fields: [clientId], references: [id])
+  projectId String?
+  project   Project?      @relation(fields: [projectId], references: [id])
+  amount    Float
+  date      DateTime      @default(now())
+  method    PaymentMethod @default(VIREMENT)
+  reference String?
+  notes     String?
+  proofUrl  String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+}
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  user      User      @relation(fields: [userId], references: [id])
+  type      NotifType
+  title     String
+  message   String
+  read      Boolean   @default(false)
+  uniqueKey String    @unique
+  link      String?
+  createdAt DateTime  @default(now())
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+  clientId  String?
+  client    Client?  @relation(fields: [clientId], references: [id])
+  action    String
+  entity    String
+  entityId  String?
+  details   Json?
+  createdAt DateTime @default(now())
+}
+
+model Settings {
+  id             String   @id @default(cuid())
+  studioId       String   @unique
+  studio         Studio   @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  cabinetName    String   @default("Cabinet d'Architecture")
+  cabinetAddress String?
+  cabinetPhone   String?
+  cabinetEmail   String?
+  cabinetLogo    String?
+  cabinetCity    String?
+  cabinetIce     String?
+  cabinetRc      String?
+  cabinetCnss    String?
+  cabinetPatente String?
+  cabinetWebsite String?
+  cabinetCountry String?  @default("Maroc")
+  bankName       String?
+  bankRib        String?
+  paymentTermsDays Int    @default(30)
+  invoiceFooter  String?
+  tvaDefault     Float    @default(20)
+  invoicePrefix  String   @default("FAC")
+  devisPrefix    String   @default("DEV")
+  cgv            String?
+  updatedAt      DateTime @updatedAt
+}

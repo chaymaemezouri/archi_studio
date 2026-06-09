@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+uploads/
+# Environment (never commit secrets — .env.example is allowed)
+.env
+.env.*
+!.env.example
+**/.env
+**/.env.*
+!**/.env.example
+*.log
+coverage/
+.DS_Store

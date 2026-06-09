@@ -1,0 +1,281 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  CheckSquare,
+  FileText,
+  FolderKanban,
+  ReceiptText,
+  Search,
+  Users,
+  X,
+} from "lucide-react";
+import { useGlobalSearch } from "@/hooks/useSearch";
+import { cn } from "@/lib/utils";
+import {
+  dropdownItem,
+  dropdownItemInactive,
+  dropdownSectionLabel,
+  glassDropdownPlain,
+} from "@/lib/glass-styles";
+import {
+  headerSearchInput,
+  headerSearchKbd,
+  headerSearchWrap,
+} from "./header-ui";
+
+function SearchGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="py-1">
+      <p className={dropdownSectionLabel}>{title}</p>
+      {children}
+    </div>
+  );
+}
+
+export default function GlobalSearch() {
+  const [query, setQuery] = useState("");
+  const [panelOpen, setPanelOpen] = useState(false);
+  const [mobileExpanded, setMobileExpanded] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const { data, isFetching } = useGlobalSearch(query);
+
+  const trimmed = query.trim();
+  const showPanel = panelOpen && trimmed.length >= 2;
+
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setPanelOpen(false);
+        setMobileExpanded(false);
+      }
+    };
+    const onKeydown = (e: KeyboardEvent) => {
+      const isK = e.key.toLowerCase() === "k";
+      const meta = e.metaKey || e.ctrlKey;
+      if (meta && isK) {
+        e.preventDefault();
+        setMobileExpanded(true);
+        setPanelOpen(trimmed.length >= 2);
+        requestAnimationFrame(() => {
+          const input = ref.current?.querySelector(
+            "input[type='search']"
+          ) as HTMLInputElement | null;
+          input?.focus();
+          input?.select();
+        });
+      }
+      if (e.key === "Escape") {
+        setPanelOpen(false);
+        setMobileExpanded(false);
+      }
+    };
+    document.addEventListener("mousedown", onClick);
+    document.addEventListener("keydown", onKeydown);
+    return () => {
+      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("keydown", onKeydown);
+    };
+  }, [trimmed.length]);
+
+  const go = (href: string) => {
+    setPanelOpen(false);
+    setMobileExpanded(false);
+    setQuery("");
+    router.push(href);
+  };
+
+  const hasResults =
+    (data?.projects?.length ?? 0) +
+      (data?.clients?.length ?? 0) +
+      (data?.documents?.length ?? 0) +
+      (data?.tasks?.length ?? 0) +
+      (data?.finances?.length ?? 0) >
+    0;
+
+  const resultBtn = cn(
+    dropdownItem,
+    dropdownItemInactive,
+    "flex items-center gap-2.5 py-2 pr-3 hover:bg-white/[0.04]"
+  );
+
+  const resultsPanel = showPanel && (
+    <div
+      className={cn(
+        glassDropdownPlain,
+        "absolute left-0 right-0 top-full z-50 mt-2 max-h-80 overflow-y-auto py-2"
+      )}
+    >
+      {isFetching && (
+        <p className="px-4 py-3 text-[13px] text-white/50">Recherche…</p>
+      )}
+      {!isFetching && !hasResults && (
+        <p className="px-4 py-3 text-[13px] text-white/50">Aucun résultat</p>
+      )}
+
+      {(data?.projects?.length ?? 0) > 0 && (
+        <SearchGroup title="Projets">
+          {data?.projects?.slice(0, 3).map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => go(`/projects/${p.id}`)}
+              className={resultBtn}
+            >
+              <FolderKanban className="h-3.5 w-3.5 shrink-0 text-studio-light/50" />
+              <span className="truncate">{p.name}</span>
+            </button>
+          ))}
+        </SearchGroup>
+      )}
+
+      {(data?.clients?.length ?? 0) > 0 && (
+        <SearchGroup title="Clients">
+          {data?.clients?.slice(0, 3).map((c) => (
+            <button
+              key={c.id}
+              type="button"
+              onClick={() => go("/clients")}
+              className={resultBtn}
+            >
+              <Users className="h-3.5 w-3.5 shrink-0 text-studio-light/50" />
+              <span className="truncate">{c.name}</span>
+            </button>
+          ))}
+        </SearchGroup>
+      )}
+
+      {(data?.documents?.length ?? 0) > 0 && (
+        <SearchGroup title="Documents">
+          {data?.documents?.slice(0, 3).map((d) => (
+            <button
+              key={d.id}
+              type="button"
+              onClick={() => go(`/projects/${d.projectId}?tab=documents`)}
+              className={resultBtn}
+            >
+              <FileText className="h-3.5 w-3.5 shrink-0 text-studio-light/50" />
+              <span className="truncate">
+                {d.name}
+                {d.project?.name && (
+                  <span className="text-white/40"> · {d.project.name}</span>
+                )}
+              </span>
+            </button>
+          ))}
+        </SearchGroup>
+      )}
+
+      {(data?.tasks?.length ?? 0) > 0 && (
+        <SearchGroup title="Tâches">
+          {data?.tasks?.slice(0, 3).map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() =>
+                go(t.projectId ? `/projects/${t.projectId}?tab=tasks` : "/tasks")
+              }
+              className={resultBtn}
+            >
+              <CheckSquare className="h-3.5 w-3.5 shrink-0 text-studio-light/50" />
+              <span className="truncate">{t.title}</span>
+            </button>
+          ))}
+        </SearchGroup>
+      )}
+
+      {(data?.finances?.length ?? 0) > 0 && (
+        <SearchGroup title="Finance">
+          {data?.finances?.slice(0, 3).map((f) => (
+            <button
+              key={`${f.kind}-${f.id}`}
+              type="button"
+              onClick={() => go(f.href)}
+              className={resultBtn}
+            >
+              <ReceiptText className="h-3.5 w-3.5 shrink-0 text-studio-light/50" />
+              <span className="truncate">{f.label}</span>
+            </button>
+          ))}
+        </SearchGroup>
+      )}
+    </div>
+  );
+
+  const searchInput = (
+    <>
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-studio-light/55"
+        strokeWidth={1.75}
+      />
+      <input
+        type="search"
+        placeholder="Rechercher projets, clients, tâches…"
+        value={query}
+        onChange={(e) => {
+          setQuery(e.target.value);
+          setPanelOpen(e.target.value.trim().length >= 2);
+        }}
+        onFocus={() => trimmed.length >= 2 && setPanelOpen(true)}
+        className={headerSearchInput}
+        aria-label="Recherche globale"
+      />
+      <kbd className={headerSearchKbd} aria-hidden>
+        ⌘K
+      </kbd>
+      {resultsPanel}
+    </>
+  );
+
+  return (
+    <div
+      ref={ref}
+      className={cn(headerSearchWrap, mobileExpanded && "flex min-w-0 flex-1 items-center")}
+    >
+      {!mobileExpanded && (
+        <button
+          type="button"
+          onClick={() => setMobileExpanded(true)}
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/55 transition hover:bg-white/[0.05] hover:text-studio-light md:hidden"
+          aria-label="Rechercher"
+        >
+          <Search className="h-4 w-4" strokeWidth={1.75} />
+        </button>
+      )}
+
+      <div
+        className={cn(
+          "relative w-full",
+          mobileExpanded ? "flex min-w-0 flex-1 items-center gap-1" : "hidden md:block"
+        )}
+      >
+        {mobileExpanded && (
+          <div className="relative min-w-0 flex-1">{searchInput}</div>
+        )}
+        {!mobileExpanded && searchInput}
+        {mobileExpanded && (
+          <button
+            type="button"
+            onClick={() => {
+              setMobileExpanded(false);
+              setPanelOpen(false);
+              setQuery("");
+            }}
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/55 hover:bg-white/[0.05] hover:text-studio-light md:hidden"
+            aria-label="Fermer la recherche"
+          >
+            <X className="h-4 w-4" strokeWidth={1.75} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
