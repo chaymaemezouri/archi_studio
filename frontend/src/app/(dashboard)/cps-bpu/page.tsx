@@ -1,15 +1,21 @@
 "use client";
 
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
 import { ClipboardList } from "lucide-react";
+import {
+  GlassListHeader,
+  GlassListRow,
+  GlassListTable,
+  GlassPageShell,
+} from "@/components/ui/GlassPageShell";
 import api from "@/lib/api";
-import Table from "@/components/ui/Table";
-import EmptyState from "@/components/ui/EmptyState";
+import { listLink } from "@/lib/theme-classes";
 import type { ProjectFile } from "@/types";
 import { formatDate } from "@/lib/utils";
 
 export default function CpsBpuPage() {
-  const { data: files = [], isLoading } = useQuery({
+  const { data: files = [], isLoading, isError, refetch } = useQuery({
     queryKey: ["project-files", "cps-bpu"],
     queryFn: async () => {
       const { data } = await api.get<ProjectFile[]>("/project-files");
@@ -22,33 +28,49 @@ export default function CpsBpuPage() {
   });
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary">CPS / BPU</h1>
-        <p className="mt-1 text-text-secondary">Cahiers des prescriptions et bordereaux de prix</p>
-      </div>
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-        </div>
-      ) : files.length === 0 ? (
-        <EmptyState
-          icon={ClipboardList}
-          title="Aucun document CPS/BPU"
-          description="Les cahiers des prescriptions apparaîtront ici."
+    <GlassPageShell
+      title="CPS / BPU"
+      description="Cahiers des prescriptions et bordereaux de prix"
+      icon={ClipboardList}
+      isLoading={isLoading}
+      isError={isError}
+      onRetry={() => void refetch()}
+      isEmpty={!isLoading && !isError && files.length === 0}
+      emptyTitle="Aucun document CPS/BPU"
+      emptyDescription="Les cahiers des prescriptions apparaîtront ici depuis vos projets."
+    >
+      <GlassListTable>
+        <GlassListHeader
+          columns={["Document", "Type", "Projet", "Date"]}
+          className="grid-cols-[minmax(0,1.4fr)_minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,0.7fr)]"
         />
-      ) : (
-        <Table
-          data={files}
-          keyExtractor={(f) => f.id}
-          columns={[
-            { key: "name", header: "Document" },
-            { key: "fileType", header: "Type" },
-            { key: "project", header: "Projet", render: (f) => f.project?.name || "—" },
-            { key: "createdAt", header: "Date", render: (f) => formatDate(f.createdAt) },
-          ]}
-        />
-      )}
-    </div>
+        {files.map((f) => (
+          <GlassListRow
+            key={f.id}
+            className="grid-cols-[minmax(0,1.4fr)_minmax(0,0.7fr)_minmax(0,1fr)_minmax(0,0.7fr)]"
+          >
+            <a
+              href={f.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={listLink}
+            >
+              {f.name}
+            </a>
+            <span>{f.fileType}</span>
+            <span className="truncate">
+              {f.project ? (
+                <Link href={`/projects/${f.project.id}`} className={listLink}>
+                  {f.project.name}
+                </Link>
+              ) : (
+                "—"
+              )}
+            </span>
+            <span>{formatDate(f.createdAt)}</span>
+          </GlassListRow>
+        ))}
+      </GlassListTable>
+    </GlassPageShell>
   );
 }

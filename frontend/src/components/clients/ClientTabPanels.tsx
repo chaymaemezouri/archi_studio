@@ -16,6 +16,8 @@ import {
   X,
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
+import { useDialog } from "@/components/providers/DialogProvider";
+import { getInvoiceFinanceHref } from "@/lib/payment-utils";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
 import ProjectTabSectionHeader from "@/components/projects/detail/ProjectTabSectionHeader";
 import CreateProjectDrawer from "@/components/projects/CreateProjectDrawer";
@@ -121,6 +123,7 @@ function ProjectRow({ project }: { project: Project }) {
 }
 
 export default function ClientTabPanels({ client, tab }: ClientTabPanelsProps) {
+  const { confirm } = useDialog();
   const updateDevis = useUpdateDevis();
   const updateInvoice = useUpdateInvoice();
   const createNote = useCreateClientNote(client.id);
@@ -383,17 +386,20 @@ export default function ClientTabPanels({ client, tab }: ClientTabPanelsProps) {
                     label="Ouvrir"
                     icon={Eye}
                     tone="view"
-                    href={`/invoices/${inv.id}`}
+                    href={getInvoiceFinanceHref(inv.id)}
                   />
                   {inv.status !== "PAID" && (
                     <IconActionButton
                       label="Marquer payée"
                       icon={CheckCircle2}
                       tone="success"
-                      onClick={() => {
-                        if (window.confirm("Marquer comme payée ?")) {
-                          updateInvoice.mutate({ id: inv.id, status: "PAID" });
-                        }
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: "Facture payée",
+                          message: "Marquer comme payée ?",
+                          confirmLabel: "Marquer payée",
+                        });
+                        if (ok) updateInvoice.mutate({ id: inv.id, status: "PAID" });
                       }}
                     />
                   )}
@@ -506,10 +512,14 @@ export default function ClientTabPanels({ client, tab }: ClientTabPanelsProps) {
                     label="Supprimer"
                     icon={Trash2}
                     tone="danger"
-                    onClick={() => {
-                      if (window.confirm("Supprimer ce document ?")) {
-                        deleteDocument.mutate(doc.id);
-                      }
+                    onClick={async () => {
+                      const ok = await confirm({
+                        title: "Supprimer le document",
+                        message: "Supprimer ce document ?",
+                        variant: "danger",
+                        confirmLabel: "Supprimer",
+                      });
+                      if (ok) deleteDocument.mutate(doc.id);
                     }}
                   />
                 </div>
@@ -625,10 +635,14 @@ export default function ClientTabPanels({ client, tab }: ClientTabPanelsProps) {
                       label="Supprimer"
                       icon={Trash2}
                       tone="danger"
-                      onClick={() => {
-                        if (window.confirm("Supprimer cette note ?")) {
-                          deleteNote.mutate(note.id);
-                        }
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: "Supprimer la note",
+                          message: "Supprimer cette note ?",
+                          variant: "danger",
+                          confirmLabel: "Supprimer",
+                        });
+                        if (ok) deleteNote.mutate(note.id);
                       }}
                     />
                   </div>

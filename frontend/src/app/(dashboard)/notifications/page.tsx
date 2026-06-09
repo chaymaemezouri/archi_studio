@@ -29,7 +29,7 @@ import {
 export default function NotificationsPage() {
   const router = useRouter();
   const [filter, setFilter] = useState<NotifFilter>("all");
-  const { data: notifications = [], isLoading } = useNotifications();
+  const { data: notifications = [], isLoading, isError, refetch } = useNotifications();
   const sync = useSyncNotifications();
   const markAsRead = useMarkAsRead();
   const markAllAsRead = useMarkAllAsRead();
@@ -124,6 +124,14 @@ export default function NotificationsPage() {
             <div key={i} className="h-[76px] animate-pulse rounded-md bg-[color:var(--glass-bg-hover)]" />
           ))}
         </div>
+      ) : isError ? (
+        <EmptyState
+          icon={Bell}
+          title="Impossible de charger les notifications"
+          description="Vérifiez votre connexion puis réessayez."
+          actionLabel="Réessayer"
+          onAction={() => void refetch()}
+        />
       ) : filtered.length === 0 ? (
           <EmptyState
             icon={Bell}

@@ -1,60 +1,62 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import Link from "next/link";
 import { CalendarClock } from "lucide-react";
-import api from "@/lib/api";
-import Table from "@/components/ui/Table";
-import EmptyState from "@/components/ui/EmptyState";
 import Badge from "@/components/ui/Badge";
+import {
+  GlassListHeader,
+  GlassListRow,
+  GlassListTable,
+  GlassPageShell,
+} from "@/components/ui/GlassPageShell";
+import { useDeadlines } from "@/hooks/useDeadlines";
 import { PRIORITY_COLORS } from "@/types";
-import type { Deadline } from "@/types";
+import { listLink } from "@/lib/theme-classes";
 import { formatDate } from "@/lib/utils";
 
 export default function DeadlinesPage() {
-  const { data: deadlines = [], isLoading } = useQuery({
-    queryKey: ["deadlines"],
-    queryFn: async () => {
-      const { data } = await api.get<Deadline[]>("/deadlines");
-      return data;
-    },
-  });
+  const { data: deadlines = [], isLoading, isError, refetch } = useDeadlines();
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-text-primary">Deadlines</h1>
-        <p className="mt-1 text-text-secondary">Suivez vos deadlines importantes</p>
-      </div>
-      {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <span className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-        </div>
-      ) : deadlines.length === 0 ? (
-        <EmptyState
-          icon={CalendarClock}
-          title="Aucune deadline"
-          description="Créez des deadlines pour ne rien oublier."
+    <GlassPageShell
+      title="Deadlines"
+      description="Échéances importantes de vos projets"
+      icon={CalendarClock}
+      isLoading={isLoading}
+      isError={isError}
+      onRetry={() => void refetch()}
+      isEmpty={!isLoading && !isError && deadlines.length === 0}
+      emptyTitle="Aucune deadline"
+      emptyDescription="Créez des deadlines depuis un projet ou le tableau de bord."
+    >
+      <GlassListTable>
+        <GlassListHeader
+          columns={["Titre", "Date", "Projet", "Priorité", "Statut"]}
+          className="grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.6fr)]"
         />
-      ) : (
-        <Table
-          data={deadlines}
-          keyExtractor={(d) => d.id}
-          columns={[
-            { key: "title", header: "Titre" },
-            { key: "date", header: "Date", render: (d) => formatDate(d.date) },
-            { key: "project", header: "Projet", render: (d) => d.project?.name || "—" },
-            {
-              key: "priority",
-              header: "Priorité",
-              render: (d) => (
-                <Badge className={PRIORITY_COLORS[d.priority]}>{d.priority}</Badge>
-              ),
-            },
-            { key: "done", header: "Statut", render: (d) => (d.done ? "Terminé" : "En cours") },
-          ]}
-        />
-      )}
-    </div>
+        {deadlines.map((d) => (
+          <GlassListRow
+            key={d.id}
+            className="grid-cols-[minmax(0,1.4fr)_minmax(0,0.8fr)_minmax(0,1fr)_minmax(0,0.7fr)_minmax(0,0.6fr)]"
+          >
+            <span className="truncate font-medium text-app-primary">{d.title}</span>
+            <span>{formatDate(d.date)}</span>
+            <span className="truncate">
+              {d.project ? (
+                <Link href={`/projects/${d.project.id}`} className={listLink}>
+                  {d.project.name}
+                </Link>
+              ) : (
+                "—"
+              )}
+            </span>
+            <span>
+              <Badge className={PRIORITY_COLORS[d.priority]}>{d.priority}</Badge>
+            </span>
+            <span className="text-glass-muted">{d.done ? "Terminé" : "En cours"}</span>
+          </GlassListRow>
+        ))}
+      </GlassListTable>
+    </GlassPageShell>
   );
 }
-

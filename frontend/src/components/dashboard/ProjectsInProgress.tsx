@@ -46,7 +46,7 @@ export default function ProjectsInProgress({
   return (
     <section className={dashboardSection}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-[15px] font-semibold tracking-tight text-stone-900">Projets en cours</h2>
+        <h2 className="text-[15px] font-semibold tracking-tight text-app-primary">Projets en cours</h2>
         <div className="flex items-center gap-2">
           <Link href="/projects" className={dashboardLink}>
             Voir tous
@@ -86,7 +86,7 @@ export default function ProjectsInProgress({
               "rounded-full px-3 py-1 text-xs font-medium transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-stone-400",
               filter === f.id
                 ? "bg-stone-900 text-white shadow-sm"
-                : "bg-stone-100/80 text-stone-600 hover:bg-stone-200/60"
+                : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-glass-secondary"
             )}
           >
             {f.label}
@@ -95,7 +95,7 @@ export default function ProjectsInProgress({
       </div>
 
       {filtered.length === 0 ? (
-        <p className="py-10 text-center text-sm text-stone-400">
+        <p className="py-10 text-center text-sm text-glass-muted">
           {projects.length === 0
             ? "Aucun projet en cours."
             : "Aucun projet ne correspond à ce filtre."}

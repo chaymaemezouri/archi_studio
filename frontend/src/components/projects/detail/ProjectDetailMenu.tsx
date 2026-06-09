@@ -14,6 +14,7 @@ import {
   Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useDialog } from "@/components/providers/DialogProvider";
 import { useCreateProject, useDeleteProject, useUpdateProject } from "@/hooks/useProjects";
 import type { Project } from "@/types";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ interface ProjectDetailMenuProps {
 }
 
 export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenuProps) {
+  const { confirm } = useDialog();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
@@ -51,13 +53,15 @@ export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenu
     setOpen(false);
   };
 
-  const archive = () => {
+  const archive = async () => {
     const archiving = project.status !== "ARCHIVED";
-    if (
-      archiving &&
-      !window.confirm(`Archiver le projet « ${project.name} » ?`)
-    ) {
-      return;
+    if (archiving) {
+      const ok = await confirm({
+        title: "Archiver le projet",
+        message: `Archiver le projet « ${project.name} » ?`,
+        confirmLabel: "Archiver",
+      });
+      if (!ok) return;
     }
     updateProject.mutate({
       id: project.id,
@@ -93,13 +97,14 @@ export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenu
     setOpen(false);
   };
 
-  const remove = () => {
-    if (
-      !window.confirm(
-        `Supprimer définitivement « ${project.name} » ? Cette action est irréversible.`
-      )
-    )
-      return;
+  const remove = async () => {
+    const ok = await confirm({
+      title: "Supprimer le projet",
+      message: `Supprimer définitivement « ${project.name} » ? Cette action est irréversible.`,
+      variant: "danger",
+      confirmLabel: "Supprimer",
+    });
+    if (!ok) return;
     deleteProject.mutate(project.id, {
       onSuccess: () => router.push("/projects"),
     });

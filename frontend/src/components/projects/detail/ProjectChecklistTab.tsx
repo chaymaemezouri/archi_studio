@@ -11,6 +11,7 @@ import {
   Upload,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useDialog } from "@/components/providers/DialogProvider";
 import IconActionButton from "./IconActionButton";
 import ProjectDetailToolbar from "./ProjectDetailToolbar";
 import {
@@ -67,6 +68,7 @@ const STATUS_DATE: Record<ChecklistItemStatus, string> = {
 };
 
 export default function ProjectChecklistTab({ project }: ProjectChecklistTabProps) {
+  const { confirm, prompt } = useDialog();
   const items = project.checklistItems ?? [];
   const stats = getChecklistStats(project);
   const mutations = useProjectDetailMutations(project.id);
@@ -96,7 +98,13 @@ export default function ProjectChecklistTab({ project }: ProjectChecklistTabProp
   };
 
   const handleDelete = async (item: ProjectChecklistItem) => {
-    if (!window.confirm(`Supprimer le fichier « ${item.title} » ?`)) return;
+    const ok = await confirm({
+      title: "Supprimer le fichier",
+      message: `Supprimer le fichier « ${item.title} » ?`,
+      variant: "danger",
+      confirmLabel: "Supprimer",
+    });
+    if (!ok) return;
     await mutations.updateChecklistItem.mutateAsync({
       id: item.id,
       status: "MISSING",
@@ -258,8 +266,12 @@ export default function ProjectChecklistTab({ project }: ProjectChecklistTabProp
                     label="Notes"
                     icon={MessageSquare}
                     tone="notes"
-                    onClick={() => {
-                      const notes = window.prompt("Notes (optionnel) :", item.notes ?? "");
+                    onClick={async () => {
+                      const notes = await prompt({
+                        title: "Notes",
+                        label: "Notes (optionnel)",
+                        defaultValue: item.notes ?? "",
+                      });
                       if (notes === null) return;
                       mutations.updateChecklistItem.mutate({ id: item.id, notes: notes.trim() });
                     }}

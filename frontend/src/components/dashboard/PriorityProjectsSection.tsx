@@ -38,10 +38,10 @@ export default function PriorityProjectsSection({
     <section className={dashboardSection}>
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-[15px] font-semibold tracking-tight text-stone-900">
+          <h2 className="text-[15px] font-semibold tracking-tight text-app-primary">
             Projets prioritaires
           </h2>
-          <p className="mt-0.5 text-xs text-stone-500">
+          <p className="mt-0.5 text-xs text-glass-muted">
             Urgents, en retard ou deadline proche
           </p>
         </div>
@@ -75,7 +75,7 @@ export default function PriorityProjectsSection({
       </div>
 
       {priority.length === 0 ? (
-        <p className="py-8 text-center text-sm text-stone-400">
+        <p className="py-8 text-center text-sm text-glass-muted">
           Aucun projet ne demande votre attention pour le moment.
         </p>
       ) : view === "grid" ? (

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Modal from "@/components/ui/Modal";
+import { useDialog } from "@/components/providers/DialogProvider";
 import CalendarEventForm from "./CalendarEventForm";
 import {
   useCreateCalendarEvent,
@@ -38,15 +39,22 @@ export default function CalendarEventDetailModal({
   onEditCustom,
 }: CalendarEventDetailModalProps) {
   const deleteEvent = useDeleteCalendarEvent();
+  const { confirm } = useDialog();
 
   if (!event) return null;
 
   const done = isEventDone(event);
   const time = formatEventTime(event);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!event.editable || event.source !== "custom") return;
-    if (!window.confirm(`Supprimer « ${event.title} » ?`)) return;
+    const ok = await confirm({
+      title: "Supprimer l'événement",
+      message: `Supprimer « ${event.title} » ?`,
+      variant: "danger",
+      confirmLabel: "Supprimer",
+    });
+    if (!ok) return;
     deleteEvent.mutate(event.id, { onSuccess: onClose });
   };
 

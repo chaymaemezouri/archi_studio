@@ -22,7 +22,9 @@ import {
   detailIconActionGroup,
   detailLinkHover,
 } from "./project-detail-ui";
+import { useDialog } from "@/components/providers/DialogProvider";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
+import { getInvoiceFinanceHref } from "@/lib/payment-utils";
 import {
   DEVIS_STATUS_LABELS,
   INVOICE_STATUS_LABELS,
@@ -35,6 +37,7 @@ interface ProjectFinancesPanelProps {
 }
 
 export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelProps) {
+  const { confirm } = useDialog();
   const { updateInvoice } = useProjectDetailMutations(project.id);
   const devis = project.devis ?? [];
   const invoices = project.invoices ?? [];
@@ -46,8 +49,13 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
   const totalPaid = invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0);
   const remaining = Math.max(0, totalInvoiced - totalPaid);
 
-  const markPaid = (invoiceId: string) => {
-    if (!window.confirm("Marquer cette facture comme payée ?")) return;
+  const markPaid = async (invoiceId: string) => {
+    const ok = await confirm({
+      title: "Facture payée",
+      message: "Marquer cette facture comme payée ?",
+      confirmLabel: "Marquer payée",
+    });
+    if (!ok) return;
     updateInvoice.mutate({ id: invoiceId, status: "PAID" });
   };
 
@@ -126,7 +134,7 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
               <li key={inv.id} className={detailChecklistItem}>
                 <div className="min-w-0 flex-1">
                   <Link
-                    href={`/invoices/${inv.id}`}
+                    href={getInvoiceFinanceHref(inv.id)}
                     className={cn(detailChecklistItemTitle, detailLinkHover)}
                   >
                     {inv.number}

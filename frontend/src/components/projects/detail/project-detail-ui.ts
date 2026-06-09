@@ -225,7 +225,7 @@ export const detailSubDivider = "mt-4 border-t border-[color:var(--pd-border)] p
 
 export const detailListItem = cn(
   "flex items-center gap-2.5 rounded-md px-1.5 py-1.5",
-  "transition hover:bg-white/[0.025]"
+  "transition hover:bg-[color:var(--pd-hover-row)]"
 );
 
 export const detailEmptyCompact = cn(
@@ -259,12 +259,12 @@ export const detailFilterChipActiveValidated =
   "rounded-md border border-emerald-500/20 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-medium text-[color:var(--pd-status-success)]";
 
 export const detailThumb =
-  "overflow-hidden rounded-md bg-white/[0.02]";
+  "overflow-hidden rounded-md bg-[color:var(--pd-surface)]";
 
-export const detailPhaseTrack = "h-[3px] overflow-hidden rounded-full bg-white/[0.05]";
+export const detailPhaseTrack = "h-[3px] overflow-hidden rounded-full bg-[color:var(--pd-progress-track)]";
 
 export const detailStatBox =
-  "rounded-lg border border-white/[0.04] bg-white/[0.02] px-3 py-2";
+  "rounded-lg border border-[color:var(--pd-border)] bg-[color:var(--pd-surface)] px-3 py-2";
 
 export const detailStatBoxSuccess =
   "rounded-lg border border-emerald-500/12 bg-emerald-500/[0.05] px-3 py-2";
@@ -274,7 +274,7 @@ export const detailStatBoxWarning =
 
 /** Barre d'infos — ultra compacte */
 export const detailInfoBar = cn(
-  "rounded-xl border border-white/[0.05] bg-white/[0.02]",
+  "rounded-xl border border-[color:var(--pd-card-border)] bg-[color:var(--pd-surface)]",
   "grid grid-cols-2 gap-x-4 gap-y-2 px-3.5 py-2.5 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9"
 );
 
@@ -290,8 +290,8 @@ export const detailBackLink =
 
 export const detailIconBtn = cn(
   glassBtnIcon,
-  "h-8 w-8 shrink-0 border-transparent bg-white/[0.03] p-0",
-  "hover:bg-white/[0.05]",
+  "h-8 w-8 shrink-0 border-transparent bg-[color:var(--pd-control-bg)] p-0",
+  "hover:bg-[color:var(--pd-progress-track)]",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-light/30"
 );
 
@@ -299,8 +299,8 @@ export const detailBtnPrimary = cn(glassBtnPrimary, "h-8 gap-1.5 px-3.5 text-[12
 
 export const detailBtnSecondary = cn(
   glassBtnSecondary,
-  "h-8 gap-1.5 border-transparent bg-white/[0.03] px-3 text-[12px]",
-  "hover:bg-white/[0.05]",
+  "h-8 gap-1.5 border-transparent bg-[color:var(--pd-control-bg)] px-3 text-[12px]",
+  "hover:bg-[color:var(--pd-progress-track)]",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-studio-light/25"
 );
 
@@ -360,11 +360,11 @@ export const detailHeaderBar = "flex items-center";
 
 export const detailInfoPanel = cn(
   glassPanel,
-  "flex h-full min-h-0 flex-col border-white/[0.05] p-4 sm:p-5"
+  "flex h-full min-h-0 flex-col border-[color:var(--pd-card-border)] p-4 sm:p-5"
 );
 
 export const detailInfoPanelToolbar = cn(
-  "mb-4 flex flex-col gap-3 border-b border-white/[0.05] pb-4 sm:flex-row sm:items-start sm:justify-between"
+  "mb-4 flex flex-col gap-3 border-b border-[color:var(--pd-card-border)] pb-4 sm:flex-row sm:items-start sm:justify-between"
 );
 
 export const detailInfoGroup = "space-y-2";
@@ -376,7 +376,7 @@ export const detailInfoGroupGrid = "grid grid-cols-1 gap-x-4 gap-y-2 sm:grid-col
 
 export const detailInfoGroupRow = "min-w-0";
 
-export const detailGroupDivider = "my-3.5 border-t border-white/[0.05]";
+export const detailGroupDivider = "my-3.5 border-t border-[color:var(--pd-card-border)]";
 
 export const detailStatusBar = cn(
   "flex flex-col gap-1.5 sm:flex-row sm:gap-2"
@@ -384,7 +384,7 @@ export const detailStatusBar = cn(
 
 export const detailStatusBarItem = cn(
   "flex min-w-0 flex-1 items-center justify-between gap-3 rounded-lg",
-  "border border-white/[0.05] bg-white/[0.02] px-2.5 py-2 transition sm:px-3"
+  "border border-[color:var(--pd-card-border)] bg-[color:var(--pd-surface)] px-2.5 py-2 transition sm:px-3"
 );
 
 export const detailStatusBarItemInteractive =
@@ -404,7 +404,7 @@ export const detailStatusBarLabel =
 
 export const detailOverviewShell = cn(
   glassPanel,
-  "border-white/[0.05] p-3 sm:p-3.5"
+  "border-[color:var(--pd-card-border)] p-3 sm:p-3.5"
 );
 
 /** @deprecated utiliser detailOverviewShell compact */
@@ -567,9 +567,9 @@ export const detailHeroGalleryFooter = "flex items-center justify-between pt-0.5
 
 export const detailHeroGalleryLink = cn(
   "inline-flex shrink-0 items-center justify-center gap-1 rounded-md border-0",
-  "bg-white/[0.04] px-2 py-1",
+  "bg-[color:var(--pd-empty-bg)] px-2 py-1",
   "text-[10px] font-medium text-[color:var(--pd-text-muted)] transition",
-  "hover:bg-white/[0.06] hover:text-[color:var(--pd-text-secondary)]",
+  "hover:bg-[color:var(--pd-progress-track)] hover:text-[color:var(--pd-text-secondary)]",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--pd-accent-ring)]"
 );
 
@@ -609,7 +609,7 @@ export const detailHeroThumbActive = cn(
   "brightness-[1.03]"
 );
 
-export const detailHeroProgressTrack = "h-[3px] overflow-hidden rounded-full bg-white/[0.06]";
+export const detailHeroProgressTrack = "h-[3px] overflow-hidden rounded-full bg-[color:var(--pd-progress-track)]";
 
 export const detailTabsShell = cn(
   detailContentShell,
@@ -621,7 +621,7 @@ export const detailTabsTrack =
 
 export const detailTabBtn = cn(
   "relative flex shrink-0 items-center gap-1 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition",
-  "text-[color:var(--pd-text-faint)] hover:bg-white/[0.03] hover:text-[color:var(--pd-text-primary)]/62"
+  "text-[color:var(--pd-text-faint)] hover:bg-[color:var(--pd-control-bg)] hover:text-[color:var(--pd-text-primary)]/62"
 );
 
 export const detailTabBtnActive = cn(
@@ -630,7 +630,7 @@ export const detailTabBtnActive = cn(
 );
 
 export const detailTabCount =
-  "min-w-[0.95rem] rounded px-0.5 text-center text-[8px] tabular-nums leading-none text-white/22";
+  "min-w-[0.95rem] rounded px-0.5 text-center text-[8px] tabular-nums leading-none text-[color:var(--pd-text-faint)]";
 
 export const detailTabCountActive = "bg-studio-light/8 text-studio-light/50";
 
@@ -645,14 +645,14 @@ export const detailOverviewCardHeader =
   "mb-2 flex items-center justify-between gap-2";
 
 export const detailOverviewBlockTitle =
-  "text-[10px] font-medium uppercase tracking-[0.11em] text-white/42";
+  "text-[10px] font-medium uppercase tracking-[0.11em] text-[color:var(--pd-text-label)]";
 
 export const detailOverviewCardFooter =
   "mt-2 border-t border-black/20 pt-2";
 
 export const detailOverviewAddBtn = cn(
   "inline-flex shrink-0 items-center justify-center rounded-[6px] p-0.5",
-  "text-[color:var(--pd-text-faint)] transition hover:bg-white/[0.04] hover:text-[color:var(--pd-text-label)]",
+  "text-[color:var(--pd-text-faint)] transition hover:bg-[color:var(--pd-empty-bg)] hover:text-[color:var(--pd-text-label)]",
   "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[color:var(--pd-accent-ring)]"
 );
 
@@ -667,12 +667,12 @@ export const detailPhaseStepConnector =
   "w-px min-h-[6px] flex-1 bg-gradient-to-b from-white/[0.05] to-transparent";
 
 export const detailPhaseStepPercent =
-  "w-7 shrink-0 text-right text-[9px] tabular-nums text-white/22";
+  "w-7 shrink-0 text-right text-[9px] tabular-nums text-[color:var(--pd-text-faint)]";
 
 export const detailPhaseStepPercentCurrent = "text-[color:var(--pd-accent)]";
 
 export const detailOverviewDeadlineCard = cn(
-  "rounded-[9px] bg-white/[0.018] px-2.5 py-2"
+  "rounded-[9px] bg-[color:var(--pd-surface)] px-2.5 py-2"
 );
 
 export const detailOverviewEmptyInline = cn(
@@ -879,7 +879,7 @@ export const detailNotesPinnedLabel =
 
 export const detailVisualShell = cn(
   "relative overflow-hidden rounded-xl border border-white/[0.06]",
-  "bg-white/[0.02] shadow-[0_4px_20px_rgba(0,0,0,0.28)]"
+  "bg-[color:var(--pd-surface)] shadow-[0_4px_20px_rgba(0,0,0,0.28)]"
 );
 
 export const detailInfoGrid =

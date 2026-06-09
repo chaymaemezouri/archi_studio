@@ -11,6 +11,7 @@ import {
   Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useDialog } from "@/components/providers/DialogProvider";
 import IconActionButton from "./IconActionButton";
 import ProjectDetailToolbar from "./ProjectDetailToolbar";
 import {
@@ -50,6 +51,7 @@ function noteTitle(note: ProjectNote) {
 }
 
 export default function ProjectNotesTab({ project }: ProjectNotesTabProps) {
+  const { confirm } = useDialog();
   const { createProjectNote, updateProjectNote, deleteProjectNote } =
     useProjectDetailMutations(project.id);
 
@@ -304,10 +306,14 @@ export default function ProjectNotesTab({ project }: ProjectNotesTabProps) {
                           label="Supprimer"
                           icon={Trash2}
                           tone="danger"
-                          onClick={() => {
-                            if (window.confirm("Supprimer cette note ?")) {
-                              deleteProjectNote.mutate(note.id);
-                            }
+                          onClick={async () => {
+                            const ok = await confirm({
+                              title: "Supprimer la note",
+                              message: "Supprimer cette note ?",
+                              variant: "danger",
+                              confirmLabel: "Supprimer",
+                            });
+                            if (ok) deleteProjectNote.mutate(note.id);
                           }}
                           disabled={deleteProjectNote.isPending}
                         />

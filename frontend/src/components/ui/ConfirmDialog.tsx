@@ -89,7 +89,7 @@ export default function ConfirmDialog({
             className={cn(
               "inline-flex w-full items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium transition disabled:opacity-50 sm:w-auto",
               isDanger
-                ? "border border-red-400/30 bg-red-500/15 text-red-300 hover:bg-red-500/25"
+                ? "border border-red-400/30 bg-red-500/15 text-red-500 hover:bg-red-500/25 dark:text-red-300"
                 : glassBtnPrimary
             )}
           >

@@ -47,6 +47,7 @@ import {
   formatFileSize,
 } from "@/lib/project-detail";
 import { resolveMediaUrl } from "@/lib/assets";
+import { useDialog } from "@/components/providers/DialogProvider";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
 import {
   DEVIS_STATUS_LABELS,
@@ -84,6 +85,7 @@ export default function ProjectTabPanels({
   onQuickAdd,
   onUpload,
 }: ProjectTabPanelsProps) {
+  const { confirm, prompt } = useDialog();
   const mutations = useProjectDetailMutations(project.id);
   const [docSearch, setDocSearch] = useState("");
   const [taskFilter, setTaskFilter] = useState<TaskFilter>("all");
@@ -154,8 +156,8 @@ export default function ProjectTabPanels({
 
   const fileRow = (
     file: { id: string; name: string; url: string; mimeType: string; size: number; createdAt: string },
-    onDelete: () => void,
-    onRename?: () => void
+    onDelete: () => void | Promise<void>,
+    onRename?: () => void | Promise<void>
   ) => {
     const href = resolveMediaUrl(file.url) ?? file.url;
     return (
@@ -195,14 +197,14 @@ export default function ProjectTabPanels({
               label="Renommer"
               icon={Pencil}
               tone="notes"
-              onClick={onRename}
+              onClick={() => void onRename()}
             />
           )}
           <IconActionButton
             label="Supprimer"
             icon={Trash2}
             tone="danger"
-            onClick={onDelete}
+            onClick={() => void onDelete()}
           />
         </div>
       </li>
@@ -299,12 +301,23 @@ export default function ProjectTabPanels({
               const isLibraryDoc = !!project.documents?.some((d) => d.id === f.id);
               return fileRow(
                 f,
-                () =>
-                  isLibraryDoc
-                    ? mutations.deleteDocument.mutate(f.id)
-                    : mutations.deleteFile.mutate(f.id),
-                () => {
-                  const name = window.prompt("Nouveau nom :", f.name);
+                async () => {
+                  const ok = await confirm({
+                    title: "Supprimer",
+                    message: `Supprimer « ${f.name} » ?`,
+                    variant: "danger",
+                    confirmLabel: "Supprimer",
+                  });
+                  if (!ok) return;
+                  if (isLibraryDoc) mutations.deleteDocument.mutate(f.id);
+                  else mutations.deleteFile.mutate(f.id);
+                },
+                async () => {
+                  const name = await prompt({
+                    title: "Renommer",
+                    label: "Nouveau nom",
+                    defaultValue: f.name,
+                  });
                   if (!name?.trim()) return;
                   if (isLibraryDoc) {
                     mutations.updateDocument.mutate({ id: f.id, name: name.trim() });
@@ -324,10 +337,26 @@ export default function ProjectTabPanels({
             </p>
             <ul className={detailChecklistList}>
               {cpsFiles.map((f) =>
-                fileRow(f, () => mutations.deleteFile.mutate(f.id), () => {
-                  const name = window.prompt("Nouveau nom :", f.name);
-                  if (name?.trim()) mutations.updateFile.mutate({ id: f.id, name: name.trim() });
-                })
+                fileRow(
+                  f,
+                  async () => {
+                    const ok = await confirm({
+                      title: "Supprimer",
+                      message: `Supprimer « ${f.name} » ?`,
+                      variant: "danger",
+                      confirmLabel: "Supprimer",
+                    });
+                    if (ok) mutations.deleteFile.mutate(f.id);
+                  },
+                  async () => {
+                    const name = await prompt({
+                      title: "Renommer",
+                      label: "Nouveau nom",
+                      defaultValue: f.name,
+                    });
+                    if (name?.trim()) mutations.updateFile.mutate({ id: f.id, name: name.trim() });
+                  }
+                )
               )}
             </ul>
           </div>
@@ -729,8 +758,12 @@ export default function ProjectTabPanels({
                       label={m.notes ? "Modifier le compte rendu" : "Ajouter un compte rendu"}
                       icon={MessageSquare}
                       tone="notes"
-                      onClick={() => {
-                        const notes = window.prompt("Compte rendu :", m.notes ?? "");
+                      onClick={async () => {
+                        const notes = await prompt({
+                          title: "Compte rendu",
+                          label: "Compte rendu",
+                          defaultValue: m.notes ?? "",
+                        });
                         if (notes !== null) {
                           mutations.updateMeeting.mutate({ id: m.id, notes: notes.trim() });
                         }
@@ -740,10 +773,14 @@ export default function ProjectTabPanels({
                       label="Supprimer"
                       icon={Trash2}
                       tone="danger"
-                      onClick={() => {
-                        if (window.confirm("Supprimer cette réunion ?")) {
-                          mutations.deleteMeeting.mutate(m.id);
-                        }
+                      onClick={async () => {
+                        const ok = await confirm({
+                          title: "Supprimer la réunion",
+                          message: "Supprimer cette réunion ?",
+                          variant: "danger",
+                          confirmLabel: "Supprimer",
+                        });
+                        if (ok) mutations.deleteMeeting.mutate(m.id);
                       }}
                     />
                   </div>

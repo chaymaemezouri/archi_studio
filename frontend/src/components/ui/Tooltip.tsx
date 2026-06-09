@@ -21,7 +21,7 @@ export default function Tooltip({
       <span
         role="tooltip"
         className={cn(
-          "pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-md bg-stone-800/95 px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow-sm transition-opacity duration-150",
+          "pointer-events-none absolute left-1/2 z-50 -translate-x-1/2 whitespace-nowrap rounded-md border border-glass bg-[color:var(--glass-dropdown-bg)] px-2 py-1 text-[10px] font-medium text-glass opacity-0 shadow-[var(--glass-shadow)] backdrop-blur-xl transition-opacity duration-150",
           "group-hover/tooltip:opacity-100 group-focus-within/tooltip:opacity-100",
           side === "top" ? "bottom-full mb-1.5" : "top-full mt-1.5"
         )}

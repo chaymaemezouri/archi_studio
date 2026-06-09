@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { FileIcon } from "@/components/projects/detail/FileTypeIcon";
 import Badge from "@/components/ui/Badge";
+import { useDialog } from "@/components/providers/DialogProvider";
 import {
   plansRendersListHeader,
   plansRendersListLink,
@@ -60,6 +61,7 @@ export function PlanRenderListHeader() {
 }
 
 export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRowProps) {
+  const { confirm } = useDialog();
   const { ref, menuRef, menuOpen, menuPos, closeMenu, toggleMenu } = usePortalRowMenu(
     MENU_WIDTH,
     280
@@ -70,8 +72,14 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
   const href = resolveMediaUrl(asset.url) ?? asset.url;
   const thumb = resolveMediaUrl(asset.thumbnailUrl ?? asset.url);
 
-  const handleDelete = () => {
-    if (!window.confirm(`Supprimer « ${asset.name} » ?`)) return;
+  const handleDelete = async () => {
+    const ok = await confirm({
+      title: "Supprimer",
+      message: `Supprimer « ${asset.name} » ?`,
+      variant: "danger",
+      confirmLabel: "Supprimer",
+    });
+    if (!ok) return;
     deleteAsset.mutate(asset.id);
     closeMenu();
   };
@@ -118,7 +126,7 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
         >
           <Star className="h-4 w-4" /> {asset.isFavorite ? "Retirer favori" : "Favori"}
         </MenuBtn>
-        <MenuBtn danger onClick={handleDelete}>
+        <MenuBtn danger onClick={() => void handleDelete()}>
           <Trash2 className="h-4 w-4" /> Supprimer
         </MenuBtn>
       </div>
