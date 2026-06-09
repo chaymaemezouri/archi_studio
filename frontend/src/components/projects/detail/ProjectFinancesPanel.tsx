@@ -20,6 +20,7 @@ import {
   detailFinanceStatValueSuccess,
   detailFinanceStatValueWarning,
   detailIconActionGroup,
+  detailLinkHover,
 } from "./project-detail-ui";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
 import {
@@ -92,10 +93,7 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/finances/quotes-invoices?edit=devis&id=${d.id}`}
-                    className={cn(
-                      detailChecklistItemTitle,
-                      "hover:text-[#8ba4c7]/90"
-                    )}
+                    className={cn(detailChecklistItemTitle, detailLinkHover)}
                   >
                     Devis {d.number}
                   </Link>
@@ -129,10 +127,7 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
                 <div className="min-w-0 flex-1">
                   <Link
                     href={`/invoices/${inv.id}`}
-                    className={cn(
-                      detailChecklistItemTitle,
-                      "hover:text-[#8ba4c7]/90"
-                    )}
+                    className={cn(detailChecklistItemTitle, detailLinkHover)}
                   >
                     {inv.number}
                   </Link>

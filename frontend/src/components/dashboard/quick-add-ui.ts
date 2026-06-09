@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
-import { glassInput, glassSelect } from "@/lib/glass-styles";
+import { formFieldLabel, glassInput, glassSelect } from "@/lib/glass-styles";
 
-export const quickAddFieldLabel = "text-[11px] font-medium text-white/40";
+export const quickAddFieldLabel = formFieldLabel;
 
 export const quickAddInput = cn(glassInput, "px-3");
 

@@ -2,9 +2,525 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
+/* ── Thème sombre (défaut) — inchangé ── */
+:root,
+.dark {
+  color-scheme: dark;
+
   --background: #0a0a0f;
   --foreground: #f0efe8;
+
+  --color-bg-base: #0a0a0f;
+  --color-bg-shell: #07070b;
+  --color-bg-sidebar: #111118;
+  --color-bg-surface: #16161f;
+  --color-bg-elevated: #1c1c28;
+
+  --color-text-primary: #f0efe8;
+  --color-text-secondary: #8a8a9a;
+  --color-text-muted: #555566;
+
+  --color-border: rgba(255, 255, 255, 0.06);
+  --color-border-strong: rgba(255, 255, 255, 0.1);
+
+  --glass-bg: rgba(255, 255, 255, 0.03);
+  --glass-bg-hover: rgba(255, 255, 255, 0.06);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-hover: rgba(255, 255, 255, 0.1);
+  --glass-input-bg: rgba(255, 255, 255, 0.04);
+  --glass-input-border: rgba(255, 255, 255, 0.1);
+  --glass-input-shadow: none;
+  --glass-dropdown-shadow: var(--glass-shadow-lg);
+  --glass-text: rgba(255, 255, 255, 0.9);
+  --glass-text-secondary: rgba(255, 255, 255, 0.65);
+  --glass-text-muted: rgba(255, 255, 255, 0.5);
+  --glass-placeholder: rgba(255, 255, 255, 0.35);
+  --glass-dropdown-bg: rgba(16, 16, 20, 0.92);
+  --glass-menu-bg: rgba(16, 16, 20, 0.95);
+  --glass-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+  --glass-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.55);
+
+  --studio-default: #5d6b7a;
+  --studio-light: #8ba4c7;
+  --studio-muted: rgba(139, 164, 199, 0.1);
+  --studio-soft: rgba(139, 164, 199, 0.06);
+  --studio-border: rgba(139, 164, 199, 0.2);
+
+  --btn-primary-text: #8ba4c7;
+  --btn-primary-bg: rgba(139, 164, 199, 0.1);
+  --btn-primary-border: rgba(139, 164, 199, 0.2);
+
+  --card-bg: rgba(12, 12, 16, 0.8);
+  --card-border: rgba(255, 255, 255, 0.07);
+  --card-shadow: 0 6px 22px rgba(0, 0, 0, 0.34);
+  --card-shadow-hover: 0 10px 30px rgba(0, 0, 0, 0.42);
+
+  /* Page détail projet — dark (valeurs d'origine) */
+  --pd-shell-bg: #08080b;
+  --pd-shell-border: rgba(139, 164, 199, 0.1);
+  --pd-shell-shadow: 0 6px 28px rgba(0, 0, 0, 0.38);
+  --pd-section-bg: rgba(255, 255, 255, 0.02);
+  --pd-section-border: rgba(139, 164, 199, 0.1);
+  --pd-section-shadow: none;
+  --pd-card-bg: rgba(255, 255, 255, 0.015);
+  --pd-card-border: rgba(139, 164, 199, 0.05);
+  --pd-hero-from: rgba(255, 255, 255, 0.03);
+  --pd-hero-via: #0c0c10;
+  --pd-hero-to: #09090c;
+  --pd-hero-border: rgba(139, 164, 199, 0.08);
+  --pd-hero-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+  --pd-pilotage-shadow: 0 6px 22px rgba(0, 0, 0, 0.18);
+  --pd-card-from: rgba(255, 255, 255, 0.03);
+  --pd-card-via: #0e1014;
+  --pd-card-to: #0a0a0d;
+  --pd-card-shadow: 0 4px 18px rgba(0, 0, 0, 0.15);
+  --pd-text-primary: rgba(255, 255, 255, 0.98);
+  --pd-text-body: rgba(255, 255, 255, 0.92);
+  --pd-text-secondary: rgba(255, 255, 255, 0.62);
+  --pd-text-muted: rgba(255, 255, 255, 0.55);
+  --pd-text-faint: rgba(255, 255, 255, 0.38);
+  --pd-text-label: rgba(168, 189, 216, 0.68);
+  --pd-text-empty: rgba(184, 196, 214, 0.62);
+  --pd-text-studio: rgba(184, 202, 228, 0.9);
+  --pd-text-heading: #e8edf4;
+  --pd-text-link: #c5d4ea;
+  --pd-text-sidebar: rgba(194, 202, 214, 0.88);
+  --pd-text-sidebar-active: #f0f4fa;
+  --pd-text-sidebar-hover: #eef2f7;
+  --pd-accent: #8ba4c7;
+  --pd-accent-soft: rgba(139, 164, 199, 0.18);
+  --pd-accent-hover: rgba(139, 164, 199, 0.12);
+  --pd-accent-ring: rgba(139, 164, 199, 0.28);
+  --pd-border: rgba(139, 164, 199, 0.12);
+  --pd-hover-row: rgba(139, 164, 199, 0.05);
+  --pd-list-divider: rgba(139, 164, 199, 0.08);
+  --pd-progress-track: rgba(255, 255, 255, 0.05);
+  --pd-progress-fill-from: rgba(139, 164, 199, 0.7);
+  --pd-progress-fill-to: rgba(139, 164, 199, 0.95);
+  --pd-finance-value: rgba(197, 212, 232, 0.95);
+  --pd-finance-success: #34d399;
+  --pd-finance-warning: #fbbf24;
+  --pd-status-success: #34d399;
+  --pd-status-warning: #fbbf24;
+  --pd-status-accent: #9eb8dc;
+  --pd-empty-bg: rgba(255, 255, 255, 0.04);
+  --pd-empty-border: rgba(139, 164, 199, 0.14);
+  --pd-surface: rgba(255, 255, 255, 0.03);
+  --pd-surface-border: rgba(139, 164, 199, 0.1);
+  --pd-badge-neutral-bg: rgba(139, 164, 199, 0.12);
+  --pd-badge-neutral-border: rgba(139, 164, 199, 0.24);
+  --pd-badge-neutral-text: rgba(200, 216, 236, 0.95);
+  --pd-badge-amber-bg: rgba(245, 158, 11, 0.14);
+  --pd-badge-amber-border: rgba(251, 191, 36, 0.3);
+  --pd-badge-amber-text: rgba(253, 230, 138, 0.95);
+  --pd-badge-deadline-bg: rgba(255, 255, 255, 0.05);
+  --pd-badge-deadline-border: rgba(139, 164, 199, 0.14);
+  --pd-sidebar-active-bar: rgba(139, 164, 199, 0.7);
+  --pd-sidebar-count-active: #e8f0fa;
+  --pd-link-hover: #a8c0e0;
+  --pd-deadline-text: #9eb8dc;
+  --pd-deadline-icon: rgba(158, 179, 212, 0.65);
+  --pd-control-bg: rgba(255, 255, 255, 0.04);
+  --pd-control-text: rgba(255, 255, 255, 0.92);
+  --pd-icon-muted: rgba(255, 255, 255, 0.4);
+  --pd-chip-active-bg: rgba(139, 164, 199, 0.12);
+  --pd-chip-active-border: rgba(139, 164, 199, 0.18);
+  --pd-chip-active-text: rgba(184, 201, 220, 0.92);
+  --pd-chip-inactive-text: rgba(168, 180, 196, 0.62);
+  --pd-mobile-panel-bg: rgba(18, 22, 30, 0.97);
+  --pd-maps-icon: rgba(158, 179, 212, 0.78);
+
+  --sidebar-gradient: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.1),
+    rgba(255, 255, 255, 0.05)
+  );
+  --nav-text: rgba(255, 255, 255, 0.7);
+  --nav-text-icon: rgba(255, 255, 255, 0.55);
+  --nav-active-bg: rgba(255, 255, 255, 0.16);
+  --nav-hover-bg: rgba(255, 255, 255, 0.1);
+
+  --glow-primary: rgba(139, 164, 199, 0.04);
+  --glow-secondary: rgba(139, 164, 199, 0.03);
+  --overlay-scrim: rgba(0, 0, 0, 0.5);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.18);
+
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-axis: rgba(255, 255, 255, 0.32);
+  --chart-tooltip-bg: rgba(20, 20, 28, 0.95);
+  --chart-tooltip-border: rgba(255, 255, 255, 0.1);
+  --chart-cursor: rgba(139, 164, 199, 0.08);
+
+  /* Badges */
+  --badge-default-bg: var(--glass-bg-hover);
+  --badge-default-text: var(--glass-text-secondary);
+  --badge-studio-bg: var(--studio-muted);
+  --badge-studio-text: var(--studio-light);
+  --badge-accent-bg: rgba(224, 120, 32, 0.15);
+  --badge-accent-text: rgba(251, 146, 60, 0.9);
+  --badge-accent-ring: transparent;
+  --badge-success-bg: rgba(16, 185, 129, 0.15);
+  --badge-success-text: rgba(52, 211, 153, 0.85);
+  --badge-success-ring: transparent;
+  --badge-warning-bg: rgba(245, 158, 11, 0.15);
+  --badge-warning-text: rgba(251, 191, 36, 0.8);
+  --badge-warning-ring: transparent;
+  --badge-danger-bg: rgba(239, 68, 68, 0.15);
+  --badge-danger-text: rgba(248, 113, 113, 0.8);
+  --badge-danger-ring: transparent;
+
+  /* Statuts factures / devis */
+  --status-neutral-bg: rgba(107, 114, 128, 0.2);
+  --status-neutral-text: rgba(156, 163, 175, 1);
+  --status-neutral-ring: transparent;
+  --status-info-bg: rgba(59, 130, 246, 0.2);
+  --status-info-text: rgba(96, 165, 250, 1);
+  --status-info-ring: transparent;
+  --status-success-bg: rgba(16, 185, 129, 0.2);
+  --status-success-text: rgba(52, 211, 153, 1);
+  --status-success-ring: transparent;
+  --status-warning-bg: rgba(245, 158, 11, 0.2);
+  --status-warning-text: rgba(251, 191, 36, 1);
+  --status-warning-ring: transparent;
+  --status-danger-bg: rgba(239, 68, 68, 0.2);
+  --status-danger-text: rgba(248, 113, 113, 1);
+  --status-danger-ring: transparent;
+  --status-orange-bg: rgba(249, 115, 22, 0.2);
+  --status-orange-text: rgba(251, 146, 60, 1);
+  --status-orange-ring: transparent;
+
+  /* Icônes d'action */
+  --icon-group-bg: rgba(139, 164, 199, 0.05);
+  --icon-group-border: transparent;
+  --icon-default-color: rgba(154, 163, 176, 0.7);
+  --icon-default-bg: transparent;
+  --icon-default-hover-bg: rgba(139, 164, 199, 0.1);
+  --icon-default-hover-color: #c2cad6;
+  --icon-view-color: rgba(139, 164, 199, 0.85);
+  --icon-view-bg: transparent;
+  --icon-view-hover-bg: rgba(139, 164, 199, 0.12);
+  --icon-view-hover-color: #b8d4f0;
+  --icon-download-color: rgba(110, 176, 232, 0.9);
+  --icon-download-bg: transparent;
+  --icon-download-hover-bg: rgba(139, 164, 199, 0.12);
+  --icon-download-hover-color: #9ec8f0;
+  --icon-upload-color: rgba(251, 191, 36, 0.9);
+  --icon-upload-bg: transparent;
+  --icon-upload-hover-bg: rgba(245, 158, 11, 0.12);
+  --icon-upload-hover-color: #fcd34d;
+  --icon-notes-color: rgba(154, 163, 176, 0.75);
+  --icon-notes-bg: transparent;
+  --icon-notes-hover-bg: rgba(139, 164, 199, 0.1);
+  --icon-notes-hover-color: rgba(194, 202, 214, 0.9);
+  --icon-success-color: rgba(52, 211, 153, 0.9);
+  --icon-success-bg: transparent;
+  --icon-success-hover-bg: rgba(16, 185, 129, 0.12);
+  --icon-success-hover-color: #6ee7b7;
+  --icon-danger-color: rgba(248, 113, 113, 0.85);
+  --icon-danger-bg: transparent;
+  --icon-danger-hover-bg: rgba(239, 68, 68, 0.12);
+  --icon-danger-hover-color: #fca5a5;
+
+  --finance-warning-text: rgba(251, 191, 36, 0.85);
+  --list-card-border: var(--glass-border);
+  --icon-box-bg: var(--glass-input-bg);
+  --icon-box-color: var(--glass-text-secondary);
+
+  /* Dashboard */
+  --dash-stat-label: var(--glass-text-muted);
+  --dash-section-label: var(--glass-text-muted);
+  --dash-card-footer-bg: rgba(0, 0, 0, 0.4);
+  --dash-agenda-tasks: #8ba4c7;
+  --dash-agenda-deadlines: #5d6b7a;
+  --dash-agenda-meetings: #b8cfe8;
+  --dash-alert-overdue-border: rgba(248, 113, 113, 0.45);
+  --dash-alert-overdue-bg: rgba(239, 68, 68, 0.08);
+  --dash-alert-today-border: rgba(251, 146, 60, 0.45);
+  --dash-alert-today-bg: rgba(249, 115, 22, 0.08);
+  --dash-alert-tomorrow-border: rgba(250, 204, 21, 0.4);
+  --dash-alert-tomorrow-bg: rgba(234, 179, 8, 0.08);
+  --dash-alert-soon-border: rgba(139, 164, 199, 0.35);
+  --dash-alert-soon-bg: rgba(139, 164, 199, 0.06);
+
+  /* Cartes projet */
+  --pc-title: rgba(255, 255, 255, 0.94);
+  --pc-subtitle: rgba(184, 202, 228, 0.55);
+  --pc-meta: rgba(184, 202, 228, 0.42);
+  --pc-deadline: rgba(184, 202, 228, 0.5);
+  --pc-overdue: rgba(252, 165, 165, 0.85);
+  --pc-accent: rgba(139, 164, 199, 0.75);
+  --pc-progress-track: rgba(255, 255, 255, 0.08);
+  --pc-progress-text: rgba(255, 255, 255, 0.62);
+  --pc-progress-text-zero: rgba(255, 255, 255, 0.26);
+  --pc-action-bg: rgba(0, 0, 0, 0.5);
+  --pc-action-opacity: 0.75;
+  --pc-count-icon: rgba(139, 164, 199, 0.55);
+
+  /* Accents deadline tâches (kanban) */
+  --task-accent-overdue: rgba(248, 113, 113, 0.35);
+  --task-accent-today: rgba(251, 191, 36, 0.4);
+  --task-accent-tomorrow: rgba(217, 119, 6, 0.45);
+  --task-accent-soon: rgba(139, 164, 199, 0.35);
+  --task-accent-default: rgba(139, 164, 199, 0.22);
+}
+
+/* ── Thème clair — fond blanc, contrastes pro ── */
+.light {
+  color-scheme: light;
+
+  --background: #ffffff;
+  --foreground: #0f172a;
+
+  --color-bg-base: #ffffff;
+  --color-bg-shell: #ffffff;
+  --color-bg-sidebar: #ffffff;
+  --color-bg-surface: #ffffff;
+  --color-bg-elevated: #ffffff;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+
+  --color-border: #cbd5e1;
+  --color-border-strong: #94a3b8;
+
+  --glass-bg: #ffffff;
+  --glass-bg-hover: #f1f5f9;
+  --glass-border: #cbd5e1;
+  --glass-border-hover: #94a3b8;
+  --glass-input-bg: #ffffff;
+  --glass-input-border: #cbd5e1;
+  --glass-input-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --glass-dropdown-shadow: 0 4px 6px rgba(15, 23, 42, 0.06), 0 14px 32px rgba(15, 23, 42, 0.1);
+  --glass-text: #0f172a;
+  --glass-text-secondary: #475569;
+  --glass-text-muted: #64748b;
+  --glass-placeholder: #94a3b8;
+  --glass-dropdown-bg: #ffffff;
+  --glass-menu-bg: #ffffff;
+  --glass-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.07);
+  --glass-shadow-lg: 0 4px 8px rgba(15, 23, 42, 0.05), 0 12px 32px rgba(15, 23, 42, 0.1);
+
+  --studio-default: #1e293b;
+  --studio-light: #1d4ed8;
+  --studio-muted: rgba(37, 99, 235, 0.14);
+  --studio-soft: rgba(37, 99, 235, 0.08);
+  --studio-border: rgba(37, 99, 235, 0.35);
+
+  --btn-primary-text: #1d4ed8;
+  --btn-primary-bg: rgba(37, 99, 235, 0.08);
+  --btn-primary-border: rgba(37, 99, 235, 0.28);
+
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.08), 0 6px 18px rgba(15, 23, 42, 0.07);
+  --card-shadow-hover: 0 6px 16px rgba(15, 23, 42, 0.1), 0 14px 32px rgba(15, 23, 42, 0.08);
+
+  /* Page détail projet — light */
+  --pd-shell-bg: #ffffff;
+  --pd-shell-border: #cbd5e1;
+  --pd-shell-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --pd-section-bg: #f8fafc;
+  --pd-section-border: #cbd5e1;
+  --pd-section-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --pd-card-bg: #ffffff;
+  --pd-card-border: #e2e8f0;
+  --pd-hero-from: #ffffff;
+  --pd-hero-via: #ffffff;
+  --pd-hero-to: #ffffff;
+  --pd-hero-border: #e2e8f0;
+  --pd-hero-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+  --pd-pilotage-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+  --pd-card-from: #ffffff;
+  --pd-card-via: #ffffff;
+  --pd-card-to: #ffffff;
+  --pd-card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+  --pd-text-primary: #0f172a;
+  --pd-text-body: #0f172a;
+  --pd-text-secondary: #475569;
+  --pd-text-muted: #64748b;
+  --pd-text-faint: #94a3b8;
+  --pd-text-label: #64748b;
+  --pd-text-studio: #334155;
+  --pd-text-heading: #0f172a;
+  --pd-text-link: #2563eb;
+  --pd-text-sidebar: #475569;
+  --pd-text-sidebar-active: #0f172a;
+  --pd-text-sidebar-hover: #0f172a;
+  --pd-accent: #2563eb;
+  --pd-accent-soft: rgba(37, 99, 235, 0.12);
+  --pd-accent-hover: rgba(37, 99, 235, 0.08);
+  --pd-accent-ring: rgba(37, 99, 235, 0.28);
+  --pd-border: #cbd5e1;
+  --pd-hover-row: rgba(37, 99, 235, 0.06);
+  --pd-list-divider: #e2e8f0;
+  --pd-progress-track: #e2e8f0;
+  --pd-progress-fill-from: #3b82f6;
+  --pd-progress-fill-to: #2563eb;
+  --pd-finance-value: #0f172a;
+  --pd-finance-success: #15803d;
+  --pd-finance-warning: #b45309;
+  --pd-status-success: #15803d;
+  --pd-status-warning: #b45309;
+  --pd-status-accent: #2563eb;
+  --pd-text-empty: #64748b;
+  --pd-empty-bg: #f1f5f9;
+  --pd-empty-border: #cbd5e1;
+  --pd-surface: #f8fafc;
+  --pd-surface-border: #e2e8f0;
+  --pd-badge-neutral-bg: #eff6ff;
+  --pd-badge-neutral-border: #93c5fd;
+  --pd-badge-neutral-text: #1d4ed8;
+  --pd-badge-amber-bg: #fffbeb;
+  --pd-badge-amber-border: #fcd34d;
+  --pd-badge-amber-text: #b45309;
+  --pd-badge-deadline-bg: #f8fafc;
+  --pd-badge-deadline-border: #e2e8f0;
+  --pd-sidebar-active-bar: #2563eb;
+  --pd-sidebar-count-active: #1e40af;
+  --pd-link-hover: #1d4ed8;
+  --pd-deadline-text: #1d4ed8;
+  --pd-deadline-icon: #3b82f6;
+  --pd-control-bg: #f8fafc;
+  --pd-control-text: #0f172a;
+  --pd-icon-muted: #94a3b8;
+  --pd-chip-active-bg: rgba(37, 99, 235, 0.08);
+  --pd-chip-active-border: rgba(37, 99, 235, 0.22);
+  --pd-chip-active-text: #1e40af;
+  --pd-chip-inactive-text: #64748b;
+  --pd-mobile-panel-bg: #ffffff;
+  --pd-maps-icon: #2563eb;
+
+  --sidebar-gradient: linear-gradient(180deg, #ffffff 0%, #ffffff 100%);
+  --nav-text: #475569;
+  --nav-text-icon: #64748b;
+  --nav-active-bg: rgba(37, 99, 235, 0.1);
+  --nav-hover-bg: #f1f5f9;
+
+  --glow-primary: transparent;
+  --glow-secondary: transparent;
+  --overlay-scrim: rgba(15, 23, 42, 0.4);
+  --scrollbar-thumb: rgba(15, 23, 42, 0.14);
+  --scrollbar-thumb-hover: rgba(15, 23, 42, 0.24);
+
+  --chart-grid: rgba(15, 23, 42, 0.12);
+  --chart-axis: rgba(15, 23, 42, 0.58);
+  --chart-tooltip-bg: #ffffff;
+  --chart-tooltip-border: #e2e8f0;
+  --chart-cursor: rgba(37, 99, 235, 0.1);
+
+  /* Badges — saturés et lisibles */
+  --badge-default-bg: #f1f5f9;
+  --badge-default-text: #475569;
+  --badge-studio-bg: #dbeafe;
+  --badge-studio-text: #1d4ed8;
+  --badge-accent-bg: #ffedd5;
+  --badge-accent-text: #c2410c;
+  --badge-accent-ring: #fdba74;
+  --badge-success-bg: #dcfce7;
+  --badge-success-text: #15803d;
+  --badge-success-ring: #86efac;
+  --badge-warning-bg: #fef3c7;
+  --badge-warning-text: #b45309;
+  --badge-warning-ring: #fcd34d;
+  --badge-danger-bg: #fee2e2;
+  --badge-danger-text: #b91c1c;
+  --badge-danger-ring: #fca5a5;
+
+  /* Statuts factures / devis */
+  --status-neutral-bg: #f1f5f9;
+  --status-neutral-text: #475569;
+  --status-neutral-ring: #cbd5e1;
+  --status-info-bg: #dbeafe;
+  --status-info-text: #1d4ed8;
+  --status-info-ring: #93c5fd;
+  --status-success-bg: #dcfce7;
+  --status-success-text: #15803d;
+  --status-success-ring: #86efac;
+  --status-warning-bg: #fef3c7;
+  --status-warning-text: #b45309;
+  --status-warning-ring: #fcd34d;
+  --status-danger-bg: #fee2e2;
+  --status-danger-text: #b91c1c;
+  --status-danger-ring: #fca5a5;
+  --status-orange-bg: #ffedd5;
+  --status-orange-text: #c2410c;
+  --status-orange-ring: #fdba74;
+
+  /* Icônes d'action — colorées */
+  --icon-group-bg: #f1f5f9;
+  --icon-group-border: #e2e8f0;
+  --icon-default-color: #64748b;
+  --icon-default-bg: #f8fafc;
+  --icon-default-hover-bg: #e2e8f0;
+  --icon-default-hover-color: #334155;
+  --icon-view-color: #2563eb;
+  --icon-view-bg: #eff6ff;
+  --icon-view-hover-bg: #dbeafe;
+  --icon-view-hover-color: #1d4ed8;
+  --icon-download-color: #0284c7;
+  --icon-download-bg: #e0f2fe;
+  --icon-download-hover-bg: #bae6fd;
+  --icon-download-hover-color: #0369a1;
+  --icon-upload-color: #d97706;
+  --icon-upload-bg: #fffbeb;
+  --icon-upload-hover-bg: #fef3c7;
+  --icon-upload-hover-color: #b45309;
+  --icon-notes-color: #7c3aed;
+  --icon-notes-bg: #f5f3ff;
+  --icon-notes-hover-bg: #ede9fe;
+  --icon-notes-hover-color: #6d28d9;
+  --icon-success-color: #059669;
+  --icon-success-bg: #ecfdf5;
+  --icon-success-hover-bg: #d1fae5;
+  --icon-success-hover-color: #047857;
+  --icon-danger-color: #dc2626;
+  --icon-danger-bg: #fef2f2;
+  --icon-danger-hover-bg: #fee2e2;
+  --icon-danger-hover-color: #b91c1c;
+
+  --finance-warning-text: #b45309;
+  --list-card-border: #cbd5e1;
+  --icon-box-bg: #eff6ff;
+  --icon-box-color: #2563eb;
+
+  /* Dashboard */
+  --dash-stat-label: #475569;
+  --dash-section-label: #64748b;
+  --dash-card-footer-bg: #ffffff;
+  --dash-agenda-tasks: #2563eb;
+  --dash-agenda-deadlines: #d97706;
+  --dash-agenda-meetings: #7c3aed;
+  --dash-alert-overdue-border: #dc2626;
+  --dash-alert-overdue-bg: #fef2f2;
+  --dash-alert-today-border: #ea580c;
+  --dash-alert-today-bg: #fff7ed;
+  --dash-alert-tomorrow-border: #d97706;
+  --dash-alert-tomorrow-bg: #fffbeb;
+  --dash-alert-soon-border: #2563eb;
+  --dash-alert-soon-bg: #eff6ff;
+
+  /* Cartes projet — textes et accents lisibles */
+  --pc-title: #0f172a;
+  --pc-subtitle: #475569;
+  --pc-meta: #64748b;
+  --pc-deadline: #64748b;
+  --pc-overdue: #dc2626;
+  --pc-accent: #2563eb;
+  --pc-progress-track: #e2e8f0;
+  --pc-progress-text: #334155;
+  --pc-progress-text-zero: #94a3b8;
+  --pc-action-bg: rgba(255, 255, 255, 0.92);
+  --pc-action-opacity: 1;
+  --pc-count-icon: #2563eb;
+
+  /* Accents deadline tâches — lignes visibles */
+  --task-accent-overdue: #dc2626;
+  --task-accent-today: #d97706;
+  --task-accent-tomorrow: #b45309;
+  --task-accent-soon: #2563eb;
+  --task-accent-default: #e2e8f0;
 }
 
 * {
@@ -17,6 +533,9 @@ body {
   font-family: var(--font-inter), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 ::-webkit-scrollbar {
@@ -29,16 +548,78 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--scrollbar-thumb);
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.18);
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Light — sidebar bordure nette */
+.light aside {
+  border-color: var(--color-border) !important;
+  box-shadow: 1px 0 0 var(--color-border);
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+
+  .bg-app-shell {
+    background-color: var(--color-bg-shell);
+  }
+
+  .bg-app-glow-primary {
+    background-color: var(--glow-primary);
+  }
+
+  .bg-app-glow-secondary {
+    background-color: var(--glow-secondary);
+  }
+
+  .bg-sidebar-gradient {
+    background: var(--sidebar-gradient);
+  }
+
+  .text-app-primary {
+    color: var(--color-text-primary);
+  }
+
+  .text-app-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .text-glass {
+    color: var(--glass-text);
+  }
+
+  .text-glass-secondary {
+    color: var(--glass-text-secondary);
+  }
+
+  .text-glass-muted {
+    color: var(--glass-text-muted);
+  }
+
+  .border-app {
+    border-color: var(--color-border);
+  }
+
+  .border-glass {
+    border-color: var(--glass-border);
+  }
+
+  .bg-card {
+    background-color: var(--card-bg);
+  }
+
+  .border-card {
+    border-color: var(--card-border);
+  }
+
+  .shadow-card {
+    box-shadow: var(--card-shadow);
   }
 }

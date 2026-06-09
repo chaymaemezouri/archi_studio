@@ -59,7 +59,7 @@ export const NOTIF_TONE_STYLES = {
     badge: "text-studio-light/80 bg-studio-muted/30",
   },
   info: {
-    icon: "text-white/55 bg-white/[0.04] border-white/[0.08]",
-    badge: "text-white/45 bg-white/[0.04]",
+    icon: "text-glass-muted bg-[color:var(--glass-bg-hover)] border-glass",
+    badge: "text-glass-muted bg-[color:var(--glass-bg-hover)]",
   },
 } as const;

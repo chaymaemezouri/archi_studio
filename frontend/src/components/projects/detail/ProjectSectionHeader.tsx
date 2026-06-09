@@ -39,7 +39,7 @@ export default function ProjectSectionHeader({
         <div className="min-w-0 flex-1">
           <h2 className={cn(detailSectionTitle, "mb-0 flex items-center gap-2")}>
             {Icon && (
-              <Icon className="h-3.5 w-3.5 shrink-0 text-[#8ba4c7]/55" strokeWidth={1.75} />
+              <Icon className="h-3.5 w-3.5 shrink-0 text-glass-muted" strokeWidth={1.75} />
             )}
             {title}
           </h2>

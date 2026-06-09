@@ -53,14 +53,14 @@ export default function ProjectCardCompact({ project, className }: ProjectCardCo
           {project.name}
         </p>
         {subtitle && (
-          <p className="mt-1 truncate text-[11px] leading-tight text-white/48">{subtitle}</p>
+          <p className="mt-1 truncate text-[11px] leading-tight text-glass-muted">{subtitle}</p>
         )}
 
-        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-white/[0.06] pt-2">
+        <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-app pt-2">
           <span
             className={cn(
               "inline-flex min-w-0 items-center gap-1 truncate text-[10px] font-medium",
-              overdue ? "text-red-300/90" : "text-white/42"
+              overdue ? "text-red-300/90" : "text-glass-muted"
             )}
           >
             <Calendar

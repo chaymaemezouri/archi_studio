@@ -11,11 +11,11 @@ const config: Config = {
     extend: {
       colors: {
         dark: {
-          base: "#0A0A0F",
-          sidebar: "#111118",
-          surface: "#16161F",
-          elevated: "#1C1C28",
-          border: "rgba(255,255,255,0.06)",
+          base: "var(--color-bg-base)",
+          sidebar: "var(--color-bg-sidebar)",
+          surface: "var(--color-bg-surface)",
+          elevated: "var(--color-bg-elevated)",
+          border: "var(--color-border)",
         },
         accent: {
           DEFAULT: "#E07820",
@@ -24,16 +24,16 @@ const config: Config = {
         },
         /** Accent dashboard — ardoise + bleu lien (Tout voir) */
         studio: {
-          DEFAULT: "#5D6B7A",
-          light: "#8BA4C7",
-          muted: "rgba(139, 164, 199, 0.10)",
-          soft: "rgba(139, 164, 199, 0.06)",
-          border: "rgba(139, 164, 199, 0.20)",
+          DEFAULT: "var(--studio-default)",
+          light: "var(--studio-light)",
+          muted: "var(--studio-muted)",
+          soft: "var(--studio-soft)",
+          border: "var(--studio-border)",
         },
         text: {
-          primary: "#F0EFE8",
-          secondary: "#8A8A9A",
-          muted: "#555566",
+          primary: "var(--color-text-primary)",
+          secondary: "var(--color-text-secondary)",
+          muted: "var(--color-text-muted)",
         },
       },
       borderRadius: {

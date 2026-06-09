@@ -428,11 +428,11 @@ export default function QuotesInvoicesPage() {
     <div className={quotesInvoicesListPage}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
             <span className={accentBar} aria-hidden />
             Devis & Factures
           </h1>
-          <p className="mt-0.5 text-xs text-[#8ba4c7]/45 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
             Gérez vos devis, notes d&apos;honoraires et documents financiers
           </p>
         </div>
@@ -447,7 +447,7 @@ export default function QuotesInvoicesPage() {
               setFilterOpen(false);
               setSortOpen(false);
             }}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-app bg-[color:var(--glass-bg)] px-4 text-sm font-medium text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
             aria-expanded={createMenuOpen}
             aria-haspopup="menu"
           >
@@ -464,7 +464,7 @@ export default function QuotesInvoicesPage() {
                 type="button"
                 role="menuitem"
                 onClick={openCreateDevis}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
               >
                 <FileSpreadsheet className="h-4 w-4" strokeWidth={1.75} />
                 Nouveau devis
@@ -473,7 +473,7 @@ export default function QuotesInvoicesPage() {
                 type="button"
                 role="menuitem"
                 onClick={openCreateInvoice}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
               >
                 <Receipt className="h-4 w-4" strokeWidth={1.75} />
                 Nouvelle facture
@@ -483,7 +483,7 @@ export default function QuotesInvoicesPage() {
         </div>
       </div>
 
-      <div className="flex gap-1 border-b border-[#8ba4c7]/[0.08]">
+      <div className="flex gap-1 border-b border-app">
         {(["devis", "invoices"] as FinanceTab[]).map((t) => (
           <button
             key={t}
@@ -517,7 +517,7 @@ export default function QuotesInvoicesPage() {
                 setFilterOpen(false);
                 setSortOpen(false);
               }}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app bg-[color:var(--glass-bg)] text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
               aria-label="Créer"
               aria-expanded={createMenuOpen}
               aria-haspopup="menu"
@@ -533,7 +533,7 @@ export default function QuotesInvoicesPage() {
                   type="button"
                   role="menuitem"
                   onClick={openCreateDevis}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 >
                   <FileSpreadsheet className="h-4 w-4" strokeWidth={1.75} />
                   Nouveau devis
@@ -542,7 +542,7 @@ export default function QuotesInvoicesPage() {
                   type="button"
                   role="menuitem"
                   onClick={openCreateInvoice}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 >
                   <Receipt className="h-4 w-4" strokeWidth={1.75} />
                   Nouvelle facture
@@ -553,7 +553,7 @@ export default function QuotesInvoicesPage() {
 
           <div className="relative min-w-0 flex-1 sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -952,10 +952,10 @@ export default function QuotesInvoicesPage() {
                 <tbody>
                   {filteredDevis.map((d) => (
                     <tr key={d.id} className={quotesInvoicesTableRow}>
-                      <td className="px-4 py-2.5 font-medium text-[#e8edf4]/88">{d.number}</td>
-                      <td className="px-4 py-2.5 text-[#9aa3b0]/65">{d.client?.name ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-[#9aa3b0]/65">{d.project?.name ?? "—"}</td>
-                      <td className=" truncate px-4 py-2.5 text-[#9aa3b0]/65">
+                      <td className="px-4 py-2.5 font-medium text-glass">{d.number}</td>
+                      <td className="px-4 py-2.5 text-glass-secondary">{d.client?.name ?? "—"}</td>
+                      <td className="px-4 py-2.5 text-glass-secondary">{d.project?.name ?? "—"}</td>
+                      <td className=" truncate px-4 py-2.5 text-glass-secondary">
                         {d.object ?? "—"}
                       </td>
                       <td className="px-4 py-2.5 tabular-nums text-[#9aa3b0]/75">
@@ -969,7 +969,7 @@ export default function QuotesInvoicesPage() {
                           {DEVIS_STATUS_LABELS[d.status]}
                         </Badge>
                       </td>
-                      <td className="px-4 py-2.5 text-[#8ba4c7]/50">{formatDate(d.createdAt)}</td>
+                      <td className="px-4 py-2.5 text-glass-muted">{formatDate(d.createdAt)}</td>
                       <td className="px-4 py-2.5">
                         <FinanceRowActions
                           id={d.id}
@@ -1126,10 +1126,10 @@ export default function QuotesInvoicesPage() {
                     const remaining = invoiceRemaining(inv);
                     return (
                       <tr key={inv.id} className={quotesInvoicesTableRow}>
-                        <td className="px-4 py-2.5 font-medium text-[#e8edf4]/88">{inv.number}</td>
-                        <td className="px-4 py-2.5 text-[#9aa3b0]/65">{inv.client?.name ?? "—"}</td>
-                        <td className="px-4 py-2.5 text-[#9aa3b0]/65">{inv.project?.name ?? "—"}</td>
-                        <td className="max-w-[160px] truncate px-4 py-2.5 text-[#9aa3b0]/65">
+                        <td className="px-4 py-2.5 font-medium text-glass">{inv.number}</td>
+                        <td className="px-4 py-2.5 text-glass-secondary">{inv.client?.name ?? "—"}</td>
+                        <td className="px-4 py-2.5 text-glass-secondary">{inv.project?.name ?? "—"}</td>
+                        <td className="max-w-[160px] truncate px-4 py-2.5 text-glass-secondary">
                           {inv.object ?? "—"}
                         </td>
                         <td className="px-4 py-2.5 tabular-nums text-[#9aa3b0]/75">

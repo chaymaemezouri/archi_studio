@@ -28,7 +28,7 @@ interface ProjectFormImagesProps {
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
-    <label className="mb-1.5 block text-sm font-medium text-white/70">{children}</label>
+    <label className="mb-1.5 block text-sm font-medium text-glass-secondary">{children}</label>
   );
 }
 
@@ -101,14 +101,14 @@ export default function ProjectFormImages({
   return (
     <div>
       <FieldLabel>Images du projet</FieldLabel>
-      <p className="mb-3 text-xs text-white/38">
+      <p className="mb-3 text-xs text-glass-muted">
         JPG, PNG ou WebP — max {MAX_PROJECT_IMAGES} images, 10 Mo chacune. La image principale
         s&apos;affiche sur la carte et la fiche projet.
       </p>
 
       {existingPreview && (
         <div className="mb-3">
-          <p className="mb-1.5 text-xs font-medium text-white/50">Image actuelle</p>
+          <p className="mb-1.5 text-xs font-medium text-glass-muted">Image actuelle</p>
           <div className="relative inline-block">
             <img
               src={existingPreview}
@@ -123,7 +123,7 @@ export default function ProjectFormImages({
                 type="button"
                 disabled={disabled}
                 onClick={onClearExistingCover}
-                className="absolute -right-2 -top-2 rounded-full border border-white/10 bg-[#101014]/90 p-1 backdrop-blur-sm transition hover:bg-red-500/15"
+                className="absolute -right-2 -top-2 rounded-full border border-glass bg-[#101014]/90 p-1 backdrop-blur-sm transition hover:bg-red-500/15"
                 aria-label="Retirer l'image actuelle"
               >
                 <Trash2 className="h-3.5 w-3.5 text-red-300" />
@@ -161,19 +161,19 @@ export default function ProjectFormImages({
           addFiles(e.dataTransfer.files);
         }}
         className={cn(
-          "flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/[0.12] bg-white/[0.02] px-4 py-8 transition",
+          "flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-white/[0.12] bg-[color:var(--glass-bg)] px-4 py-8 transition",
           canAdd
             ? "hover:border-studio-border/50 hover:bg-studio-soft"
             : "cursor-not-allowed opacity-50"
         )}
       >
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04]">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-glass bg-[color:var(--glass-bg-hover)]">
           <Upload className="h-5 w-5 text-studio-light/70" />
         </div>
-        <span className="text-sm font-medium text-white/70">
+        <span className="text-sm font-medium text-glass-secondary">
           Glisser-déposer ou cliquer pour ajouter
         </span>
-        <span className="text-xs text-white/35">
+        <span className="text-xs text-glass-muted">
           {images.length}/{MAX_PROJECT_IMAGES} image{images.length !== 1 ? "s" : ""}
         </span>
       </button>
@@ -188,10 +188,10 @@ export default function ProjectFormImages({
               <li
                 key={img.id}
                 className={cn(
-                  "group relative aspect-[4/3] overflow-hidden rounded-lg border bg-white/[0.03]",
+                  "group relative aspect-[4/3] overflow-hidden rounded-lg border bg-[color:var(--glass-bg)]",
                   isPendingCover
                     ? "border-studio-border ring-1 ring-studio-border/40"
-                    : "border-white/[0.08]"
+                    : "border-glass"
                 )}
               >
                 <img src={img.preview} alt="" className="h-full w-full object-cover" />
@@ -205,7 +205,7 @@ export default function ProjectFormImages({
                     type="button"
                     disabled={disabled}
                     onClick={() => setCover(index)}
-                    className="rounded border border-white/15 bg-black/40 p-1 text-white/80 backdrop-blur-sm hover:bg-black/55"
+                    className="rounded border border-white/15 bg-black/40 p-1 text-glass backdrop-blur-sm hover:bg-black/55"
                     title="Définir comme image principale"
                   >
                     <Star
@@ -234,7 +234,7 @@ export default function ProjectFormImages({
                 type="button"
                 disabled={disabled}
                 onClick={() => inputRef.current?.click()}
-                className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/[0.12] bg-white/[0.02] text-white/40 transition hover:border-studio-border/40 hover:text-studio-light"
+                className="flex aspect-[4/3] w-full flex-col items-center justify-center gap-1 rounded-lg border border-dashed border-white/[0.12] bg-[color:var(--glass-bg)] text-glass-muted transition hover:border-studio-border/40 hover:text-studio-light"
               >
                 <ImagePlus className="h-5 w-5" />
                 <span className="text-[10px] font-medium">Ajouter</span>

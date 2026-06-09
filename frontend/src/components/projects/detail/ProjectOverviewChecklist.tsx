@@ -60,7 +60,7 @@ export default function ProjectOverviewChecklist({
               </p>
               <p className={cn(detailChecklistSub, "mt-0.5")}>documents</p>
             </div>
-            <span className="text-[10px] tabular-nums text-[#9aa3b0]/45">{progressPct}%</span>
+            <span className="text-[10px] tabular-nums text-glass-muted">{progressPct}%</span>
           </div>
 
           <div className={detailProgressBarTrack}>

@@ -108,10 +108,10 @@ export function ProjectCardFull({
       <div className={projectCardBody}>
         <div className="flex items-start gap-2.5">
           <Link href={href} className="min-w-0 flex-1">
-            <h3 className="truncate text-[13px] font-semibold leading-snug tracking-tight text-white/[0.94] transition duration-200 group-hover/card:text-studio-light/95">
+            <h3 className="truncate text-[13px] font-semibold leading-snug tracking-tight text-[color:var(--pc-title)] transition duration-200 group-hover/card:text-studio-light">
               {project.name}
             </h3>
-            <p className="mt-0.5 truncate text-[10px] leading-tight text-studio-light/55">
+            <p className="mt-0.5 truncate text-[10px] leading-tight text-[color:var(--pc-subtitle)]">
               {getClientLabel(project)}
             </p>
           </Link>
@@ -121,7 +121,7 @@ export function ProjectCardFull({
         </div>
 
         {metaLine && (
-          <p className="mt-1 truncate text-[10px] leading-none tracking-wide text-studio-light/42">
+          <p className="mt-1 truncate text-[10px] leading-none tracking-wide text-[color:var(--pc-meta)]">
             {metaLine}
           </p>
         )}
@@ -135,8 +135,8 @@ export function ProjectCardFull({
         />
 
         {nextTask?.title && (
-          <p className="mt-1 truncate text-[10px] leading-snug text-white/42">
-            <span className="text-white/28">Prochaine · </span>
+          <p className="mt-1 truncate text-[10px] leading-snug text-glass-muted">
+            <span className="text-glass-muted">Prochaine · </span>
             {nextTask.title}
           </p>
         )}
@@ -146,15 +146,15 @@ export function ProjectCardFull({
         <div className="flex min-w-0 flex-1 items-center gap-1.5">
           <p
             className={cn(
-              "min-w-0 truncate text-[10px] font-medium text-studio-light/50",
-              overdue && deadlineDate && "text-red-300/85"
+              "min-w-0 truncate text-[10px] font-medium text-[color:var(--pc-deadline)]",
+              overdue && deadlineDate && "text-[color:var(--pc-overdue)]"
             )}
             title={getDeadlineText(deadlineDate)}
           >
             {getDeadlineText(deadlineDate)}
           </p>
           {overdue && deadlineDate && (
-            <span className="shrink-0 rounded-full border border-red-400/20 bg-red-500/10 px-1.5 py-px text-[9px] font-medium text-red-300/80">
+            <span className="shrink-0 rounded-full border border-[color:var(--badge-danger-ring)] bg-[color:var(--badge-danger-bg)] px-1.5 py-px text-[9px] font-medium text-[color:var(--badge-danger-text)]">
               En retard
             </span>
           )}

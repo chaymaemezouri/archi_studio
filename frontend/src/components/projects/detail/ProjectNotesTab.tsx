@@ -244,7 +244,7 @@ export default function ProjectNotesTab({ project }: ProjectNotesTabProps) {
                         <button
                           type="button"
                           onClick={() => setEditingId(null)}
-                          className="text-[11px] text-[#9aa3b0]/50 hover:text-[#c2cad6]/70"
+                          className="text-[11px] text-[#9aa3b0]/50 hover:text-glass-secondary/70"
                         >
                           Annuler
                         </button>
@@ -256,7 +256,7 @@ export default function ProjectNotesTab({ project }: ProjectNotesTabProps) {
                         <StickyNote
                           className={cn(
                             "h-3.5 w-3.5 shrink-0",
-                            note.pinned ? "text-amber-400/80" : "text-[#8ba4c7]/45"
+                            note.pinned ? "text-amber-400/80" : "text-glass-muted"
                           )}
                           aria-hidden
                         />

@@ -122,10 +122,10 @@ function FieldLabel({
   icon?: React.ComponentType<{ className?: string }>;
 }) {
   return (
-    <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-white/40">
+    <label className="mb-1.5 flex items-center gap-1.5 text-[11px] font-medium text-glass-muted">
       {Icon && <Icon className="h-3 w-3 text-studio-light/55" />}
       {children}
-      {required && <span className="text-white/28">*</span>}
+      {required && <span className="text-glass-muted">*</span>}
     </label>
   );
 }
@@ -145,11 +145,11 @@ function FormSection({
   return (
     <div
       className={cn(
-        "space-y-2.5 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3",
+        "space-y-2.5 rounded-xl border border-app bg-[color:var(--glass-bg)] p-3",
         className
       )}
     >
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-white/32">{title}</p>
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-glass-muted">{title}</p>
       <div className="space-y-2.5">{children}</div>
     </div>
   );
@@ -356,7 +356,7 @@ export default function CreateProjectDrawer({
             Projet créé avec succès
             <button
               type="button"
-              className="rounded-md border border-white/[0.08] bg-white/[0.06] px-2 py-0.5 text-xs font-medium text-studio-light transition hover:bg-white/[0.10]"
+              className="rounded-md border border-glass bg-[color:var(--glass-bg-hover)] px-2 py-0.5 text-xs font-medium text-studio-light transition hover:bg-white/[0.10]"
               onClick={() => {
                 toast.dismiss(t.id);
                 router.push(`/projects/${created.id}`);
@@ -401,17 +401,17 @@ export default function CreateProjectDrawer({
         className={cn(
           glassPanel,
           "relative flex max-h-[92dvh] w-full max-w-4xl flex-col overflow-hidden",
-          "rounded-t-xl border-white/[0.08] sm:max-h-[90dvh] sm:rounded-xl",
+          "rounded-t-xl border-glass sm:max-h-[90dvh] sm:rounded-xl",
           "max-md:max-h-[100dvh] max-md:rounded-none max-md:border-x-0 max-md:border-t-0",
           "pb-[env(safe-area-inset-bottom)]"
         )}
       >
-        <header className="flex shrink-0 items-center justify-between border-b border-white/[0.06] px-4 py-3.5 sm:px-5 sm:py-4">
+        <header className="flex shrink-0 items-center justify-between border-b border-app px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="flex min-w-0 items-center gap-2">
             <span className="h-4 w-0.5 shrink-0 rounded-full bg-studio-light" aria-hidden />
             <h2
               id="create-project-title"
-              className="truncate text-base font-semibold text-white/90"
+              className="truncate text-base font-semibold text-glass"
             >
               {isEdit ? "Modifier le projet" : "Nouveau projet"}
             </h2>
@@ -419,7 +419,7 @@ export default function CreateProjectDrawer({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-white/45 transition hover:bg-white/[0.06] hover:text-white/80"
+            className="rounded-lg p-1.5 text-glass-muted transition hover:bg-[color:var(--glass-bg-hover)] hover:text-glass"
             aria-label="Fermer"
           >
             <X className="h-4 w-4" />
@@ -446,7 +446,7 @@ export default function CreateProjectDrawer({
                   <div>
                     <FieldLabel required>Type de projet</FieldLabel>
                     <select
-                      className={cn(selectClass, !form.type && "text-white/35")}
+                      className={cn(selectClass, !form.type && "text-glass-muted")}
                       value={form.type}
                       onChange={(e) => set("type", e.target.value)}
                       required
@@ -504,7 +504,7 @@ export default function CreateProjectDrawer({
                   <div>
                     <FieldLabel>Taille</FieldLabel>
                     <select
-                      className={cn(selectClass, !form.projectScale && "text-white/35")}
+                      className={cn(selectClass, !form.projectScale && "text-glass-muted")}
                       value={form.projectScale}
                       onChange={(e) => set("projectScale", e.target.value)}
                     >
@@ -538,7 +538,7 @@ export default function CreateProjectDrawer({
                   <div>
                     <FieldLabel icon={User}>Client</FieldLabel>
                     <select
-                      className={cn(selectClass, !form.clientId && "text-white/35")}
+                      className={cn(selectClass, !form.clientId && "text-glass-muted")}
                       value={form.clientId}
                       onChange={(e) => set("clientId", e.target.value)}
                     >
@@ -593,7 +593,7 @@ export default function CreateProjectDrawer({
                 </div>
 
                 {!isEdit && priority === "URGENT" && (
-                  <p className="text-[10px] text-white/30">
+                  <p className="text-[10px] text-glass-muted">
                     Priorité urgente : deadline à 3 jours si aucune date n&apos;est indiquée.
                   </p>
                 )}
@@ -715,7 +715,7 @@ export default function CreateProjectDrawer({
             </div>
           </div>
 
-          <footer className="shrink-0 border-t border-white/[0.06] bg-white/[0.02] px-4 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
+          <footer className="shrink-0 border-t border-app bg-[color:var(--glass-bg)] px-4 py-3 backdrop-blur-xl sm:px-5 sm:py-4">
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end sm:gap-3">
               <button
                 type="button"

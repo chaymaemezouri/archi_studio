@@ -1,31 +1,41 @@
 import { cn } from "@/lib/utils";
 
-/** Styles glass partagés (dashboard + projets) */
+/** Styles glass partagés — s'adaptent au thème via variables CSS */
 export const glassPanel = cn(
-  "rounded-xl border border-white/[0.07] bg-white/[0.03]",
-  "shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.04)]",
-  "backdrop-blur-xl"
+  "rounded-xl border border-glass bg-[color:var(--glass-bg)]",
+  "shadow-[var(--glass-shadow-lg)] backdrop-blur-xl"
 );
 
 export const glassCard = cn(
-  "rounded-xl border border-white/[0.07] bg-white/[0.03]",
-  "shadow-[0_10px_32px_rgba(0,0,0,0.45)] backdrop-blur-xl transition",
-  "hover:border-white/[0.10] hover:shadow-[0_14px_40px_rgba(0,0,0,0.52)]"
+  "rounded-xl border border-glass bg-[color:var(--glass-bg)]",
+  "shadow-[var(--glass-shadow)] backdrop-blur-xl transition",
+  "hover:border-[color:var(--glass-border-hover)]"
 );
 
 export const accentBar = "h-4 w-0.5 shrink-0 rounded-full bg-studio-light";
 
-export const glassInput =
-  "w-full rounded-lg border border-white/[0.08] bg-white/[0.04] py-2.5 text-sm text-white/90 placeholder:text-white/35 focus:border-studio-border focus:outline-none focus:ring-1 focus:ring-studio-border/40";
+export const glassInput = cn(
+  "w-full rounded-lg border border-[color:var(--glass-input-border)] bg-[color:var(--glass-input-bg)] py-2.5 text-sm",
+  "text-glass placeholder:text-[color:var(--glass-placeholder)]",
+  "shadow-[var(--glass-input-shadow)]",
+  "focus:border-studio-border focus:outline-none focus:ring-2 focus:ring-studio-border/30"
+);
 
-export const glassSelect =
-  "rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-sm text-white/75 focus:border-studio-border focus:outline-none focus:ring-1 focus:ring-studio-border/40";
+export const glassSelect = cn(
+  "rounded-lg border border-[color:var(--glass-input-border)] bg-[color:var(--glass-input-bg)] px-3 py-2 text-sm",
+  "text-glass-secondary shadow-[var(--glass-input-shadow)]",
+  "focus:border-studio-border focus:outline-none focus:ring-2 focus:ring-studio-border/30"
+);
+
+export const formFieldLabel = "text-[11px] font-medium text-glass-secondary";
 
 export const filterChipActive =
   "bg-studio-muted text-studio-light border border-studio-border/60";
 
-export const filterChipInactive =
-  "border border-transparent bg-white/[0.04] text-white/50 hover:bg-white/[0.06] hover:text-white/70";
+export const filterChipInactive = cn(
+  "border border-[color:var(--glass-input-border)] bg-[color:var(--glass-bg)] text-glass-muted",
+  "hover:border-studio-border hover:bg-[color:var(--glass-bg-hover)] hover:text-glass-secondary"
+);
 
 /** Ligne de menu dropdown (tri, filtres…) — sans fond, accent barre gauche */
 export const dropdownItem =
@@ -33,27 +43,45 @@ export const dropdownItem =
 
 export const dropdownItemActive = "border-studio-light text-studio-light";
 
-export const dropdownItemInactive =
-  "border-transparent text-white/50 hover:text-white/72";
+export const dropdownItemInactive = cn(
+  "border-transparent text-glass-muted hover:text-glass-secondary"
+);
 
-export const dropdownSectionLabel = "px-3 pt-2 pb-0.5 text-[11px] text-white/30";
+export const dropdownSectionLabel = cn(
+  "px-3 pt-2 pb-0.5 text-[11px] text-glass-muted"
+);
 
-/** Menu flottant sans bordure — léger */
-export const glassDropdownPlain =
-  "rounded-lg bg-[#101014]/90 py-1 shadow-[0_8px_28px_rgba(0,0,0,0.45)] backdrop-blur-xl";
+/** Menu flottant — bordure visible light / dark */
+export const glassDropdownPlain = cn(
+  "rounded-xl border border-glass bg-[color:var(--glass-dropdown-bg)] py-1",
+  "shadow-[var(--glass-dropdown-shadow,var(--glass-shadow-lg))] backdrop-blur-xl"
+);
 
-export const glassBtnIcon =
-  "inline-flex items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/65 transition hover:bg-white/[0.06] hover:text-studio-light";
+export const glassBtnIcon = cn(
+  "inline-flex items-center justify-center rounded-lg border border-glass",
+  "bg-[color:var(--glass-bg)] text-glass-secondary transition",
+  "hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+);
 
-export const glassBtnPrimary =
-  "inline-flex items-center justify-center rounded-lg border border-studio-border/50 bg-studio-muted px-5 py-2.5 text-sm font-medium text-studio-light transition hover:bg-studio-muted/80 hover:text-white disabled:opacity-50";
+export const glassBtnPrimary = cn(
+  "inline-flex items-center justify-center rounded-lg px-5 py-2.5 text-sm font-medium transition disabled:opacity-50",
+  "border border-[color:var(--btn-primary-border)] bg-[color:var(--btn-primary-bg)]",
+  "text-[color:var(--btn-primary-text)] hover:brightness-95"
+);
 
-export const glassBtnSecondary =
-  "inline-flex items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-sm font-medium text-white/70 transition hover:bg-white/[0.06] hover:text-white/90";
+export const glassBtnSecondary = cn(
+  "inline-flex items-center justify-center rounded-lg border border-glass",
+  "bg-[color:var(--glass-bg)] px-5 py-2.5 text-sm font-medium text-glass-secondary transition",
+  "hover:bg-[color:var(--glass-bg-hover)] hover:text-glass"
+);
 
-export const glassMenu =
-  "overflow-hidden rounded-lg border border-white/10 bg-[#101014]/95 py-1 shadow-xl backdrop-blur-xl";
+export const glassMenu = cn(
+  "overflow-hidden rounded-xl border border-glass bg-[color:var(--glass-menu-bg)] py-1",
+  "shadow-[var(--glass-dropdown-shadow,var(--glass-shadow-lg))] backdrop-blur-xl"
+);
 
 /** Panneau dropdown — fond opaque, au-dessus du contenu de la page */
-export const glassDropdown =
-  "rounded-xl border border-white/12 bg-[#14141c] shadow-[0_18px_40px_rgba(0,0,0,0.65),0_0_0_1px_rgba(255,255,255,0.04)] backdrop-blur-xl";
+export const glassDropdown = cn(
+  "rounded-xl border border-glass bg-[color:var(--glass-dropdown-bg)]",
+  "shadow-[var(--glass-dropdown-shadow,var(--glass-shadow-lg))] backdrop-blur-xl"
+);

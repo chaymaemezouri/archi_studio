@@ -47,7 +47,7 @@ export default function StudioBrand({
           />
         ) : (
           <Building2
-            className={cn("h-5 w-5", borderless ? "text-white/50" : "text-accent")}
+            className={cn("h-5 w-5", borderless ? "text-glass-muted" : "text-accent")}
           />
         )}
       </div>

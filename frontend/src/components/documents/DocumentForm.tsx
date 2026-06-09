@@ -147,13 +147,13 @@ export default function DocumentForm({
               onClick={() => fileRef.current?.click()}
               className={cn(
                 "flex w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed",
-                "border-white/[0.12] bg-white/[0.03] px-4 py-6 text-center transition",
-                "hover:border-studio-border/50 hover:bg-white/[0.05]",
-                values.file && "border-studio-border/40 bg-white/[0.05]"
+                "border-white/[0.12] bg-[color:var(--glass-bg)] px-4 py-6 text-center transition",
+                "hover:border-studio-border/50 hover:bg-[color:var(--glass-bg-hover)]",
+                values.file && "border-studio-border/40 bg-[color:var(--glass-bg-hover)]"
               )}
             >
-              <Upload className="h-5 w-5 text-white/35" strokeWidth={1.5} />
-              <span className="text-[13px] text-white/55">
+              <Upload className="h-5 w-5 text-glass-muted" strokeWidth={1.5} />
+              <span className="text-[13px] text-glass-muted">
                 {values.file ? values.file.name : "Choisir un fichier…"}
               </span>
             </button>
@@ -206,7 +206,7 @@ export default function DocumentForm({
             <select
               value={values.projectId}
               onChange={(e) => set("projectId", e.target.value)}
-              className={cn(financeSelectClass, !values.projectId && "text-white/35")}
+              className={cn(financeSelectClass, !values.projectId && "text-glass-muted")}
             >
               <option value="" className="bg-[#101014]">
                 Aucun
@@ -223,7 +223,7 @@ export default function DocumentForm({
             <select
               value={values.clientId}
               onChange={(e) => set("clientId", e.target.value)}
-              className={cn(financeSelectClass, !values.clientId && "text-white/35")}
+              className={cn(financeSelectClass, !values.clientId && "text-glass-muted")}
             >
               <option value="" className="bg-[#101014]">
                 Aucun
@@ -250,7 +250,7 @@ export default function DocumentForm({
         </div>
       </FinanceFormSection>
 
-      <div className="flex justify-end border-t border-white/[0.06] pt-4">
+      <div className="flex justify-end border-t border-app pt-4">
         <button
           type="submit"
           disabled={loading}

@@ -14,6 +14,7 @@ import {
   Upload,
   Users,
 } from "lucide-react";
+import { glassDropdown } from "@/lib/glass-styles";
 import { cn } from "@/lib/utils";
 import QuickAddModal, { type QuickAddMode } from "@/components/dashboard/QuickAddModal";
 import { useProjects } from "@/hooks/useProjects";
@@ -77,7 +78,7 @@ export default function GlobalAddMenu() {
         {open && (
           <div
             role="menu"
-            className="absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden rounded-2xl border border-white/10 bg-[#111827] py-1.5 shadow-[0_18px_38px_rgba(0,0,0,0.45)]"
+            className={cn(glassDropdown, "absolute right-0 top-full z-50 mt-2 w-56 overflow-hidden py-1.5")}
           >
             {LINK_ITEMS.map((item) => {
               const Icon = item.icon;
@@ -87,39 +88,39 @@ export default function GlobalAddMenu() {
                   href={item.href}
                   role="menuitem"
                   onClick={() => setOpen(false)}
-                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:bg-white/10"
+                  className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-glass-secondary transition hover:bg-[color:var(--glass-bg-hover)] hover:text-app-primary focus-visible:outline-none focus-visible:bg-[color:var(--glass-bg-hover)]"
                 >
-                  <Icon className="h-3.5 w-3.5 shrink-0 text-white/45" />
+                  <Icon className="h-3.5 w-3.5 shrink-0 text-glass-muted" />
                   {item.label}
                 </Link>
               );
             })}
-            <div className="my-1 border-t border-white/10" />
+            <div className="my-1 border-t border-glass" />
             <button
               type="button"
               role="menuitem"
               onClick={() => openQuickAdd("task")}
-              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:bg-white/10"
+              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-glass-secondary transition hover:bg-[color:var(--glass-bg-hover)] hover:text-app-primary focus-visible:outline-none focus-visible:bg-[color:var(--glass-bg-hover)]"
             >
-              <CheckSquare className="h-3.5 w-3.5 shrink-0 text-white/45" />
+              <CheckSquare className="h-3.5 w-3.5 shrink-0 text-glass-muted" />
               Nouvelle tâche
             </button>
             <button
               type="button"
               role="menuitem"
               onClick={() => openQuickAdd("deadline")}
-              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:bg-white/10"
+              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-glass-secondary transition hover:bg-[color:var(--glass-bg-hover)] hover:text-app-primary focus-visible:outline-none focus-visible:bg-[color:var(--glass-bg-hover)]"
             >
-              <Calendar className="h-3.5 w-3.5 shrink-0 text-white/45" />
+              <Calendar className="h-3.5 w-3.5 shrink-0 text-glass-muted" />
               Nouvelle deadline
             </button>
             <button
               type="button"
               role="menuitem"
               onClick={() => openQuickAdd("meeting")}
-              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-white/75 transition hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:bg-white/10"
+              className="flex w-full items-center gap-2.5 px-3.5 py-2.5 text-sm text-glass-secondary transition hover:bg-[color:var(--glass-bg-hover)] hover:text-app-primary focus-visible:outline-none focus-visible:bg-[color:var(--glass-bg-hover)]"
             >
-              <Users className="h-3.5 w-3.5 shrink-0 text-white/45" />
+              <Users className="h-3.5 w-3.5 shrink-0 text-glass-muted" />
               Nouvelle réunion
             </button>
           </div>

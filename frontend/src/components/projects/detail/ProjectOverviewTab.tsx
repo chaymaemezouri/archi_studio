@@ -59,7 +59,7 @@ function PhaseStepIndicator({
           <Check className="h-1.5 w-1.5 text-emerald-400/70" strokeWidth={3} />
         </span>
       ) : isCurrent ? (
-        <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full bg-[#8ba4c7]/10 ring-1 ring-[#8ba4c7]/25">
+        <span className="flex h-2.5 w-2.5 items-center justify-center rounded-full bg-studio-muted ring-1 ring-[color:var(--studio-border)]">
           <span className="h-1 w-1 rounded-full bg-[#8ba4c7]/75" />
         </span>
       ) : (
@@ -115,7 +115,7 @@ function PhaseStepper({
                   isCurrent
                     ? "font-medium text-white/86"
                     : isComplete
-                      ? "text-white/40"
+                      ? "text-glass-muted"
                       : "text-white/24"
                 )}
               >
@@ -212,7 +212,7 @@ export default function ProjectOverviewTab({
           <button
             type="button"
             onClick={() => onTabChange("planning")}
-            className={cn(detailLink, "text-[10px] text-white/34 hover:text-white/55")}
+            className={cn(detailLink, "text-[10px] text-white/34 hover:text-glass-muted")}
           >
             Voir toutes les deadlines
           </button>

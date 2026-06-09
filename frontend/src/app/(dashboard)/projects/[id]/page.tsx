@@ -113,9 +113,9 @@ export default function ProjectDetailPage() {
   if (isLoading) {
     return (
       <div className={detailPage}>
-        <div className="h-32 animate-pulse rounded-xl bg-white/[0.03]" />
-        <div className="h-14 animate-pulse rounded-xl bg-white/[0.025]" />
-        <div className="h-48 animate-pulse rounded-xl bg-white/[0.02]" />
+        <div className="h-32 animate-pulse rounded-xl bg-[color:var(--glass-bg)]" />
+        <div className="h-14 animate-pulse rounded-xl bg-[color:var(--glass-bg)]" />
+        <div className="h-48 animate-pulse rounded-xl bg-[color:var(--glass-bg)]" />
       </div>
     );
   }

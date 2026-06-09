@@ -37,11 +37,13 @@ import {
   uploadUserAvatar,
 } from "@/lib/settings-api";
 import { normalizeUser, resolveMediaUrl } from "@/lib/assets";
+import { useTheme } from "@/components/providers/ThemeProvider";
 import {
   loadUserPreferences,
   saveUserPreferences,
   type UserAppPreferences,
 } from "@/lib/settings-user-prefs";
+import type { ThemeMode } from "@/lib/theme";
 import { accentBar, glassInput } from "@/lib/glass-styles";
 import { cn, formatDate } from "@/lib/utils";
 
@@ -61,6 +63,7 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function SettingsPageContent() {
   const { user, setUser } = useAuth();
+  const { setTheme } = useTheme();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<SettingsTab>("profile");
   const [form, setForm] = useState<StudioSettings>({});
@@ -105,7 +108,21 @@ export default function SettingsPageContent() {
       }
       toast.success("Enregistré");
     },
-    onError: () => toast.error("Erreur lors de l'enregistrement"),
+    onError: (err: unknown) => {
+      const message =
+        err &&
+        typeof err === "object" &&
+        "response" in err &&
+        err.response &&
+        typeof err.response === "object" &&
+        "data" in err.response &&
+        err.response.data &&
+        typeof err.response.data === "object" &&
+        "message" in err.response.data
+          ? String(err.response.data.message)
+          : null;
+      toast.error(message ?? "Erreur lors de l'enregistrement");
+    },
   });
 
   const logoUpload = useMutation({
@@ -169,7 +186,7 @@ export default function SettingsPageContent() {
 
   return (
     <div className={settingsPage}>
-      <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+      <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
         <span className={accentBar} aria-hidden />
         Paramètres
       </h1>
@@ -205,6 +222,7 @@ export default function SettingsPageContent() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   saveUserPreferences(prefs);
+                  setTheme(prefs.theme);
                   saveProfile.mutate({ name: profileName.trim() });
                 }}
               >
@@ -247,7 +265,7 @@ export default function SettingsPageContent() {
                       </SettingsField>
                     </div>
                     {user?.studio?.name && (
-                      <p className="mt-2 text-[11px] text-white/35">
+                      <p className="mt-2 text-[11px] text-glass-muted">
                         Studio · {user.studio.name}
                         {user.createdAt && (
                           <> · depuis {formatDate(user.createdAt, "MMM yyyy")}</>
@@ -259,6 +277,20 @@ export default function SettingsPageContent() {
 
                 <SettingsSection title="Affichage par défaut">
                   <div className={settingsGrid3}>
+                    <SettingsField label="Thème">
+                      <SettingsSelect
+                        value={prefs.theme}
+                        onChange={(v) => {
+                          const theme = v as ThemeMode;
+                          setPrefs((p) => ({ ...p, theme }));
+                          setTheme(theme);
+                        }}
+                        options={[
+                          { value: "dark", label: "Sombre" },
+                          { value: "light", label: "Clair" },
+                        ]}
+                      />
+                    </SettingsField>
                     <SettingsField label="Projets">
                       <SettingsSelect
                         value={prefs.defaultProjectsView}
@@ -308,7 +340,7 @@ export default function SettingsPageContent() {
                     </SettingsField>
                   </div>
                   <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-                    <label className="flex cursor-pointer items-center gap-2 text-[12px] text-white/55">
+                    <label className="flex cursor-pointer items-center gap-2 text-[12px] text-glass-muted">
                       <input
                         type="checkbox"
                         checked={prefs.showDoneTasksByDefault}
@@ -318,11 +350,11 @@ export default function SettingsPageContent() {
                             showDoneTasksByDefault: e.target.checked,
                           }))
                         }
-                        className="h-4 w-4 rounded border-white/20 bg-white/[0.04] accent-studio-light"
+                        className="h-4 w-4 rounded border-white/20 bg-[color:var(--glass-bg-hover)] accent-studio-light"
                       />
                       Tâches terminées visibles
                     </label>
-                    <label className="flex cursor-pointer items-center gap-2 text-[12px] text-white/55">
+                    <label className="flex cursor-pointer items-center gap-2 text-[12px] text-glass-muted">
                       <input
                         type="checkbox"
                         checked={prefs.showDoneCalendarByDefault}
@@ -332,7 +364,7 @@ export default function SettingsPageContent() {
                             showDoneCalendarByDefault: e.target.checked,
                           }))
                         }
-                        className="h-4 w-4 rounded border-white/20 bg-white/[0.04] accent-studio-light"
+                        className="h-4 w-4 rounded border-white/20 bg-[color:var(--glass-bg-hover)] accent-studio-light"
                       />
                       Événements terminés visibles
                     </label>
@@ -373,9 +405,9 @@ export default function SettingsPageContent() {
                       onUpload={(file) => logoUpload.mutate(file)}
                     />
                     {user?.studio?.slug && (
-                      <p className="mt-2 text-[11px] text-white/35">
+                      <p className="mt-2 text-[11px] text-glass-muted">
                         Identifiant ·{" "}
-                        <span className="font-mono text-white/50">{user.studio.slug}</span>
+                        <span className="font-mono text-glass-muted">{user.studio.slug}</span>
                       </p>
                     )}
                   </SettingsSection>

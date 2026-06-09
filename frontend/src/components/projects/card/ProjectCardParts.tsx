@@ -13,7 +13,6 @@ import {
 import IconActionButton from "../detail/IconActionButton";
 import Tooltip from "@/components/ui/Tooltip";
 import ProjectCardMenu from "../ProjectCardMenu";
-import { detailIconActionGroup } from "../detail/project-detail-ui";
 import ProjectCountIndicators from "../ProjectCountIndicators";
 import {
   getProjectDisplayStatus,
@@ -23,6 +22,7 @@ import {
   PROJECT_DISPLAY_STATUS_PILL,
   type ProjectDisplayStatus,
 } from "@/lib/project-status";
+import { PROJECT_LIST_DEADLINE_PILL } from "../list/project-list-utils";
 import { resolveMediaUrl } from "@/lib/assets";
 import type { Project } from "@/types";
 import { cn } from "@/lib/utils";
@@ -30,6 +30,7 @@ import {
   dashboardProjectCardImageOverlayBottom,
   dashboardProjectCardImageOverlayTop,
   projectCardActionBtn,
+  projectCardImageActionGroup,
   projectCardImageFadeIntoContent,
   projectCardImageOverlayBottom,
   projectCardImageOverlayTop,
@@ -41,18 +42,31 @@ export function ProjectStatusBadge({
   status,
   className,
   size = "md",
+  context = "card",
 }: {
   status: ProjectDisplayStatus;
   className?: string;
   size?: "sm" | "md";
+  /** Liste : pills plus contrastées sur fond blanc */
+  context?: "card" | "list";
 }) {
+  const listPill =
+    context === "list"
+      ? PROJECT_LIST_DEADLINE_PILL[status]
+      : undefined;
+
   return (
     <span
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full border backdrop-blur-md",
-        "font-medium leading-none shadow-[0_2px_10px_rgba(0,0,0,0.28)]",
-        size === "sm" ? "gap-1 px-2 py-0.5 text-[9px]" : "gap-1.5 px-2.5 py-1 text-[10px]",
-        PROJECT_DISPLAY_STATUS_PILL[status],
+        "inline-flex items-center gap-1.5 rounded-full border",
+        context === "card" && "backdrop-blur-md shadow-sm dark:shadow-[0_2px_10px_rgba(0,0,0,0.28)]",
+        context === "list" && "font-semibold",
+        size === "sm"
+          ? context === "list"
+            ? "gap-1 px-2 py-0.5 text-[10px]"
+            : "gap-1 px-2 py-0.5 text-[9px]"
+          : "gap-1.5 px-2.5 py-1 text-[10px]",
+        listPill ?? PROJECT_DISPLAY_STATUS_PILL[status],
         className
       )}
     >
@@ -99,7 +113,7 @@ export function ProjectCardPlaceholder({
         strokeWidth={1.25}
       />
       {!compact && (
-        <span className="text-[10px] font-medium tracking-wide text-white/30">Aperçu projet</span>
+        <span className="text-[10px] font-medium tracking-wide text-glass-muted">Aperçu projet</span>
       )}
     </div>
   );
@@ -183,7 +197,11 @@ export function ProjectCardMedia({
           <ProjectStatusBadge
             status={displayStatus}
             size={isDashboard ? "sm" : "md"}
-            className={isDashboard ? "border-white/12 bg-black/35 shadow-none" : undefined}
+            className={
+              isDashboard
+                ? "shadow-md ring-1 ring-black/10 dark:border-white/12 dark:bg-black/35 dark:shadow-none dark:ring-0"
+                : undefined
+            }
           />
         </div>
       )}
@@ -235,7 +253,7 @@ export function ProjectCardImageActions({
       </div>
 
       <div className="absolute bottom-2 right-2 z-10">
-        <div className={cn(detailIconActionGroup, "bg-black/45 backdrop-blur-md")}>
+        <div className={projectCardImageActionGroup}>
           <IconActionButton
             label="Ouvrir le projet"
             icon={ExternalLink}
@@ -320,7 +338,7 @@ export function ProjectProgressRing({
           cy={center}
           r={radius}
           fill="none"
-          stroke={isZero ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.08)"}
+          stroke="var(--pc-progress-track)"
           strokeWidth={strokeWidth}
         />
         {!isZero && strokeColor !== "transparent" && (
@@ -341,7 +359,11 @@ export function ProjectProgressRing({
       <span
         className={cn(
           "absolute inset-0 flex items-center justify-center tabular-nums leading-none font-semibold",
-          isZero ? "text-white/26" : isDashboard ? "text-white/75" : "text-white/62",
+          isZero
+            ? "text-[color:var(--pc-progress-text-zero)]"
+            : isDashboard
+              ? "text-glass-secondary"
+              : "text-[color:var(--pc-progress-text)]",
           isDashboard ? "text-[8px]" : compact ? "text-[8px]" : "text-[9px]"
         )}
       >
@@ -380,7 +402,7 @@ export function ProjectCardProgress({
       )}
     >
       {showLabel && !compact && (
-        <span className="text-[10px] font-medium text-white/38">Progression</span>
+        <span className="text-[10px] font-medium text-glass-muted">Progression</span>
       )}
       <ProjectProgressRing progress={progress} status={status} compact={compact} />
     </div>
@@ -406,7 +428,7 @@ export function ProjectCardLocationRow({
   return (
     <div className={cn("flex min-w-0 items-center gap-2", compact ? "mt-1.5" : "mt-2")}>
       <MapPin
-        className="h-3 w-3 shrink-0 text-studio-light/60"
+        className="h-3 w-3 shrink-0 text-[color:var(--pc-accent)]"
         strokeWidth={1.75}
         aria-hidden
       />
@@ -414,7 +436,7 @@ export function ProjectCardLocationRow({
         <p
           className={cn(
             "min-w-0 flex-1 truncate",
-            isUndefined ? "text-white/32" : "text-white/55",
+            isUndefined ? "text-glass-muted" : "text-glass-muted",
             compact ? "text-[10px]" : "text-[11px] leading-snug"
           )}
         >
@@ -429,9 +451,9 @@ export function ProjectCardLocationRow({
             rel="noopener noreferrer"
             className={cn(
               "inline-flex shrink-0 items-center gap-1 rounded-md",
-              "border border-studio-light/20 bg-studio-light/[0.06] px-1.5 py-0.5",
-              "text-[10px] font-medium text-studio-light/75 transition duration-200",
-              "hover:border-studio-border/50 hover:bg-studio-muted/50 hover:text-studio-light"
+              "border border-[color:var(--studio-border)] bg-studio-muted px-1.5 py-0.5",
+              "text-[10px] font-medium text-studio-light transition duration-200",
+              "hover:border-[color:var(--studio-border)] hover:bg-studio-soft hover:text-studio-light"
             )}
             aria-label="Voir le site sur Google Maps"
             title="Voir sur Google Maps"

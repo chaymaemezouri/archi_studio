@@ -24,7 +24,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
           <button
             type="button"
             onClick={onMobileClose}
-            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/70 hover:bg-white/10"
+            className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-glass-secondary hover:bg-[color:var(--nav-hover-bg)]"
             aria-label="Fermer le menu"
           >
             <X className="h-5 w-5" />
@@ -38,7 +38,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
           onClick={onMobileClose}
           title={studio?.name ?? "Accueil"}
           aria-label={studio?.name ? `Accueil · ${studio.name}` : "Accueil"}
-          className="rounded-lg p-0.5 transition hover:bg-white/[0.08]"
+          className="rounded-lg p-0.5 transition hover:bg-[color:var(--nav-hover-bg)]"
         >
           <StudioBrand studio={studio} showName={false} size={40} borderless />
         </Link>
@@ -62,11 +62,22 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
               className={cn(
                 "inline-flex h-10 w-10 items-center justify-center rounded-lg transition-all lg:h-8 lg:w-8",
                 isActive
-                  ? "bg-white/16 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] ring-1 ring-white/16"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
+                  ? "bg-[color:var(--nav-active-bg)] text-app-primary shadow-[inset_0_1px_0_var(--color-border-strong)] ring-1 ring-[color:var(--color-border-strong)]"
+                  : "text-[color:var(--nav-text)] hover:bg-[color:var(--nav-hover-bg)] hover:text-app-primary"
               )}
             >
-              <Icon className={cn("h-4 w-4 shrink-0", isActive ? "text-white/90" : "text-white/55")} aria-hidden />
+              <Icon
+                className={cn(
+                  "h-4 w-4 shrink-0",
+                  isActive
+                    ? cn(
+                        item.iconLightActive ?? item.iconLight,
+                        "dark:text-app-primary"
+                      )
+                    : cn(item.iconLight, "dark:text-[color:var(--nav-text-icon)]")
+                )}
+                aria-hidden
+              />
             </Link>
           );
         })}
@@ -79,7 +90,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
       {mobileOpen && (
         <button
           type="button"
-          className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-40 bg-[color:var(--overlay-scrim)] lg:hidden"
           aria-label="Fermer le menu"
           onClick={onMobileClose}
         />
@@ -87,7 +98,7 @@ export default function Sidebar({ mobileOpen = false, onMobileClose }: SidebarPr
 
       <aside
         className={cn(
-          "fixed left-2 top-2 z-50 flex h-[calc(100vh-24px)] flex-col overflow-hidden rounded-[18px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.10),rgba(255,255,255,0.05))] backdrop-blur-2xl transition-all duration-300",
+          "fixed left-2 top-2 z-50 flex h-[calc(100vh-24px)] flex-col overflow-hidden rounded-[18px] border border-glass bg-sidebar-gradient backdrop-blur-2xl transition-all duration-300",
           "w-[64px] -translate-x-[110%] lg:left-2 lg:translate-x-0",
           mobileOpen && "translate-x-0 w-[72px]"
         )}

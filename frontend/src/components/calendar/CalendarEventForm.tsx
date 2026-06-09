@@ -190,7 +190,7 @@ export default function CalendarEventForm({
           <div>
             <FinanceFieldLabel>Projet lié</FinanceFieldLabel>
             <select
-              className={cn(financeSelectClass, !values.projectId && "text-white/35")}
+              className={cn(financeSelectClass, !values.projectId && "text-glass-muted")}
               value={values.projectId}
               onChange={(e) => set("projectId", e.target.value)}
             >
@@ -207,7 +207,7 @@ export default function CalendarEventForm({
           <div>
             <FinanceFieldLabel>Client lié</FinanceFieldLabel>
             <select
-              className={cn(financeSelectClass, !values.clientId && "text-white/35")}
+              className={cn(financeSelectClass, !values.clientId && "text-glass-muted")}
               value={values.clientId}
               onChange={(e) => set("clientId", e.target.value)}
             >
@@ -251,7 +251,7 @@ export default function CalendarEventForm({
         </div>
       </FinanceFormSection>
 
-      <div className="flex justify-end border-t border-white/[0.06] pt-4">
+      <div className="flex justify-end border-t border-app pt-4">
         <button
           type="submit"
           disabled={loading || !values.title.trim()}

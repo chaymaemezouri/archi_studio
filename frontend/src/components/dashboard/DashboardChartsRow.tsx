@@ -27,17 +27,16 @@ import { accentBar } from "@/lib/glass-styles";
 import { cn } from "@/lib/utils";
 import { dashboardChartMobileSlide, dashboardChartsMobileRow, dashboardPanel } from "./dashboard-ui";
 import {
-  AGENDA_CHART_COLORS,
   AgendaChartLegend,
   agendaChartMargin,
-  CHART_COLORS,
-  chartAxisTick,
   chartMargin,
   ChartTooltip,
   EmptyChart,
   RevenueTooltip,
   TrendBadge,
+  useChartTheme,
 } from "./dashboard-recharts";
+import { dashboardPanelHeader, dashboardPanelTitle } from "./dashboard-ui";
 
 interface DashboardChartsRowProps {
   data: DashboardOverview;
@@ -58,13 +57,13 @@ function ChartSection({
     <div className="min-w-0 px-3 py-2.5 sm:px-4">
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <h4 className="text-[11px] font-medium text-white/55">{title}</h4>
+          <h4 className="text-[11px] font-semibold text-glass-secondary">{title}</h4>
           {hint && <div className="mt-0.5">{hint}</div>}
         </div>
         {href && (
           <Link
             href={href}
-            className="shrink-0 text-white/30 transition hover:text-studio-light/80"
+            className="shrink-0 text-glass-muted transition hover:text-studio-light/80"
           >
             <ArrowUpRight className="h-3 w-3" />
           </Link>
@@ -76,6 +75,12 @@ function ChartSection({
 }
 
 export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
+  const chartTheme = useChartTheme();
+  const chartAxisTick = useMemo(
+    () => ({ fill: chartTheme.axis, fontSize: 10 }),
+    [chartTheme.axis]
+  );
+
   const taskCounts = useMemo(() => buildTaskCounts(data), [data]);
   const agendaData = useMemo(() => buildAgendaWeek(data), [data]);
 
@@ -110,15 +115,15 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
 
   return (
     <section className={dashboardPanel}>
-      <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-b border-white/[0.06] px-3.5 py-2">
-        <h3 className="flex items-center gap-2 text-[13px] font-semibold text-white/88">
+      <div className={cn(dashboardPanelHeader, "flex-wrap gap-x-3 gap-y-1 py-2")}>
+        <h3 className={cn(dashboardPanelTitle, "text-[13px]")}>
           <span className={cn(accentBar, "h-3 opacity-80")} aria-hidden />
           Aperçu
         </h3>
-        <p className="text-[10px] text-white/38">
+        <p className="text-[10px] text-glass-muted">
           <span className="hidden sm:inline">
             Tâches :{" "}
-            <span className="text-white/60">{taskCounts.todo} à faire</span>
+            <span className="text-glass-secondary">{taskCounts.todo} à faire</span>
             {taskCounts.inProgress > 0 && (
               <span className="text-studio-light/70">
                 {" "}
@@ -126,7 +131,7 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
               </span>
             )}
           </span>
-          <span className="sm:hidden text-white/45">Glisser pour voir les graphiques →</span>
+          <span className="sm:hidden text-glass-muted">Glisser pour voir les graphiques →</span>
         </p>
       </div>
 
@@ -136,7 +141,7 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
           title="Activité studio"
           href="/projects"
           hint={
-            <span className="text-[10px] text-white/32">
+            <span className="text-[10px] text-glass-muted">
               {activityTotal} action{activityTotal !== 1 ? "s" : ""} · 14 j
             </span>
           }
@@ -148,13 +153,13 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
               <AreaChart data={activityData} margin={chartMargin}>
                 <defs>
                   <linearGradient id="activityFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor={CHART_COLORS.activity} stopOpacity={0.35} />
-                    <stop offset="100%" stopColor={CHART_COLORS.activity} stopOpacity={0} />
+                    <stop offset="0%" stopColor={chartTheme.activity} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={chartTheme.activity} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke={CHART_COLORS.grid}
+                  stroke={chartTheme.grid}
                   vertical={false}
                 />
                 <XAxis
@@ -167,17 +172,17 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
                 <YAxis hide allowDecimals={false} />
                 <Tooltip
                   content={<ChartTooltip />}
-                  cursor={{ stroke: "rgba(255,255,255,0.12)" }}
+                  cursor={{ stroke: chartTheme.axis }}
                 />
                 <Area
                   type="monotone"
                   dataKey="value"
                   name="Actions"
-                  stroke={CHART_COLORS.activity}
+                  stroke={chartTheme.activity}
                   strokeWidth={2}
                   fill="url(#activityFill)"
                   dot={false}
-                  activeDot={{ r: 3, fill: CHART_COLORS.activity }}
+                  activeDot={{ r: 3, fill: chartTheme.activity }}
                 />
               </AreaChart>
             </ResponsiveContainer>
@@ -198,7 +203,7 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
               <BarChart data={revenueData} margin={chartMargin}>
                 <CartesianGrid
                   strokeDasharray="3 3"
-                  stroke={CHART_COLORS.grid}
+                  stroke={chartTheme.grid}
                   vertical={false}
                 />
                 <XAxis
@@ -208,11 +213,11 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
                   tickLine={false}
                 />
                 <YAxis hide />
-                <Tooltip content={<RevenueTooltip />} cursor={{ fill: "rgba(255,255,255,0.04)" }} />
+                <Tooltip content={<RevenueTooltip />} cursor={{ fill: chartTheme.cursor }} />
                 <Bar
                   dataKey="value"
                   name="Encaissé"
-                  fill={CHART_COLORS.revenue}
+                  fill={chartTheme.revenue}
                   radius={[4, 4, 0, 0]}
                   maxBarSize={28}
                 />
@@ -232,7 +237,7 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
                 <BarChart data={agendaData} margin={agendaChartMargin} barCategoryGap="18%">
                   <CartesianGrid
                     strokeDasharray="3 3"
-                    stroke={CHART_COLORS.grid}
+                    stroke={chartTheme.grid}
                     vertical={false}
                   />
                   <XAxis
@@ -244,14 +249,14 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
                   <YAxis hide allowDecimals={false} />
                   <Tooltip
                     content={<ChartTooltip />}
-                    cursor={{ fill: AGENDA_CHART_COLORS.cursor }}
+                    cursor={{ fill: chartTheme.cursor }}
                   />
                   <Bar
                     dataKey="tasks"
                     name="Tâches"
                     stackId="agenda"
-                    fill={AGENDA_CHART_COLORS.tasks}
-                    stroke="rgba(255,255,255,0.06)"
+                    fill={chartTheme.agendaTasks}
+                    stroke={chartTheme.barStroke}
                     strokeWidth={1}
                     maxBarSize={20}
                   />
@@ -259,22 +264,28 @@ export default function DashboardChartsRow({ data }: DashboardChartsRowProps) {
                     dataKey="deadlines"
                     name="Deadlines"
                     stackId="agenda"
-                    fill={AGENDA_CHART_COLORS.deadlines}
-                    stroke="rgba(255,255,255,0.05)"
+                    fill={chartTheme.agendaDeadlines}
+                    stroke={chartTheme.barStroke}
                     strokeWidth={1}
                   />
                   <Bar
                     dataKey="meetings"
                     name="Réunions"
                     stackId="agenda"
-                    fill={AGENDA_CHART_COLORS.meetings}
-                    stroke="rgba(255,255,255,0.08)"
+                    fill={chartTheme.agendaMeetings}
+                    stroke={chartTheme.barStroke}
                     strokeWidth={1}
                     radius={[3, 3, 0, 0]}
                   />
                 </BarChart>
               </ResponsiveContainer>
-              <AgendaChartLegend />
+              <AgendaChartLegend
+                colors={{
+                  tasks: chartTheme.agendaTasks,
+                  deadlines: chartTheme.agendaDeadlines,
+                  meetings: chartTheme.agendaMeetings,
+                }}
+              />
             </div>
           )}
         </ChartSection>

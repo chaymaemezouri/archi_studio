@@ -67,16 +67,16 @@ export function CalendarMonthView({
               type="button"
               onClick={() => onSelectDay(day)}
               className={cn(
-                "w-full rounded-lg border border-[#8ba4c7]/[0.06] bg-white/[0.02] p-3 text-left transition",
+                "w-full rounded-lg border border-app bg-[color:var(--glass-bg)] p-3 text-left transition",
                 isSelected && "border-studio-border/50 bg-studio-soft",
                 isToday && !isSelected && "border-studio-border/30"
               )}
             >
-              <p className="mb-2 text-[12px] font-medium capitalize text-[#e8edf4]/88">
+              <p className="mb-2 text-[12px] font-medium capitalize text-glass">
                 {format(day, "EEE d MMM", { locale: fr })}
               </p>
               {dayEvents.length === 0 ? (
-                <p className="text-[11px] text-[#8ba4c7]/38">Aucun événement</p>
+                <p className="text-[11px] text-glass-muted">Aucun événement</p>
               ) : (
                 <div className="space-y-1">
                   {dayEvents.map((ev) => (
@@ -131,7 +131,7 @@ export function CalendarMonthView({
                   />
                 ))}
                 {extra > 0 && (
-                  <span className="block px-1 text-[9px] text-[#8ba4c7]/40">
+                  <span className="block px-1 text-[9px] text-glass-muted">
                     + {extra} autres
                   </span>
                 )}
@@ -163,12 +163,12 @@ export function CalendarWeekView({ anchor, events, onEventClick }: WeekViewProps
         const dayEvents = eventsOnDay(events, day);
         return (
           <div key={dateKey(day)} className={calendarWeekColumn}>
-            <p className="mb-2 text-[11px] font-semibold capitalize text-[#e8edf4]/85">
+            <p className="mb-2 text-[11px] font-semibold capitalize text-app-primary/85">
               {format(day, "EEE d MMM", { locale: fr })}
             </p>
             <div className="space-y-1">
               {dayEvents.length === 0 ? (
-                <p className="text-[10px] text-[#8ba4c7]/38">—</p>
+                <p className="text-[10px] text-glass-muted">—</p>
               ) : (
                 dayEvents.map((ev) => (
                   <CalendarEventChip key={ev.id} event={ev} onClick={onEventClick} />
@@ -196,12 +196,12 @@ export function CalendarDayView({ day, events, onEventClick, embedded }: DayView
   const content = (
     <>
       {!embedded && (
-        <h2 className="mb-3 text-[15px] font-semibold capitalize text-[#e8edf4]/90">
+        <h2 className="mb-3 text-[15px] font-semibold capitalize text-app-primary/90">
           {format(day, "EEEE d MMMM yyyy", { locale: fr })}
         </h2>
       )}
       {dayEvents.length === 0 ? (
-        <p className="py-6 text-center text-[12px] text-[#8ba4c7]/45">
+        <p className="py-6 text-center text-[12px] text-glass-muted">
           Aucun événement prévu ce jour.
         </p>
       ) : (
@@ -238,7 +238,7 @@ export function CalendarListView({ events, onEventClick }: ListViewProps) {
 
   if (!hasAny) {
     return (
-      <p className="py-12 text-center text-[12px] text-[#8ba4c7]/45">
+      <p className="py-12 text-center text-[12px] text-glass-muted">
         Aucun événement à venir.
       </p>
     );

@@ -58,8 +58,8 @@ export default function PaymentModal({
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
       <div className="rounded-xl border border-studio-border/25 bg-studio-muted/40 px-3 py-2.5">
-        <p className="text-[11px] text-white/45">Facture</p>
-        <p className="mt-0.5 text-[13px] font-medium text-white/88">{invoice.number}</p>
+        <p className="text-[11px] text-glass-muted">Facture</p>
+        <p className="mt-0.5 text-[13px] font-medium text-glass">{invoice.number}</p>
         <p className="mt-1 text-[11px] text-studio-light/70">
           Reste à payer : {formatCurrency(remaining)}
         </p>
@@ -118,7 +118,7 @@ export default function PaymentModal({
         </div>
       </PaymentFormSection>
 
-      <div className="flex flex-col-reverse gap-2 border-t border-white/[0.06] pt-4 sm:flex-row sm:justify-end sm:gap-3">
+      <div className="flex flex-col-reverse gap-2 border-t border-app pt-4 sm:flex-row sm:justify-end sm:gap-3">
         <button
           type="button"
           onClick={onClose}

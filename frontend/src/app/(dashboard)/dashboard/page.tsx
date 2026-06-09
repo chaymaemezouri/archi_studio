@@ -17,6 +17,7 @@ import {
   dashboardMobileScrollRow,
   dashboardPageStack,
   dashboardPanel,
+  dashboardStatLabel,
 } from "@/components/dashboard/dashboard-ui";
 import type { QuickAddAction } from "@/components/dashboard/DashboardAddMenu";
 import {
@@ -50,20 +51,20 @@ function StatItem({
     >
       <div className="flex items-center gap-1.5">
         <span className={cn(accentBar, "h-1.5 opacity-75")} aria-hidden />
-        <p className="text-[9px] font-medium uppercase tracking-wide text-white/42 group-hover/stat:text-studio-light/55">
+        <p className={cn(dashboardStatLabel, "group-hover/stat:text-studio-light")}>
           {label}
         </p>
       </div>
       <p
         className={cn(
-          "mt-0.5 pl-2 font-semibold tabular-nums leading-none tracking-tight text-white/92",
+          "mt-0.5 pl-2 font-semibold tabular-nums leading-none tracking-tight text-app-primary",
           compact ? "text-xl" : "text-lg"
         )}
       >
         {value}
       </p>
       {subValue && (
-        <p className="mt-0.5 pl-2 text-[10px] text-white/40">{subValue}</p>
+        <p className="mt-0.5 pl-2 text-[10px] text-glass-muted">{subValue}</p>
       )}
     </div>
   );
@@ -207,11 +208,11 @@ export default function DashboardPage() {
   };
 
   const statsSection = (
-    <section className={cn(dashboardPanel, "order-5 border-studio-light/[0.07] lg:order-2")}>
+    <section className={cn(dashboardPanel, "order-5 lg:order-2")}>
       <div
         className={cn(
           dashboardMobileScrollRow,
-          "md:grid-cols-3 lg:grid-cols-5 md:divide-x md:divide-studio-light/[0.08]"
+          "md:grid-cols-3 lg:grid-cols-5 md:divide-x md:divide-app"
         )}
       >
         {headerStats.map((stat) => (
@@ -238,11 +239,11 @@ export default function DashboardPage() {
 
       {isError ? (
         <section className={cn(dashboardPanel, "order-2 p-8 text-center")}>
-          <p className="text-sm text-white/70">Impossible de charger le dashboard</p>
+          <p className="text-sm text-glass-secondary">Impossible de charger le dashboard</p>
           <button
             type="button"
             onClick={() => refetch()}
-            className="mt-3 rounded-lg bg-white/[0.06] px-4 py-2 text-[12px] text-white/80 transition hover:bg-white/[0.09]"
+            className="mt-3 rounded-lg bg-[color:var(--glass-bg-hover)] px-4 py-2 text-[12px] text-glass transition hover:bg-studio-muted/50"
           >
             Réessayer
           </button>
@@ -252,7 +253,7 @@ export default function DashboardPage() {
           <div className={cn(dashboardPanel, "h-36 animate-pulse lg:order-none")} />
           <div className={cn(dashboardPanel, "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5")}>
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 animate-pulse border-r border-white/[0.05] last:border-0" />
+              <div key={i} className="h-14 animate-pulse border-r border-app last:border-0" />
             ))}
           </div>
           <div className="grid gap-2.5 lg:grid-cols-5">

@@ -35,7 +35,7 @@ export function FinanceMenuLink({
       href={href}
       role="menuitem"
       onClick={onClick}
-      className="flex w-full items-center px-3 py-2 text-[13px] text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+      className="flex w-full items-center px-3 py-2 text-[13px] text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
     >
       {children}
     </Link>
@@ -60,7 +60,7 @@ export function FinanceMenuItem({
         "flex w-full items-center px-3 py-2 text-left text-[13px]",
         danger
           ? "text-red-400 hover:bg-red-500/10"
-          : "text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+          : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
       )}
     >
       {label}

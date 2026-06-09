@@ -23,9 +23,9 @@ export const settingsGrid3 = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols
 export const settingsGrid4 = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4";
 
 export const settingsSubsectionTitle =
-  "text-[12px] font-semibold uppercase tracking-wide text-[#8ba4c7]/55";
+  "text-[12px] font-semibold uppercase tracking-wide text-glass-muted";
 
-export const settingsDivider = "border-t border-[#8ba4c7]/[0.08]";
+export const settingsDivider = "border-t border-app";
 
 export const settingsCard = cn(glassPanel, "p-4 sm:p-5");
 
@@ -35,51 +35,62 @@ export const settingsProfileCard = cn(
 );
 
 export const settingsSectionTitle = cn(
-  "mb-4 flex items-center gap-2 border-l-2 border-[#8ba4c7]/45 pl-2.5",
-  "text-[14px] font-medium text-[#e8edf4]/92"
+  "mb-4 flex items-center gap-2 border-l-2 border-[color:var(--studio-border)] pl-2.5",
+  "text-[14px] font-medium text-app-primary"
 );
 
-export const settingsSectionIcon = "h-4 w-4 shrink-0 text-[#8ba4c7]/55";
+export const settingsSectionIcon = "h-4 w-4 shrink-0 text-studio-light";
 
 export const settingsLabel =
-  "block text-[11px] font-medium text-white/40";
+  "block text-[11px] font-medium text-glass-muted";
 
-export const settingsHint = "text-[11px] leading-relaxed text-[#9aa3b0]/45";
+export const settingsHint = "text-[11px] leading-relaxed text-glass-muted";
 
-export const settingsCode =
-  "rounded-md bg-white/[0.04] px-1.5 py-0.5 font-mono text-[10px] text-[#b8c9dc]/75";
+export const settingsCode = cn(
+  "rounded-md bg-[color:var(--glass-bg-hover)] px-1.5 py-0.5 font-mono text-[10px] text-glass-secondary"
+);
 
 export const settingsField = "space-y-1.5";
 
-export const settingsProfileName = "text-[15px] font-medium text-[#e8edf4]/90";
+export const settingsProfileName = "text-[15px] font-medium text-app-primary";
 
-export const settingsProfileMeta = "text-[12px] text-[#8ba4c7]/50";
+export const settingsProfileMeta = "text-[12px] text-glass-muted";
 
-export const settingsProfileRole = "text-[10px] text-[#9aa3b0]/42";
+export const settingsProfileRole = "text-[10px] text-glass-muted";
 
-export const settingsTabsRow =
-  "flex flex-wrap gap-1 rounded-lg border border-[#8ba4c7]/[0.06] bg-white/[0.02] p-0.5";
+export const settingsTabsRow = cn(
+  "flex flex-wrap gap-1 rounded-lg border border-app bg-[color:var(--glass-bg)] p-0.5"
+);
 
 export const settingsTabBtn =
   "rounded-md px-3 py-1.5 text-[11px] font-medium transition";
 
 export const settingsTabBtnActive = "bg-studio-soft text-studio-light";
 
-export const settingsTabBtnInactive =
-  "text-[#9aa3b0]/55 hover:bg-white/[0.04] hover:text-[#e8edf4]/75";
+export const settingsTabBtnInactive = cn(
+  "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-glass-secondary"
+);
 
-export const settingsInfoGrid =
-  "grid grid-cols-1 gap-3 sm:grid-cols-2";
+export const settingsInfoGrid = "grid grid-cols-1 gap-3 sm:grid-cols-2";
 
-export const settingsInfoItem =
-  "rounded-lg border border-[#8ba4c7]/[0.06] bg-white/[0.02] px-3 py-2.5";
+export const settingsInfoItem = cn(
+  "rounded-lg border border-app bg-[color:var(--glass-bg)] px-3 py-2.5"
+);
 
-export const settingsInfoLabel = "text-[10px] font-medium text-[#8ba4c7]/45";
+export const settingsInfoLabel = "text-[10px] font-medium text-glass-muted";
 
-export const settingsInfoValue = "mt-0.5 text-[13px] text-[#e8edf4]/88";
+export const settingsInfoValue = "mt-0.5 text-[13px] text-glass";
 
 export const settingsUploadZone = cn(
   "flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed",
-  "border-[#8ba4c7]/[0.12] bg-white/[0.02] px-4 py-5 transition",
-  "hover:border-[#8ba4c7]/[0.22] hover:bg-[#8ba4c7]/[0.03]"
+  "border-[color:var(--studio-border)] bg-[color:var(--glass-bg)] px-4 py-5 transition",
+  "hover:border-[color:var(--studio-border)] hover:bg-studio-muted/30"
+);
+
+export const settingsNavBtnActive = cn(
+  "bg-studio-muted text-studio-light"
+);
+
+export const settingsNavBtnInactive = cn(
+  "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-glass-secondary"
 );

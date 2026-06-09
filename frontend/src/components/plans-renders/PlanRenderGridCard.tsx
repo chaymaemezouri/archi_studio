@@ -94,7 +94,7 @@ export default function PlanRenderGridCard({
         {asset.projectId && (
           <Link
             href={`/projects/${asset.projectId}?tab=${asset.kind === "PLAN" ? "plans" : "renders"}`}
-            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
             onClick={closeMenu}
           >
             Ouvrir projet
@@ -146,18 +146,18 @@ export default function PlanRenderGridCard({
 
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm font-medium text-[#e8edf4]/88">{asset.name}</p>
+          <p className="line-clamp-2 text-sm font-medium text-glass">{asset.name}</p>
           <div className="mt-1 flex flex-wrap gap-1">
             <Badge variant="studio">{PLAN_RENDER_KIND_LABELS[asset.kind]}</Badge>
             {asset.version && <Badge variant="accent">{asset.version}</Badge>}
           </div>
-          <p className="mt-1 text-[11px] text-[#9aa3b0]/55">{categoryLabel(asset)}</p>
+          <p className="mt-1 text-[11px] text-glass-muted">{categoryLabel(asset)}</p>
           {(asset.projectName || asset.clientName) && (
-            <p className="mt-1 line-clamp-1 text-[11px] text-[#8ba4c7]/70">
+            <p className="mt-1 line-clamp-1 text-[11px] text-glass-muted">
               {asset.projectName ?? asset.clientName}
             </p>
           )}
-          <p className="mt-1 text-[10px] text-[#8ba4c7]/40">
+          <p className="mt-1 text-[10px] text-glass-muted">
             {formatDate(asset.uploadedAt ?? asset.createdAt)}
           </p>
         </div>
@@ -204,7 +204,7 @@ function MenuBtn({
         "flex w-full items-center gap-2 px-3 py-2 text-sm",
         danger
           ? "text-red-400 hover:bg-red-500/10"
-          : "text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+          : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
       )}
     >
       {children}

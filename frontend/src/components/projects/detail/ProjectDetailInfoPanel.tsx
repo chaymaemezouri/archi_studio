@@ -114,13 +114,13 @@ export default function ProjectDetailInfoPanel({
             <ProjectStatusBadge
               status={displayStatus}
               size="sm"
-              className="border-white/10 bg-white/[0.04]"
+              className="border-glass bg-[color:var(--glass-bg-hover)]"
             />
             {project.city && (
-              <span className="truncate text-[11px] text-white/40">{project.city}</span>
+              <span className="truncate text-[11px] text-glass-muted">{project.city}</span>
             )}
           </div>
-          <h1 className="text-lg font-bold tracking-tight text-white/95 sm:text-xl">
+          <h1 className="text-lg font-bold tracking-tight text-glass sm:text-xl">
             {project.name}
           </h1>
         </div>
@@ -144,7 +144,7 @@ export default function ProjectDetailInfoPanel({
             <Star
               className={cn(
                 "h-3.5 w-3.5",
-                project.isFavorite ? "fill-amber-400 text-amber-400" : "text-white/50"
+                project.isFavorite ? "fill-amber-400 text-amber-400" : "text-glass-muted"
               )}
             />
           </button>
@@ -243,8 +243,8 @@ export default function ProjectDetailInfoPanel({
             <span className={detailInfoLabel}>Progression globale</span>
             <div className="mt-1.5">
               <div className="mb-1 flex items-center justify-between text-[11px]">
-                <span className="text-white/45">Avancement</span>
-                <span className="tabular-nums font-medium text-white/75">
+                <span className="text-glass-muted">Avancement</span>
+                <span className="tabular-nums font-medium text-glass-secondary">
                   {progress}%
                 </span>
               </div>
@@ -268,7 +268,7 @@ export default function ProjectDetailInfoPanel({
               <span
                 className={cn(
                   deadlineUrgent && "text-red-300/90",
-                  !project.deadline && "text-white/30"
+                  !project.deadline && "text-glass-muted"
                 )}
               >
                 {project.deadline
@@ -289,7 +289,7 @@ export default function ProjectDetailInfoPanel({
               </button>
             </div>
             {nextDeadline ? (
-              <div className="flex items-start justify-between gap-2 rounded-lg border border-white/[0.05] bg-white/[0.02] px-2.5 py-2">
+              <div className="flex items-start justify-between gap-2 rounded-lg border border-app bg-[color:var(--glass-bg)] px-2.5 py-2">
                 <div className="min-w-0">
                   <p className={detailTextStrong}>{nextDeadline.title}</p>
                   <p className={detailCaption}>
@@ -304,7 +304,7 @@ export default function ProjectDetailInfoPanel({
                 />
               </div>
             ) : (
-              <p className="text-xs text-white/35">Aucune deadline à venir</p>
+              <p className="text-xs text-glass-muted">Aucune deadline à venir</p>
             )}
             <button
               type="button"

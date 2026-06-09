@@ -24,10 +24,10 @@ export function FileIcon({ mimeType, name, className }: FileIconProps) {
     ext === "pdf"
       ? "text-red-400/65 bg-red-500/8"
       : ext === "dwg"
-        ? "text-[#8ba4c7]/70 bg-[#8ba4c7]/10"
+        ? "text-glass-muted bg-studio-muted"
         : ext === "docx" || ext === "doc"
-          ? "text-[#8ba4c7]/70 bg-[#8ba4c7]/10"
-          : "text-[#8ba4c7]/55 bg-[#8ba4c7]/8";
+          ? "text-glass-muted bg-studio-muted"
+          : "text-glass-muted bg-[#8ba4c7]/8";
 
   return (
     <span

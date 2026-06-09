@@ -30,8 +30,8 @@ export function SettingsSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
-      <p className="text-[10px] font-semibold uppercase tracking-wide text-white/32">{title}</p>
+    <div className="space-y-3 rounded-xl border border-glass bg-[color:var(--glass-bg)] p-3.5">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-glass-muted">{title}</p>
       <div className="space-y-3">{children}</div>
     </div>
   );
@@ -45,7 +45,7 @@ export function SettingsSaveBar({
   label?: string;
 }) {
   return (
-    <div className="flex justify-end border-t border-white/[0.06] pt-4">
+    <div className="flex justify-end border-t border-app pt-4">
       <button
         type="submit"
         disabled={saving}
@@ -75,7 +75,7 @@ export function SettingsSelect({
       className={cn(glassSelect, "h-9 w-full py-0 text-[12px]", className)}
     >
       {options.map((o) => (
-        <option key={o.value} value={o.value} className="bg-[#101014]">
+        <option key={o.value} value={o.value} className="bg-dark-elevated text-text-primary">
           {o.label}
         </option>
       ))}
@@ -86,8 +86,8 @@ export function SettingsSelect({
 export function SettingsDocPreview({ settings }: { settings: StudioSettings }) {
   const year = new Date().getFullYear();
   return (
-    <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-3 text-[11px] leading-relaxed text-white/45">
-      <p className="text-[13px] font-medium text-white/80">
+    <div className="rounded-lg border border-glass bg-[color:var(--glass-bg)] p-3 text-[11px] leading-relaxed text-glass-muted">
+      <p className="text-[13px] font-medium text-glass">
         {settings.cabinetName || "Cabinet"}
       </p>
       {settings.cabinetAddress && <p>{settings.cabinetAddress}</p>}
@@ -96,7 +96,7 @@ export function SettingsDocPreview({ settings }: { settings: StudioSettings }) {
       )}
       {settings.cabinetEmail && <p>{settings.cabinetEmail}</p>}
       {settings.cabinetIce && <p>ICE {settings.cabinetIce}</p>}
-      <p className="mt-2 border-t border-white/[0.06] pt-2 text-white/35">
+      <p className="mt-2 border-t border-app pt-2 text-glass-muted">
         {settings.devisPrefix ?? "DEV"}-{year}-001 · {settings.invoicePrefix ?? "FAC"}-
         {year}-001 · TVA {settings.tvaDefault ?? 20}% · {settings.paymentTermsDays ?? 30}j
       </p>

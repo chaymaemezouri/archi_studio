@@ -11,6 +11,7 @@ import {
   glassInput,
   glassPanel,
 } from "@/lib/glass-styles";
+import { textHeading, textLabel } from "@/lib/theme-classes";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -25,19 +26,18 @@ function LoginForm() {
 
   return (
     <div className={cn(glassPanel, "overflow-hidden")}>
-      <div className="border-b border-white/[0.06] px-6 py-8 text-center">
-        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
+      <div className="border-b border-app px-6 py-8 text-center">
+        <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl border border-glass bg-[color:var(--glass-bg)]">
           <Building2 className="h-5 w-5 text-studio-light" strokeWidth={1.75} />
         </div>
-        <h1 className="text-lg font-semibold tracking-tight text-white/92">
+        <h1 className={cn(textHeading, "text-lg font-semibold tracking-tight")}>
           Architecture Studio
         </h1>
-       
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 px-6 py-6">
         <div className="space-y-1.5">
-          <label htmlFor="login-email" className="text-[11px] font-medium text-white/40">
+          <label htmlFor="login-email" className={textLabel}>
             Email
           </label>
           <input
@@ -52,7 +52,7 @@ function LoginForm() {
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor="login-password" className="text-[11px] font-medium text-white/40">
+          <label htmlFor="login-password" className={textLabel}>
             Mot de passe
           </label>
           <input
@@ -87,8 +87,6 @@ function LoginForm() {
           )}
         </button>
       </form>
-
-     
     </div>
   );
 }

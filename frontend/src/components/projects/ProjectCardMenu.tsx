@@ -64,7 +64,7 @@ function MenuItem({
     "flex w-full shrink-0 items-center gap-2 px-3 py-2 text-left text-[13px] leading-normal transition",
     danger
       ? "text-red-300 hover:bg-red-500/10"
-      : "text-white/75 hover:bg-white/[0.06]"
+      : "text-glass-secondary hover:bg-[color:var(--glass-bg-hover)]"
   );
   if (href) {
     return (
@@ -237,7 +237,7 @@ export default function ProjectCardMenu({
             close();
           }}
         >
-          <ExternalLink className="h-4 w-4 text-white/45" />
+          <ExternalLink className="h-4 w-4 text-glass-muted" />
           Ouvrir
         </MenuItem>
       )}
@@ -250,7 +250,7 @@ export default function ProjectCardMenu({
             close();
           }}
         >
-          <MapPin className="h-4 w-4 text-white/45" />
+          <MapPin className="h-4 w-4 text-glass-muted" />
           Voir sur la carte
         </MenuItem>
       )}
@@ -263,7 +263,7 @@ export default function ProjectCardMenu({
             close();
           }}
         >
-          <Pencil className="h-4 w-4 text-white/45" />
+          <Pencil className="h-4 w-4 text-glass-muted" />
           Modifier
         </MenuItem>
       )}
@@ -276,7 +276,7 @@ export default function ProjectCardMenu({
             close();
           }}
         >
-          <CheckSquare className="h-4 w-4 text-white/45" />
+          <CheckSquare className="h-4 w-4 text-glass-muted" />
           Ajouter une tâche
         </MenuItem>
       )}
@@ -289,7 +289,7 @@ export default function ProjectCardMenu({
             close();
           }}
         >
-          <CalendarPlus className="h-4 w-4 text-white/45" />
+          <CalendarPlus className="h-4 w-4 text-glass-muted" />
           Ajouter une deadline
         </MenuItem>
       )}
@@ -303,7 +303,7 @@ export default function ProjectCardMenu({
                 goTab("documents");
               }}
             >
-              <FileText className="h-4 w-4 text-white/45" />
+              <FileText className="h-4 w-4 text-glass-muted" />
               Ajouter un document
             </MenuItem>
           )}
@@ -313,7 +313,7 @@ export default function ProjectCardMenu({
               goTab("plans");
             }}
           >
-            <Layers className="h-4 w-4 text-white/45" />
+            <Layers className="h-4 w-4 text-glass-muted" />
             {isList ? "Plans du projet" : "Ajouter un plan"}
           </MenuItem>
           <MenuItem
@@ -322,7 +322,7 @@ export default function ProjectCardMenu({
               goTab("renders");
             }}
           >
-            <Image className="h-4 w-4 text-white/45" />
+            <Image className="h-4 w-4 text-glass-muted" />
             {isList ? "Rendus du projet" : "Ajouter un rendu"}
           </MenuItem>
         </>
@@ -334,7 +334,7 @@ export default function ProjectCardMenu({
         <Star
           className={cn(
             "h-4 w-4",
-            project.isFavorite ? "fill-amber-400 text-amber-400" : "text-white/45"
+            project.isFavorite ? "fill-amber-400 text-amber-400" : "text-glass-muted"
           )}
         />
         {project.isFavorite ? "Retirer des favoris" : "Marquer comme favori"}
@@ -344,12 +344,12 @@ export default function ProjectCardMenu({
         <MenuItem onClick={archive}>
           {project.status === "ARCHIVED" ? (
             <>
-              <ArchiveRestore className="h-4 w-4 text-white/45" />
+              <ArchiveRestore className="h-4 w-4 text-glass-muted" />
               Restaurer
             </>
           ) : (
             <>
-              <Archive className="h-4 w-4 text-white/45" />
+              <Archive className="h-4 w-4 text-glass-muted" />
               Archiver le projet
             </>
           )}

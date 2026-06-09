@@ -1,3 +1,5 @@
+import { isThemeMode, type ThemeMode } from "@/lib/theme";
+
 const PREFS_KEY = "architecture-studio-user-prefs";
 
 export const VIEW_KEYS = {
@@ -9,6 +11,7 @@ export const VIEW_KEYS = {
 } as const;
 
 export interface UserAppPreferences {
+  theme: ThemeMode;
   defaultProjectsView: "grid" | "list";
   defaultTasksView: "list" | "board";
   defaultCalendarView: "month" | "week" | "day" | "list";
@@ -17,6 +20,7 @@ export interface UserAppPreferences {
 }
 
 const DEFAULTS: UserAppPreferences = {
+  theme: "dark",
   defaultProjectsView: "grid",
   defaultTasksView: "list",
   defaultCalendarView: "month",
@@ -29,7 +33,12 @@ export function loadUserPreferences(): UserAppPreferences {
   try {
     const raw = localStorage.getItem(PREFS_KEY);
     if (!raw) return DEFAULTS;
-    return { ...DEFAULTS, ...JSON.parse(raw) };
+    const parsed = JSON.parse(raw) as Partial<UserAppPreferences>;
+    return {
+      ...DEFAULTS,
+      ...parsed,
+      theme: isThemeMode(parsed.theme) ? parsed.theme : DEFAULTS.theme,
+    };
   } catch {
     return DEFAULTS;
   }

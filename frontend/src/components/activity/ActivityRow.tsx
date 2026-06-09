@@ -33,10 +33,10 @@ export default function ActivityRow({ log }: ActivityRowProps) {
         className="ring-[#8ba4c7]/20"
       />
       <div className="min-w-0 flex-1">
-        <p className="text-[13px] leading-snug text-[#e8edf4]/88">
+        <p className="text-[13px] leading-snug text-glass">
           {formatProjectActivityMessage(log)}
         </p>
-        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#8ba4c7]/50">
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-glass-muted">
           {contextLabel && <span>{contextLabel}</span>}
           {contextLabel && <span className="text-[#8ba4c7]/25">·</span>}
           <span>{entityLabel}</span>

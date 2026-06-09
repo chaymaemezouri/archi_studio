@@ -140,13 +140,13 @@ export default function ClientProfileOverview({ client }: ClientProfileOverviewP
             <h3 className={detailClientProfileBlockTitle}>Note interne</h3>
             <Link
               href={`/clients/${client.id}?tab=notes`}
-              className="text-[11px] text-[#8ba4c7]/70 hover:text-[#b8cfe8]/95"
+              className="text-[11px] text-glass-muted hover:text-[#b8cfe8]/95"
               scroll={false}
             >
               Gérer dans Notes →
             </Link>
           </div>
-          <p className="mt-2 whitespace-pre-wrap text-[12px] leading-relaxed text-[#9aa3b0]/65">
+          <p className="mt-2 whitespace-pre-wrap text-[12px] leading-relaxed text-glass-secondary">
             {client.notes}
           </p>
         </div>

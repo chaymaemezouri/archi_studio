@@ -104,7 +104,7 @@ export default function GlobalSearch() {
   const resultBtn = cn(
     dropdownItem,
     dropdownItemInactive,
-    "flex items-center gap-2.5 py-2 pr-3 hover:bg-white/[0.04]"
+    "flex items-center gap-2.5 py-2 pr-3 hover:bg-[color:var(--glass-bg-hover)]"
   );
 
   const resultsPanel = showPanel && (
@@ -115,10 +115,10 @@ export default function GlobalSearch() {
       )}
     >
       {isFetching && (
-        <p className="px-4 py-3 text-[13px] text-white/50">Recherche…</p>
+        <p className="px-4 py-3 text-[13px] text-glass-muted">Recherche…</p>
       )}
       {!isFetching && !hasResults && (
-        <p className="px-4 py-3 text-[13px] text-white/50">Aucun résultat</p>
+        <p className="px-4 py-3 text-[13px] text-glass-muted">Aucun résultat</p>
       )}
 
       {(data?.projects?.length ?? 0) > 0 && (
@@ -166,7 +166,7 @@ export default function GlobalSearch() {
               <span className="truncate">
                 {d.name}
                 {d.project?.name && (
-                  <span className="text-white/40"> · {d.project.name}</span>
+                  <span className="text-glass-muted"> · {d.project.name}</span>
                 )}
               </span>
             </button>
@@ -244,7 +244,7 @@ export default function GlobalSearch() {
         <button
           type="button"
           onClick={() => setMobileExpanded(true)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-white/55 transition hover:bg-white/[0.05] hover:text-studio-light md:hidden"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-glass-muted transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light md:hidden"
           aria-label="Rechercher"
         >
           <Search className="h-4 w-4" strokeWidth={1.75} />
@@ -269,7 +269,7 @@ export default function GlobalSearch() {
               setPanelOpen(false);
               setQuery("");
             }}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-white/55 hover:bg-white/[0.05] hover:text-studio-light md:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light md:hidden"
             aria-label="Fermer la recherche"
           >
             <X className="h-4 w-4" strokeWidth={1.75} />

@@ -8,9 +8,9 @@ import { useUnreadCount } from "@/hooks/useNotifications";
 import NotificationDropdown from "./NotificationDropdown";
 
 const notificationBadgeBase = cn(
-  "absolute -right-0.5 -top-0.5 flex h-[15px] min-w-[15px] items-center justify-center",
-  "rounded-full px-1 text-[8px] font-medium leading-none tabular-nums",
-  "ring-2 ring-[#07070b]"
+  "absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center",
+  "rounded-full px-1 text-[10px] font-semibold leading-none tabular-nums",
+  "ring-2 ring-[color:var(--background)]"
 );
 
 export default function NotificationBell() {
@@ -51,19 +51,19 @@ export default function NotificationBell() {
         aria-expanded={open}
         className={cn(
           glassBtnIcon,
-          "relative h-9 w-9 border-0 text-white/55",
-          "hover:text-studio-light/90",
-          open && "bg-white/[0.06] text-studio-light"
+          "relative h-10 w-10 border-0 text-glass-secondary",
+          "hover:text-studio-light",
+          open && "bg-[color:var(--glass-bg-hover)] text-studio-light"
         )}
       >
-        <Bell className="h-4 w-4" strokeWidth={1.75} />
+        <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />
         {unreadCount > 0 && (
           <span
             className={cn(
               notificationBadgeBase,
               urgentCount > 0
-                ? "border border-amber-400/30 bg-[#1c1810]/95 text-amber-200/90 shadow-[0_0_10px_rgba(251,191,36,0.12)]"
-                : "border border-[#8ba4c7]/35 bg-[#141a24]/95 text-[#b8cfe8]"
+                ? "bg-red-500 text-white"
+                : "bg-studio-light text-white dark:text-[#0a0a0f]"
             )}
           >
             {unreadCount > 9 ? "9+" : unreadCount}

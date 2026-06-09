@@ -106,7 +106,7 @@ export default function PaymentForm({
         <div>
           <PaymentFieldLabel>Facture liée</PaymentFieldLabel>
           <select
-            className={cn(paymentSelectClass, !invoiceId && "text-white/35")}
+            className={cn(paymentSelectClass, !invoiceId && "text-glass-muted")}
             value={invoiceId}
             onChange={(e) => onInvoiceChange(e.target.value)}
           >
@@ -130,7 +130,7 @@ export default function PaymentForm({
           <div>
             <PaymentFieldLabel required>Client</PaymentFieldLabel>
             <select
-              className={cn(paymentSelectClass, !clientId && "text-white/35")}
+              className={cn(paymentSelectClass, !clientId && "text-glass-muted")}
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               required
@@ -148,7 +148,7 @@ export default function PaymentForm({
           <div>
             <PaymentFieldLabel>Projet lié</PaymentFieldLabel>
             <select
-              className={cn(paymentSelectClass, !projectId && "text-white/35")}
+              className={cn(paymentSelectClass, !projectId && "text-glass-muted")}
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
             >
@@ -247,7 +247,7 @@ export default function PaymentForm({
         </p>
       )}
 
-      <div className="flex flex-col-reverse gap-2 border-t border-white/[0.06] pt-4 sm:flex-row sm:justify-end sm:gap-3">
+      <div className="flex flex-col-reverse gap-2 border-t border-app pt-4 sm:flex-row sm:justify-end sm:gap-3">
         <button
           type="button"
           onClick={onCancel}

@@ -17,6 +17,7 @@ import {
   clientsListCardHeader,
   clientsListCardMeta,
   clientsListCardStats,
+  clientsListCardTag,
 } from "@/components/clients/clients-list-ui";
 import { cn, formatCurrency, formatRelativeTime } from "@/lib/utils";
 
@@ -44,7 +45,7 @@ export default function ClientCard({ client, onEdit }: ClientCardProps) {
       <div className={clientsListCardHeader}>
         <div className="min-w-0 flex-1">
           <Link href={`/clients/${client.id}`} className="block min-w-0">
-            <h3 className="truncate text-[13px] font-semibold text-[#e8edf4]/92 transition group-hover/card:text-[#f0f4fa]">
+            <h3 className="truncate text-[13px] font-semibold text-app-primary transition group-hover/card:text-[color:var(--detail-sidebar-text-active)]">
               {client.name}
             </h3>
           </Link>
@@ -52,18 +53,18 @@ export default function ClientCard({ client, onEdit }: ClientCardProps) {
             <Badge variant={statusVariant(client.status)}>
               {CLIENT_STATUS_LABELS[client.status ?? "ACTIVE"]}
             </Badge>
-            <span className={clientsListCardMeta}>{typeLabel}</span>
+            <span className={clientsListCardTag}>{typeLabel}</span>
             {location && (
               <>
                 <span className={clientsListCardMeta} aria-hidden>
                   ·
                 </span>
-                <span className={cn(clientsListCardMeta, "truncate")}>{location}</span>
+                <span className={cn(clientsListCardTag, "truncate")}>{location}</span>
               </>
             )}
           </div>
           {company && (
-            <p className="mt-1 truncate text-[11px] text-[#9aa3b0]/50">{company}</p>
+            <p className="mt-1 truncate text-[11px] text-glass-muted">{company}</p>
           )}
         </div>
         <ClientCardMenu client={client} onEdit={() => onEdit?.(client)} />

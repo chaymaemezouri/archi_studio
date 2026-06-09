@@ -71,16 +71,16 @@ export default function SettingsImageUpload({
         className={cn(
           settingsUploadZone,
           "min-h-[88px] flex-1 cursor-pointer",
-          dragOver && "border-studio-border/40 bg-white/[0.05]",
+          dragOver && "border-studio-border/40 bg-[color:var(--glass-bg-hover)]",
           uploading && "pointer-events-none opacity-60"
         )}
       >
         {uploading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-white/50" />
+          <Loader2 className="h-5 w-5 animate-spin text-glass-muted" />
         ) : (
-          <ImagePlus className="h-5 w-5 text-white/35" strokeWidth={1.5} />
+          <ImagePlus className="h-5 w-5 text-glass-muted" strokeWidth={1.5} />
         )}
-        <span className="text-[12px] text-white/55">
+        <span className="text-[12px] text-glass-muted">
           {uploading ? "Envoi…" : "Choisir une image"}
         </span>
       </button>

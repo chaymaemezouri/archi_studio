@@ -25,7 +25,7 @@ export function ProjectListProgressBar({
       <div
         className={cn(
           "h-[3px] overflow-hidden rounded-full",
-          isZero ? "bg-white/[0.04]" : "bg-white/[0.08]"
+          isZero ? "bg-[color:var(--glass-bg-hover)]" : "bg-[color:var(--pc-progress-track)]"
         )}
       >
         {!isZero && (
@@ -41,7 +41,7 @@ export function ProjectListProgressBar({
       <p
         className={cn(
           "text-center text-[10px] tabular-nums leading-none",
-          isZero ? "text-white/28" : "text-white/52"
+          isZero ? "text-glass-muted" : "text-glass-secondary"
         )}
       >
         {safe}%
@@ -68,16 +68,21 @@ export function ProjectListDeadlineCell({
       <p
         className={cn(
           "truncate text-[11px] leading-tight",
-          undefinedDeadline && "text-white/32",
-          !undefinedDeadline && overdue && "font-medium text-red-300/90",
-          !undefinedDeadline && !overdue && "text-white/48"
+          undefinedDeadline && "text-glass-muted",
+          !undefinedDeadline && overdue && "font-semibold text-[color:var(--pc-overdue)]",
+          !undefinedDeadline && !overdue && "text-glass-secondary"
         )}
         title={label}
       >
         {label}
       </p>
       {shouldShowDeadlineBadge(displayStatus) && (
-        <ProjectStatusBadge status={displayStatus} size="sm" className="w-fit shrink-0" />
+        <ProjectStatusBadge
+          status={displayStatus}
+          size="sm"
+          context="list"
+          className="w-fit shrink-0"
+        />
       )}
     </div>
   );

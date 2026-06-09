@@ -252,11 +252,11 @@ export default function ClientForm({
       </FinanceFormSection>
 
       <FinanceFormSection title="Administratif">
-        <details className="group rounded-lg border border-white/[0.06] bg-white/[0.02]">
-          <summary className="cursor-pointer list-none px-3 py-2.5 text-[12px] text-white/50 transition hover:text-white/70 [&::-webkit-details-marker]:hidden">
-            <span className="group-open:text-white/65">Informations administratives (optionnel)</span>
+        <details className="group rounded-lg border border-app bg-[color:var(--glass-bg)]">
+          <summary className="cursor-pointer list-none px-3 py-2.5 text-[12px] text-glass-muted transition hover:text-glass-secondary [&::-webkit-details-marker]:hidden">
+            <span className="group-open:text-glass-secondary">Informations administratives (optionnel)</span>
           </summary>
-          <div className="grid grid-cols-1 gap-3 border-t border-white/[0.06] p-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 border-t border-app p-3 sm:grid-cols-2">
             <div>
               <FinanceFieldLabel>ICE</FinanceFieldLabel>
               <input className={financeFieldClass} value={values.ice} onChange={(e) => set("ice", e.target.value)} />
@@ -282,7 +282,7 @@ export default function ClientForm({
           <div>
             <FinanceFieldLabel>Source</FinanceFieldLabel>
             <select
-              className={cn(financeSelectClass, !values.source && "text-white/35")}
+              className={cn(financeSelectClass, !values.source && "text-glass-muted")}
               value={values.source}
               onChange={(e) => set("source", e.target.value as ClientSource | "")}
             >
@@ -322,7 +322,7 @@ export default function ClientForm({
         </div>
       </FinanceFormSection>
 
-      <div className="flex justify-end border-t border-white/[0.06] pt-4">
+      <div className="flex justify-end border-t border-app pt-4">
         <button
           type="submit"
           disabled={loading || !values.name.trim() || !values.phone.trim()}

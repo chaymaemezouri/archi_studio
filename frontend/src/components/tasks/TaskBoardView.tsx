@@ -4,7 +4,12 @@ import Badge from "@/components/ui/Badge";
 import type { Task, TaskStatus } from "@/types";
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
 import { getTaskDeadlineBadge, TASK_DEADLINE_BADGE_LABELS } from "@/lib/tasks-list";
-import { taskDeadlineBadgeVariant, tasksBoardCard, tasksBoardColumn } from "./tasks-list-ui";
+import {
+  taskBoardDeadlineAccent,
+  taskDeadlineBadgeVariant,
+  tasksBoardCard,
+  tasksBoardColumn,
+} from "./tasks-list-ui";
 import { cn, formatDate } from "@/lib/utils";
 
 const COLUMNS: { id: TaskStatus; label: string }[] = [
@@ -25,15 +30,15 @@ export default function TaskBoardView({ tasks, onEdit }: TaskBoardViewProps) {
         const colTasks = tasks.filter((t) => t.status === col.id);
         return (
           <div key={col.id} className={tasksBoardColumn}>
-            <h3 className="mb-2.5 text-[12px] font-semibold text-[#e8edf4]/88">
+            <h3 className="mb-2.5 text-[12px] font-semibold text-glass">
               {col.label}
-              <span className="ml-1.5 text-[10px] font-normal text-[#8ba4c7]/45">
+              <span className="ml-1.5 text-[10px] font-normal text-glass-muted">
                 ({colTasks.length})
               </span>
             </h3>
             <div className="space-y-1.5">
               {colTasks.length === 0 ? (
-                <p className="py-4 text-center text-[11px] text-[#8ba4c7]/38">Aucune tâche</p>
+                <p className="py-4 text-center text-[11px] text-glass-muted">Aucune tâche</p>
               ) : (
                 colTasks.map((task) => (
                   <BoardCard key={task.id} task={task} onEdit={onEdit} />
@@ -54,24 +59,18 @@ function BoardCard({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) 
     <button
       type="button"
       onClick={() => onEdit(task)}
-      className={cn(
-        tasksBoardCard,
-        deadlineBadge === "overdue" && "border-l-red-400/25",
-        deadlineBadge === "today" && "border-l-amber-400/25",
-        (deadlineBadge === "tomorrow" || deadlineBadge === "soon") &&
-          "border-l-[#8ba4c7]/22"
-      )}
+      className={cn(tasksBoardCard, taskBoardDeadlineAccent(deadlineBadge))}
     >
       <p
         className={cn(
-          "text-[13px] font-medium text-[#e8edf4]/88",
+          "text-[13px] font-medium text-glass",
           task.status === "DONE" && "line-through"
         )}
       >
         {task.title}
       </p>
       {(task.projectName ?? task.project?.name) && (
-        <p className="mt-1 text-[11px] text-[#9aa3b0]/50">
+        <p className="mt-1 text-[11px] text-glass-muted">
           {task.projectName ?? task.project?.name}
         </p>
       )}
@@ -85,7 +84,7 @@ function BoardCard({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) 
           </Badge>
         )}
         {task.dueDate && (
-          <span className="text-[10px] text-[#8ba4c7]/40">{formatDate(task.dueDate)}</span>
+          <span className="text-[10px] text-glass-muted">{formatDate(task.dueDate)}</span>
         )}
         <Badge variant={task.status === "DONE" ? "success" : "studio"}>
           {TASK_STATUS_LABELS[task.status]}

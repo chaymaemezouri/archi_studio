@@ -11,6 +11,13 @@ import {
   Plus,
   Users,
 } from "lucide-react";
+import {
+  dropdownItem,
+  dropdownItemInactive,
+  glassBtnIcon,
+  glassMenu,
+} from "@/lib/glass-styles";
+import { cn } from "@/lib/utils";
 
 export type QuickAddAction = "task" | "deadline" | "meeting";
 
@@ -24,6 +31,12 @@ const LINK_ITEMS = [
   { href: "/payments", label: "Nouveau paiement", icon: CreditCard },
   { href: "/finances/quotes-invoices?new=devis", label: "Nouveau devis", icon: FileSpreadsheet },
 ] as const;
+
+const menuItemClass = cn(
+  dropdownItem,
+  dropdownItemInactive,
+  "flex w-full items-center gap-2.5 border-l-0 px-3 py-2.5 text-sm"
+);
 
 export default function DashboardAddMenu({ onQuickAdd, disabled }: DashboardAddMenuProps) {
   const [open, setOpen] = useState(false);
@@ -55,16 +68,13 @@ export default function DashboardAddMenu({ onQuickAdd, disabled }: DashboardAddM
         aria-haspopup="menu"
         aria-label="Ajouter"
         title="Ajouter"
-        className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/65 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-white/[0.06] hover:text-studio-light disabled:opacity-50"
+        className={cn(glassBtnIcon, "h-9 w-9 shadow-[var(--glass-shadow)]")}
       >
         <Plus className="h-4 w-4" />
       </button>
 
       {open && (
-        <div
-          role="menu"
-          className="absolute right-0 top-full z-50 mt-2 w-52 overflow-hidden rounded-lg border border-white/10 bg-[#101014]/95 py-1 shadow-xl backdrop-blur-xl"
-        >
+        <div role="menu" className={cn(glassMenu, "absolute right-0 top-full z-50 mt-2 w-52")}>
           {LINK_ITEMS.map((item) => {
             const Icon = item.icon;
             return (
@@ -73,14 +83,14 @@ export default function DashboardAddMenu({ onQuickAdd, disabled }: DashboardAddM
                 href={item.href}
                 role="menuitem"
                 onClick={() => setOpen(false)}
-                  className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-white/75 transition hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none"
+                className={menuItemClass}
               >
-                  <Icon className="h-4 w-4 text-white/45" strokeWidth={1.75} />
+                <Icon className="h-4 w-4 text-glass-muted" strokeWidth={1.75} />
                 {item.label}
               </Link>
             );
           })}
-          <div className="my-1 h-px bg-white/[0.08]" />
+          <div className="my-1 h-px bg-[color:var(--color-border)]" />
           <button
             type="button"
             role="menuitem"
@@ -88,9 +98,9 @@ export default function DashboardAddMenu({ onQuickAdd, disabled }: DashboardAddM
               onQuickAdd("task");
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-white/75 transition hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none"
+            className={menuItemClass}
           >
-            <ClipboardList className="h-4 w-4 text-white/45" strokeWidth={1.75} />
+            <ClipboardList className="h-4 w-4 text-glass-muted" strokeWidth={1.75} />
             Nouvelle tâche
           </button>
           <button
@@ -100,9 +110,9 @@ export default function DashboardAddMenu({ onQuickAdd, disabled }: DashboardAddM
               onQuickAdd("deadline");
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-white/75 transition hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none"
+            className={menuItemClass}
           >
-            <CalendarClock className="h-4 w-4 text-white/45" strokeWidth={1.75} />
+            <CalendarClock className="h-4 w-4 text-glass-muted" strokeWidth={1.75} />
             Nouvelle deadline
           </button>
           <button
@@ -112,9 +122,9 @@ export default function DashboardAddMenu({ onQuickAdd, disabled }: DashboardAddM
               onQuickAdd("meeting");
               setOpen(false);
             }}
-            className="flex w-full items-center gap-2.5 px-3 py-2.5 text-sm text-white/75 transition hover:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none"
+            className={menuItemClass}
           >
-            <Users className="h-4 w-4 text-white/45" strokeWidth={1.75} />
+            <Users className="h-4 w-4 text-glass-muted" strokeWidth={1.75} />
             Nouvelle réunion
           </button>
         </div>

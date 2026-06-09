@@ -744,23 +744,10 @@ export const INVOICE_STATUS_LABELS: Record<InvoiceStatus, string> = {
   CANCELLED: "Annulée",
 };
 
-export const DEVIS_STATUS_COLORS: Record<DevisStatus, string> = {
-  DRAFT: "bg-gray-500/20 text-gray-400",
-  SENT: "bg-blue-500/20 text-blue-400",
-  ACCEPTED: "bg-emerald-500/20 text-emerald-400",
-  REFUSED: "bg-red-500/20 text-red-400",
-  EXPIRED: "bg-amber-500/20 text-amber-400",
-};
-
-export const INVOICE_STATUS_COLORS: Record<InvoiceStatus, string> = {
-  DRAFT: "bg-gray-500/20 text-gray-400",
-  SENT: "bg-blue-500/20 text-blue-400",
-  UNPAID: "bg-amber-500/20 text-amber-400",
-  PARTIAL: "bg-orange-500/20 text-orange-400",
-  PAID: "bg-emerald-500/20 text-emerald-400",
-  OVERDUE: "bg-red-500/20 text-red-400",
-  CANCELLED: "bg-gray-500/20 text-gray-400",
-};
+export {
+  DEVIS_STATUS_COLORS,
+  INVOICE_STATUS_COLORS,
+} from "@/lib/status-badge-styles";
 
 export const DEVIS_STATUS_LABELS: Record<DevisStatus, string> = {
   DRAFT: "Brouillon",
@@ -863,13 +850,13 @@ export const CALENDAR_EVENT_TYPE_LABELS: Record<CalendarEventType, string> = {
 
 /** Fond + texte événements (contour via calendarEventChipBase / calendarListRow) */
 export const CALENDAR_EVENT_TYPE_COLORS: Record<CalendarEventType, string> = {
-  DEADLINE_PROJECT: "bg-[#8ba4c7]/12 text-[#b8cfe8]/90",
+  DEADLINE_PROJECT: "bg-studio-muted text-[#b8cfe8]/90",
   DEADLINE_TASK: "bg-violet-500/10 text-violet-300/90",
   MEETING: "bg-blue-500/10 text-blue-300/90",
   SITE_VISIT: "bg-emerald-500/10 text-emerald-300/90",
   INVOICE_REMINDER: "bg-amber-500/10 text-amber-300/90",
-  PAYMENT_REMINDER: "bg-white/[0.03] text-[#9aa3b0]/75",
-  CUSTOM_EVENT: "bg-[#8ba4c7]/10 text-[#c5d8ee]/90",
+  PAYMENT_REMINDER: "bg-[color:var(--glass-bg)] text-[#9aa3b0]/75",
+  CUSTOM_EVENT: "bg-studio-muted text-studio-light/90",
 };
 
 /** Accent barre gauche (vue liste / détail jour) */

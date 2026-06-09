@@ -113,11 +113,11 @@ export default function ActivityPage() {
   return (
     <div className={activityListPage}>
       <div className="min-w-0">
-        <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+        <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
           <span className={accentBar} aria-hidden />
           Activité
         </h1>
-        <p className="mt-0.5 text-xs text-[#8ba4c7]/45 sm:text-sm">
+        <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
           Historique des actions sur vos projets, clients et documents
         </p>
       </div>
@@ -126,7 +126,7 @@ export default function ActivityPage() {
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-[200px] flex-1">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -306,7 +306,7 @@ export default function ActivityPage() {
         />
       ) : (
         <div className={activityListWrap}>
-          <p className="border-b border-[#8ba4c7]/[0.06] px-4 py-2.5 text-[10px] font-medium uppercase tracking-wide text-[#8ba4c7]/40">
+          <p className="border-b border-app px-4 py-2.5 text-[10px] font-medium uppercase tracking-wide text-glass-muted">
             {filtered.length} événement{filtered.length > 1 ? "s" : ""}
           </p>
           <ul>

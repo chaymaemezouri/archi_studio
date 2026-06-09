@@ -46,7 +46,7 @@ export default function ProjectsPagination({
 
   if (totalItems <= pageSize) {
     return (
-      <p className={cn("text-center text-xs text-white/35", className)}>
+      <p className={cn("text-center text-xs text-glass-muted", className)}>
         {totalItems} projet{totalItems !== 1 ? "s" : ""} affiché
         {totalItems !== 1 ? "s" : ""}
       </p>
@@ -60,7 +60,7 @@ export default function ProjectsPagination({
       className={cn("flex flex-col items-center gap-3 sm:flex-row sm:justify-between", className)}
       aria-label="Pagination des projets"
     >
-      <p className="text-xs text-white/40 tabular-nums">
+      <p className="text-xs text-glass-muted tabular-nums">
         {visibleCount} projet{visibleCount !== 1 ? "s" : ""} affiché
         {visibleCount !== 1 ? "s" : ""} sur {totalItems}
       </p>
@@ -71,10 +71,10 @@ export default function ProjectsPagination({
           onClick={() => onPageChange(safePage - 1)}
           disabled={safePage <= 1}
           className={cn(
-            "inline-flex h-8 items-center gap-1 rounded-lg border border-white/[0.08] px-2.5 text-xs font-medium transition",
+            "inline-flex h-8 items-center gap-1 rounded-lg border border-glass px-2.5 text-xs font-medium transition",
             safePage <= 1
-              ? "cursor-not-allowed text-white/25"
-              : "text-white/60 hover:border-white/[0.14] hover:bg-white/[0.04] hover:text-white/85"
+              ? "cursor-not-allowed text-glass-muted"
+              : "text-glass-secondary hover:border-white/[0.14] hover:bg-[color:var(--glass-bg-hover)] hover:text-glass"
           )}
           aria-label="Page précédente"
         >
@@ -85,7 +85,7 @@ export default function ProjectsPagination({
         <div className="flex items-center gap-0.5 px-0.5">
           {pages.map((p, i) =>
             p === "ellipsis" ? (
-              <span key={`e-${i}`} className="px-1.5 text-xs text-white/30" aria-hidden>
+              <span key={`e-${i}`} className="px-1.5 text-xs text-glass-muted" aria-hidden>
                 …
               </span>
             ) : (
@@ -97,7 +97,7 @@ export default function ProjectsPagination({
                   "flex h-8 min-w-[2rem] items-center justify-center rounded-lg px-2 text-xs font-medium tabular-nums transition",
                   p === safePage
                     ? "border border-studio-border/50 bg-studio-muted text-studio-light"
-                    : "border border-transparent text-white/50 hover:bg-white/[0.04] hover:text-white/75"
+                    : "border border-transparent text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-glass-secondary"
                 )}
                 aria-label={`Page ${p}`}
                 aria-current={p === safePage ? "page" : undefined}
@@ -113,10 +113,10 @@ export default function ProjectsPagination({
           onClick={() => onPageChange(safePage + 1)}
           disabled={safePage >= totalPages}
           className={cn(
-            "inline-flex h-8 items-center gap-1 rounded-lg border border-white/[0.08] px-2.5 text-xs font-medium transition",
+            "inline-flex h-8 items-center gap-1 rounded-lg border border-glass px-2.5 text-xs font-medium transition",
             safePage >= totalPages
-              ? "cursor-not-allowed text-white/25"
-              : "text-white/60 hover:border-white/[0.14] hover:bg-white/[0.04] hover:text-white/85"
+              ? "cursor-not-allowed text-glass-muted"
+              : "text-glass-secondary hover:border-white/[0.14] hover:bg-[color:var(--glass-bg-hover)] hover:text-glass"
           )}
           aria-label="Page suivante"
         >

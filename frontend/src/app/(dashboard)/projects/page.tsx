@@ -477,7 +477,7 @@ export default function ProjectsPage() {
 
         <div className="min-w-0">
 
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-white/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
 
             <span className={accentBar} aria-hidden />
 
@@ -485,7 +485,7 @@ export default function ProjectsPage() {
 
           </h1>
 
-          <p className="mt-0.5 text-xs text-white/40 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
 
             Gérez vos projets, suivez les phases et les deadlines
 
@@ -503,7 +503,7 @@ export default function ProjectsPage() {
 
             onClick={openCreate}
 
-            className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 text-sm font-medium text-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-white/[0.06] hover:text-studio-light sm:inline-flex"
+            className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-glass bg-[color:var(--glass-bg-hover)] px-4 text-sm font-medium text-glass shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light sm:inline-flex"
 
           >
 
@@ -539,7 +539,7 @@ export default function ProjectsPage() {
 
             onClick={openCreate}
 
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-white/[0.06] hover:text-studio-light sm:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-glass bg-[color:var(--glass-bg-hover)] text-glass shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light sm:hidden"
 
             aria-label="Nouveau projet"
 
@@ -555,7 +555,7 @@ export default function ProjectsPage() {
 
           <Search
 
-            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+            className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
 
             strokeWidth={1.75}
 
@@ -963,7 +963,7 @@ export default function ProjectsPage() {
 
 
 
-          <div className="flex rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
+          <div className="flex rounded-lg border border-glass bg-[color:var(--glass-bg)] p-0.5">
 
             <button
 
@@ -979,7 +979,7 @@ export default function ProjectsPage() {
 
                   ? "bg-studio-muted text-studio-light"
 
-                  : "text-white/45 hover:text-white/70"
+                  : "text-glass-muted hover:text-glass-secondary"
 
               )}
 
@@ -1005,7 +1005,7 @@ export default function ProjectsPage() {
 
                   ? "bg-studio-muted text-studio-light"
 
-                  : "text-white/45 hover:text-white/70"
+                  : "text-glass-muted hover:text-glass-secondary"
 
               )}
 
@@ -1039,7 +1039,7 @@ export default function ProjectsPage() {
 
               key={i}
 
-              className="h-[210px] animate-pulse rounded-xl border border-white/[0.06] bg-white/[0.03]"
+              className="h-[210px] animate-pulse rounded-xl border border-app bg-[color:var(--glass-bg)]"
 
             />
 

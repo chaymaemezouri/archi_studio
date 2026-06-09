@@ -104,7 +104,7 @@ export default function ClientDetailPage() {
     <div className={detailClientPage}>
       <Link
         href="/clients"
-        className="inline-flex items-center gap-1.5 text-[12px] text-[#9aa3b0]/55 hover:text-[#8ba4c7]/75"
+        className="inline-flex items-center gap-1.5 text-[12px] text-glass-muted hover:text-[#8ba4c7]/75"
       >
         <ArrowLeft className="h-3.5 w-3.5" />
         Retour aux clients

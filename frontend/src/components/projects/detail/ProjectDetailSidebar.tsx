@@ -85,13 +85,13 @@ export default function ProjectDetailSidebar({
         aria-expanded={mobileOpen}
         aria-haspopup="dialog"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[#8ba4c7]/18">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-studio-muted">
           <ActiveIcon className="h-3.5 w-3.5 text-[#b8cfe8]" />
         </span>
-        <span className="min-w-0 flex-1 truncate text-left text-[12px] font-medium text-[#eef2f7]">
+        <span className="min-w-0 flex-1 truncate text-left text-[12px] font-medium text-app-primary">
           {activeSection.label}
         </span>
-        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#8ba4c7]/50" />
+        <ChevronDown className="h-3.5 w-3.5 shrink-0 text-glass-muted" />
       </button>
 
       {mobileOpen && (
@@ -113,7 +113,7 @@ export default function ProjectDetailSidebar({
               <button
                 type="button"
                 onClick={() => setMobileOpen(false)}
-                className="rounded-lg p-1.5 text-[#b4bcc8]/70 transition hover:bg-[#8ba4c7]/12 hover:text-[#eef2f7]"
+                className="rounded-lg p-1.5 text-[#b4bcc8]/70 transition hover:bg-studio-muted hover:text-app-primary"
                 aria-label="Fermer"
               >
                 <X className="h-4 w-4" />

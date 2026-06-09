@@ -295,18 +295,18 @@ export default function PaymentsPage() {
     <div className={paymentsListPage}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
             <span className={accentBar} aria-hidden />
             Paiements
           </h1>
-          <p className="mt-0.5 text-xs text-[#8ba4c7]/45 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
             Suivez les paiements reçus et les montants restants à encaisser
           </p>
         </div>
         <button
           type="button"
           onClick={openCreate}
-          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:inline-flex"
+          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-app bg-[color:var(--glass-bg)] px-4 text-sm font-medium text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:inline-flex"
         >
           <Plus className="h-4 w-4" strokeWidth={1.75} />
           Ajouter un paiement
@@ -315,26 +315,26 @@ export default function PaymentsPage() {
 
       <div className="grid grid-cols-2 gap-2.5 md:grid-cols-4">
         <div className={paymentsStatCard}>
-          <p className="text-[10px] text-[#8ba4c7]/42">Encaissé ce mois</p>
-          <p className="mt-1 text-sm font-semibold text-[#e8edf4]/88">
+          <p className="text-[10px] text-glass-muted">Encaissé ce mois</p>
+          <p className="mt-1 text-sm font-semibold text-glass">
             {formatCurrency(stats.totalMonth)}
           </p>
         </div>
         <div className={paymentsStatCard}>
-          <p className="text-[10px] text-[#8ba4c7]/42">Encaissé cette année</p>
-          <p className="mt-1 text-sm font-semibold text-[#e8edf4]/88">
+          <p className="text-[10px] text-glass-muted">Encaissé cette année</p>
+          <p className="mt-1 text-sm font-semibold text-glass">
             {formatCurrency(stats.totalYear)}
           </p>
         </div>
         <div className={paymentsStatCard}>
-          <p className="text-[10px] text-[#8ba4c7]/42">Reste à encaisser</p>
-          <p className="mt-1 text-sm font-semibold text-[#e8edf4]/88">
+          <p className="text-[10px] text-glass-muted">Reste à encaisser</p>
+          <p className="mt-1 text-sm font-semibold text-glass">
             {formatCurrency(stats.rest)}
           </p>
         </div>
         <div className={paymentsStatCard}>
-          <p className="text-[10px] text-[#8ba4c7]/42">Factures impayées</p>
-          <p className="mt-1 text-sm font-semibold text-[#e8edf4]/88">{stats.unpaidInvoices}</p>
+          <p className="text-[10px] text-glass-muted">Factures impayées</p>
+          <p className="mt-1 text-sm font-semibold text-glass">{stats.unpaidInvoices}</p>
         </div>
       </div>
 
@@ -348,7 +348,7 @@ export default function PaymentsPage() {
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-app bg-[color:var(--glass-bg)] text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:hidden"
             aria-label="Ajouter un paiement"
           >
             <Plus className="h-4 w-4" strokeWidth={1.75} />
@@ -356,7 +356,7 @@ export default function PaymentsPage() {
 
           <div className="relative min-w-0 flex-1 sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -696,18 +696,18 @@ export default function PaymentsPage() {
 
                 return (
                   <tr key={p.id} className={paymentsTableRow}>
-                    <td className="px-4 py-2.5 text-[#e8edf4]/88">{p.reference ?? "—"}</td>
-                    <td className="px-4 py-2.5 text-[#9aa3b0]/65">{formatDate(p.date)}</td>
-                    <td className="px-4 py-2.5 text-[#9aa3b0]/65">{client}</td>
-                    <td className="px-4 py-2.5 text-[#9aa3b0]/65">{project}</td>
-                    <td className="px-4 py-2.5 text-[#9aa3b0]/65">{invoice}</td>
-                    <td className="px-4 py-2.5 font-medium tabular-nums text-[#e8edf4]/88">
+                    <td className="px-4 py-2.5 text-glass">{p.reference ?? "—"}</td>
+                    <td className="px-4 py-2.5 text-glass-secondary">{formatDate(p.date)}</td>
+                    <td className="px-4 py-2.5 text-glass-secondary">{client}</td>
+                    <td className="px-4 py-2.5 text-glass-secondary">{project}</td>
+                    <td className="px-4 py-2.5 text-glass-secondary">{invoice}</td>
+                    <td className="px-4 py-2.5 font-medium tabular-nums text-glass">
                       {formatCurrency(p.amount)}
                     </td>
-                    <td className="px-4 py-2.5 text-[#9aa3b0]/65">
+                    <td className="px-4 py-2.5 text-glass-secondary">
                       {paymentMethodLabel[p.method]}
                     </td>
-                    <td className="px-4 py-2.5 text-[#9aa3b0]/65">
+                    <td className="px-4 py-2.5 text-glass-secondary">
                       {p.invoice ? INVOICE_STATUS_LABELS[p.invoice.status] : "—"}
                     </td>
                     <td className="px-4 py-2.5">

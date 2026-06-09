@@ -57,11 +57,11 @@ export default function NotificationsPage() {
     <div className="space-y-5 pb-2">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-white/92">
+          <h1 className="flex items-center gap-2.5 text-2xl font-bold tracking-tight text-app-primary">
             <span className={accentBar} aria-hidden />
             Notifications
           </h1>
-          <p className="mt-1.5 text-sm text-white/40">
+          <p className="mt-1.5 text-sm text-glass-muted">
             {unreadCount > 0
               ? `${unreadCount} non lue${unreadCount !== 1 ? "s" : ""}${
                   urgentUnread > 0
@@ -78,7 +78,7 @@ export default function NotificationsPage() {
             disabled={sync.isPending}
             className={cn(
               glassBtnIcon,
-              "h-9 gap-2 px-3 text-[13px] font-medium text-white/65 hover:text-studio-light disabled:opacity-50"
+              "h-9 gap-2 px-3 text-[13px] font-medium text-glass-secondary hover:text-studio-light disabled:opacity-50"
             )}
           >
             Actualiser
@@ -89,7 +89,7 @@ export default function NotificationsPage() {
               onClick={() => markAllAsRead.mutate()}
               className={cn(
                 glassBtnIcon,
-                "h-9 gap-2 px-3 text-[13px] font-medium text-white/70 hover:text-studio-light"
+                "h-9 gap-2 px-3 text-[13px] font-medium text-glass-secondary hover:text-studio-light"
               )}
             >
               <CheckCheck className="h-4 w-4" strokeWidth={1.75} />
@@ -121,7 +121,7 @@ export default function NotificationsPage() {
       {isLoading ? (
         <div className={cn(glassPanel, "space-y-1 p-2")}>
           {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="h-[76px] animate-pulse rounded-md bg-white/[0.04]" />
+            <div key={i} className="h-[76px] animate-pulse rounded-md bg-[color:var(--glass-bg-hover)]" />
           ))}
         </div>
       ) : filtered.length === 0 ? (

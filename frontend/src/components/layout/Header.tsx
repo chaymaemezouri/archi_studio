@@ -8,6 +8,7 @@ import Link from "next/link";
 import { getPageTitle } from "@/lib/sidebar-nav";
 import Avatar from "@/components/ui/Avatar";
 import NotificationBell from "@/components/notifications/NotificationBell";
+import ThemeToggle from "@/components/layout/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
 import { useStudio } from "@/hooks/useStudio";
 import { cn } from "@/lib/utils";
@@ -55,7 +56,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
   }, [dropdownOpen]);
 
   return (
-    <header className={cn("sticky top-0 z-30 pb-2 pt-2.5", dashboardShellPadding)}>
+    <header className={cn("sticky top-0 z-30 pb-2.5 pt-3", dashboardShellPadding)}>
       <div className={dashboardShellContainer}>
         <div className={headerBar}>
           <div className="flex min-w-0 flex-1 items-center gap-2">
@@ -63,14 +64,14 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
               <button
                 type="button"
                 onClick={onMenuClick}
-                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-white/65 transition hover:bg-white/[0.06] hover:text-studio-light focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-border/40 lg:hidden"
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-lg text-glass-secondary transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-studio-border/40 lg:hidden"
                 aria-label="Ouvrir le menu"
               >
                 <Menu className="h-4 w-4" />
               </button>
             )}
             {pageTitle ? (
-              <h1 className="min-w-0 max-w-[38vw] shrink truncate text-[12px] font-semibold text-white/88 sm:max-w-none sm:text-[13px] lg:max-w-[200px]">
+              <h1 className="min-w-0 max-w-[38vw] shrink truncate text-[13px] font-semibold text-glass sm:max-w-none sm:text-[14px] lg:max-w-[200px]">
                 {pageTitle}
               </h1>
             ) : null}
@@ -78,6 +79,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
           </div>
 
           <div className={headerActions}>
+            <ThemeToggle />
             <NotificationBell />
 
             <div ref={dropdownRef} className="relative">
@@ -87,7 +89,11 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
                 aria-expanded={dropdownOpen}
                 aria-haspopup="menu"
                 aria-label="Menu profil"
-                className={cn(headerProfileBtn, dropdownOpen && "bg-white/[0.05]")}
+                className={cn(
+                  headerProfileBtn,
+                  "min-h-10",
+                  dropdownOpen && "bg-[color:var(--glass-bg-hover)]"
+                )}
               >
                 <Avatar
                   name={user?.name || studio?.name || "U"}
@@ -99,7 +105,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
                 </span>
                 <ChevronDown
                   className={cn(
-                    "h-3 w-3 shrink-0 text-white/40 transition-transform",
+                    "h-3 w-3 shrink-0 text-glass-muted transition-transform",
                     dropdownOpen && "rotate-180 text-studio-light/70"
                   )}
                 />
@@ -108,10 +114,10 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
               {dropdownOpen && (
                 <div className={headerProfileMenu} role="menu">
                   <div className={headerProfileMenuHead}>
-                    <p className="truncate text-[13px] font-medium text-white/90">{user?.name}</p>
-                    <p className="mt-0.5 truncate text-[11px] text-white/40">{user?.email}</p>
+                    <p className="truncate text-[13px] font-medium text-glass">{user?.name}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-glass-muted">{user?.email}</p>
                   </div>
-                  <div className="border-t border-white/[0.06] py-1">
+                  <div className="border-t border-app py-1">
                     <Link
                       href="/settings"
                       onClick={() => setDropdownOpen(false)}

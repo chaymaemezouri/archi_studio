@@ -11,6 +11,10 @@ import {
   detailPilotageProgressFill,
   detailPilotageProgressTrack,
   detailPilotageProgressValue,
+  detailMenuItemActive,
+  detailPilotageChevron,
+  detailPilotageDeadlineIcon,
+  detailPilotageDeadlineValue,
   detailPilotageSelect,
   detailPilotageStrip,
   detailPilotageValue,
@@ -73,7 +77,8 @@ function PilotagePhaseSelect({
       </button>
       <ChevronDown
         className={cn(
-          "pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 text-white/28 transition",
+          "pointer-events-none absolute right-2 top-1/2 h-3 w-3 -translate-y-1/2 transition",
+          detailPilotageChevron,
           open && "rotate-180"
         )}
         aria-hidden
@@ -100,7 +105,7 @@ function PilotagePhaseSelect({
               className={cn(
                 detailMenuItem,
                 "text-[12px] font-medium",
-                o.value === value && "bg-white/[0.06] text-white/95"
+                o.value === value && detailMenuItemActive
               )}
             >
               {o.label}
@@ -163,13 +168,13 @@ export default function ProjectDetailPilotageStrip({
           className={cn(
             detailPilotageValue,
             "inline-flex items-center gap-1.5",
-            project.deadline ? "text-[#8ba4c7]/88" : "text-white/[0.88]"
+            project.deadline && detailPilotageDeadlineValue
           )}
         >
           <Calendar
             className={cn(
               "h-3 w-3 shrink-0",
-              project.deadline ? "text-[#8ba4c7]/55" : "text-white/28"
+              project.deadline ? detailPilotageDeadlineIcon : detailPilotageChevron
             )}
             aria-hidden
           />

@@ -21,7 +21,7 @@ function statusVariant(status?: string): "default" | "success" | "warning" {
 
 export function ClientListHeader() {
   return (
-    <div className="hidden grid-cols-[1.15fr_0.65fr_0.95fr_1fr_0.55fr_0.45fr_0.55fr_0.55fr_2.2rem] gap-2 border-b border-[#8ba4c7]/[0.06] px-4 py-2 text-[10px] font-medium uppercase tracking-wide text-[#8ba4c7]/40 md:grid">
+    <div className="hidden grid-cols-[1.15fr_0.65fr_0.95fr_1fr_0.55fr_0.45fr_0.55fr_0.55fr_2.2rem] gap-2 border-b border-app px-4 py-2 text-[10px] font-medium uppercase tracking-wide text-glass-muted md:grid">
       <span>Client</span>
       <span>Type</span>
       <span>Téléphone</span>
@@ -50,15 +50,15 @@ export default function ClientListRow({ client, onEdit }: ClientListRowProps) {
   return (
     <div
       className={cn(
-        "grid grid-cols-1 gap-2 border-b border-[#8ba4c7]/[0.05] px-4 py-2.5 text-[13px] transition last:border-b-0 hover:bg-[#8ba4c7]/[0.04]",
+        "grid grid-cols-1 gap-2 border-b border-app px-4 py-2.5 text-[13px] transition last:border-b-0 hover:bg-studio-muted/40",
         "md:grid-cols-[1.15fr_0.65fr_0.95fr_1fr_0.55fr_0.45fr_0.55fr_0.55fr_2.2rem] md:items-center md:gap-2"
       )}
     >
       <div className="min-w-0">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Client · </span>
+        <span className="text-[10px] text-glass-muted md:hidden">Client · </span>
         <Link
           href={`/clients/${client.id}`}
-          className="font-medium text-[#e8edf4]/88 transition hover:text-[#b8cfe8]/95"
+          className="font-medium text-glass transition hover:text-[#b8cfe8]/95"
         >
           {client.name}
         </Link>
@@ -70,13 +70,13 @@ export default function ClientListRow({ client, onEdit }: ClientListRowProps) {
         </div>
       </div>
 
-      <span className="text-[#9aa3b0]/65">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Type · </span>
+      <span className="text-glass-secondary">
+        <span className="text-[10px] text-glass-muted md:hidden">Type · </span>
         {CLIENT_TYPE_LABELS[client.type ?? ""] ?? "—"}
       </span>
 
       <span className="min-w-0">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Tél · </span>
+        <span className="text-[10px] text-glass-muted md:hidden">Tél · </span>
         {phone ? (
           <a href={`tel:${phone.replace(/\s/g, "")}`} className={clientsListRowContactLink}>
             {phone}
@@ -87,7 +87,7 @@ export default function ClientListRow({ client, onEdit }: ClientListRowProps) {
       </span>
 
       <span className="min-w-0 truncate">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Email · </span>
+        <span className="text-[10px] text-glass-muted md:hidden">Email · </span>
         {email ? (
           <a href={`mailto:${email}`} className={clientsListRowContactLink}>
             {email}
@@ -97,13 +97,13 @@ export default function ClientListRow({ client, onEdit }: ClientListRowProps) {
         )}
       </span>
 
-      <span className="text-[#9aa3b0]/65">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Ville · </span>
+      <span className="text-glass-secondary">
+        <span className="text-[10px] text-glass-muted md:hidden">Ville · </span>
         {client.city || "—"}
       </span>
 
-      <span className="text-[#9aa3b0]/65">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Projets · </span>
+      <span className="text-glass-secondary">
+        <span className="text-[10px] text-glass-muted md:hidden">Projets · </span>
         {projectsCount}
       </span>
 
@@ -116,7 +116,7 @@ export default function ClientListRow({ client, onEdit }: ClientListRowProps) {
       <span
         className={cn(
           "text-[11px]",
-          (client.unpaidInvoicesCount ?? 0) > 0 ? "text-amber-400/85" : "text-[#8ba4c7]/40"
+          (client.unpaidInvoicesCount ?? 0) > 0 ? "text-amber-400/85" : "text-glass-muted"
         )}
       >
         {financeHint}

@@ -16,10 +16,10 @@ export default function DashboardLayout({ children, title }: DashboardLayoutProp
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden bg-[#07070b]">
+    <div className="relative min-h-screen overflow-x-hidden bg-app-shell">
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        <div className="absolute -left-24 top-0 h-[480px] w-[480px] rounded-full bg-studio-light/[0.04] blur-[120px]" />
-        <div className="absolute bottom-0 right-0 h-[320px] w-[320px] rounded-full bg-studio-light/[0.03] blur-[100px]" />
+        <div className="absolute -left-24 top-0 h-[480px] w-[480px] rounded-full bg-app-glow-primary blur-[120px]" />
+        <div className="absolute bottom-0 right-0 h-[320px] w-[320px] rounded-full bg-app-glow-secondary blur-[100px]" />
       </div>
       <AuthHydrator />
       <Sidebar

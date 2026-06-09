@@ -60,7 +60,7 @@ function getDeadlineDateLabel(deadlineDate: string | null | undefined): string {
 
 function ProjectThumb({ imageSrc }: { imageSrc: string | null | undefined }) {
   return (
-    <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-lg border border-white/[0.08] bg-white/[0.03]">
+    <div className="relative h-10 w-14 shrink-0 overflow-hidden rounded-lg border border-glass bg-[color:var(--glass-bg)]">
       {imageSrc ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -97,7 +97,7 @@ function ProjectListProjectCell({
           </p>
         </Tooltip>
         {project.type && (
-          <p className="mt-0.5 truncate text-[10px] text-white/38" title={project.type}>
+          <p className="mt-0.5 truncate text-[10px] text-glass-muted" title={project.type}>
             {project.type}
           </p>
         )}
@@ -198,13 +198,13 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
         <ProjectListProjectCell project={project} href={href} imageSrc={imageSrc} />
 
         <div className="grid grid-cols-2 gap-x-3 gap-y-1 text-[10px]">
-          <p className="truncate text-white/48" title={getClientLabel(project)}>
+          <p className="truncate text-glass-muted" title={getClientLabel(project)}>
             {getClientLabel(project)}
           </p>
-          <p className="truncate text-white/42" title={PHASE_LABELS[project.phase]}>
+          <p className="truncate text-glass-muted" title={PHASE_LABELS[project.phase]}>
             {PHASE_LABELS[project.phase]}
           </p>
-          <p className="col-span-2 truncate text-white/40" title={getCityLabel(project)}>
+          <p className="col-span-2 truncate text-glass-muted" title={getCityLabel(project)}>
             {getCityLabel(project)}
           </p>
         </div>
@@ -218,11 +218,11 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
           />
         </div>
 
-        <div className="flex items-center justify-between gap-2 border-t border-white/[0.05] pt-2">
+        <div className="flex items-center justify-between gap-2 border-t border-app pt-2">
           <ProjectCountIndicators
             project={project}
             variant="natural"
-            className="text-[11px] text-white/48"
+            className="text-[11px] text-glass-muted"
           />
           <ListActions project={project} onEdit={onEdit} onQuickAdd={onQuickAdd} />
         </div>
@@ -236,7 +236,7 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
 
         <div className={projectListColClient}>
           <p
-            className="w-full min-w-0 truncate text-left text-[11px] text-white/50"
+            className="w-full min-w-0 truncate text-left text-[11px] text-glass-muted"
             title={getClientLabel(project)}
           >
             {getClientLabel(project)}
@@ -245,7 +245,7 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
 
         <div className={projectListColVille}>
           <p
-            className="w-full min-w-0 truncate text-left text-[11px] text-white/42"
+            className="w-full min-w-0 truncate text-left text-[11px] text-glass-muted"
             title={getCityLabel(project)}
           >
             {getCityLabel(project)}
@@ -254,7 +254,7 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
 
         <div className={projectListColPhase}>
           <p
-            className="w-full min-w-0 truncate text-left text-[11px] text-white/48"
+            className="w-full min-w-0 truncate text-left text-[11px] text-glass-muted"
             title={PHASE_LABELS[project.phase]}
           >
             {PHASE_LABELS[project.phase]}
@@ -277,7 +277,7 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
           <ProjectCountIndicators
             project={project}
             variant="natural"
-            className="text-[11px] leading-snug text-white/48"
+            className="text-[11px] leading-snug text-glass-muted"
           />
         </div>
 
@@ -290,7 +290,7 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
 }
 
 const headerCell =
-  "block w-full min-w-0 truncate text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-white/28 leading-none";
+  "block w-full min-w-0 truncate text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-glass-muted leading-none";
 
 export function ProjectListHeader() {
   return (
@@ -299,7 +299,7 @@ export function ProjectListHeader() {
         projectListGrid,
         projectListRowBorder,
         "border-l-transparent",
-        "hidden min-h-[52px] rounded-xl border border-white/[0.05] bg-white/[0.015] lg:grid"
+        "hidden min-h-[52px] rounded-xl border border-app bg-[color:var(--glass-bg)] lg:grid"
       )}
       role="row"
     >

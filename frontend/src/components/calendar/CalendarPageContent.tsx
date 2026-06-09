@@ -198,18 +198,18 @@ export default function CalendarPageContent() {
     <div className={calendarPage}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
             <span className={accentBar} aria-hidden />
             Calendrier
           </h1>
-          <p className="mt-0.5 text-xs text-[#8ba4c7]/45 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
             Suivez vos deadlines, tâches, réunions et visites chantier
           </p>
         </div>
         <button
           type="button"
           onClick={() => openCreate(selectedDay)}
-          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:inline-flex"
+          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-app bg-[color:var(--glass-bg)] px-4 text-sm font-medium text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:inline-flex"
         >
           <Plus className="h-4 w-4" strokeWidth={1.75} />
           Ajouter un événement
@@ -226,7 +226,7 @@ export default function CalendarPageContent() {
           <button
             type="button"
             onClick={() => openCreate(selectedDay)}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-app bg-[color:var(--glass-bg)] text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:hidden"
             aria-label="Ajouter un événement"
           >
             <Plus className="h-4 w-4" strokeWidth={1.75} />
@@ -234,7 +234,7 @@ export default function CalendarPageContent() {
 
           <div className="relative min-w-0 flex-1 lg:w-[min(100%,280px)] lg:shrink-0">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -275,7 +275,7 @@ export default function CalendarPageContent() {
                 <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
               </button>
               <span
-                className="max-w-[4.5rem] truncate px-0.5 text-center text-[11px] font-medium capitalize text-[#e8edf4]/88 sm:max-w-none sm:min-w-[120px] sm:text-[13px] lg:min-w-[140px]"
+                className="max-w-[4.5rem] truncate px-0.5 text-center text-[11px] font-medium capitalize text-glass sm:max-w-none sm:min-w-[120px] sm:text-[13px] lg:min-w-[140px]"
                 title={headerLabel}
               >
                 <span className="sm:hidden">{headerLabelShort}</span>
@@ -344,7 +344,7 @@ export default function CalendarPageContent() {
               )}
             </div>
 
-            <div className="hidden max-w-full overflow-x-auto rounded-lg border border-[#8ba4c7]/[0.06] p-0.5 sm:flex [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="hidden max-w-full overflow-x-auto rounded-lg border border-app p-0.5 sm:flex [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {VIEW_OPTIONS.map((v) => (
                 <button
                   key={v.id}
@@ -354,7 +354,7 @@ export default function CalendarPageContent() {
                     "shrink-0 rounded-md px-2.5 py-1.5 text-[11px] font-medium transition",
                     view === v.id
                       ? "bg-studio-soft text-studio-light"
-                      : "text-white/45 hover:bg-white/[0.04] hover:text-white/70"
+                      : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-glass-secondary"
                   )}
                 >
                   {v.label}
@@ -414,12 +414,12 @@ export default function CalendarPageContent() {
                   </button>
                 ))}
 
-                <label className="mt-2 flex cursor-pointer items-center gap-2 border-t border-white/[0.06] px-3 py-2.5 text-[12px] text-[#8ba4c7]/65">
+                <label className="mt-2 flex cursor-pointer items-center gap-2 border-t border-app px-3 py-2.5 text-[12px] text-glass-muted">
                   <input
                     type="checkbox"
                     checked={showDone}
                     onChange={(e) => setShowDone(e.target.checked)}
-                    className="rounded border-[#8ba4c7]/[0.12] bg-white/[0.03] text-studio-light focus:ring-[#8ba4c7]/20"
+                    className="rounded border-[#8ba4c7]/[0.12] bg-[color:var(--glass-bg)] text-studio-light focus:ring-[#8ba4c7]/20"
                   />
                   Afficher terminés
                 </label>
@@ -431,7 +431,7 @@ export default function CalendarPageContent() {
                       resetFilters();
                       setFilterOpen(false);
                     }}
-                    className={cn(dropdownItem, "text-white/45 hover:text-white/70")}
+                    className={cn(dropdownItem, "text-glass-muted hover:text-glass-secondary")}
                   >
                     Réinitialiser les filtres
                   </button>
@@ -498,7 +498,7 @@ export default function CalendarPageContent() {
           {view === "month" && (
             <div className={calendarDayDetailPanel}>
               <div className="mb-2.5 flex items-center justify-between gap-2">
-                <h3 className="text-[13px] font-semibold text-[#e8edf4]/90">
+                <h3 className="text-[13px] font-semibold text-app-primary/90">
                   Détail du{" "}
                   {selectedDay.toLocaleDateString("fr-FR", {
                     weekday: "long",

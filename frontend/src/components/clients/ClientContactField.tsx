@@ -66,12 +66,12 @@ export default function ClientContactField({
       <div className="min-w-0 flex-1">
         {href ? (
           <a href={href} className={detailClientContactValue}>
-            {Icon && <Icon className="mr-1.5 inline h-3.5 w-3.5 text-[#8ba4c7]/50" strokeWidth={1.75} />}
+            {Icon && <Icon className="mr-1.5 inline h-3.5 w-3.5 text-glass-muted" strokeWidth={1.75} />}
             {display}
           </a>
         ) : (
           <span className={detailClientContactValue}>
-            {Icon && <Icon className="mr-1.5 inline h-3.5 w-3.5 text-[#8ba4c7]/50" strokeWidth={1.75} />}
+            {Icon && <Icon className="mr-1.5 inline h-3.5 w-3.5 text-glass-muted" strokeWidth={1.75} />}
             {display}
           </span>
         )}

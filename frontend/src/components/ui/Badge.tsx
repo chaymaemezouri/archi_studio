@@ -19,12 +19,30 @@ const badgeBase =
   "inline-flex items-center rounded-lg px-2 py-0.5 text-[10px] font-medium";
 
 export const badgeVariantStyles: Record<BadgeVariant, string> = {
-  default: cn(badgeBase, "bg-white/10 text-[#9aa3b0]/80"),
-  studio: cn(badgeBase, "bg-[#8ba4c7]/12 text-[#a8bdd4]/90"),
-  accent: cn(badgeBase, "bg-accent-muted text-accent/90"),
-  success: cn(badgeBase, "bg-emerald-500/15 text-emerald-400/85"),
-  warning: cn(badgeBase, "bg-amber-500/15 text-amber-400/80"),
-  danger: cn(badgeBase, "bg-red-500/15 text-red-400/80"),
+  default: cn(
+    badgeBase,
+    "bg-[color:var(--badge-default-bg)] text-[color:var(--badge-default-text)]"
+  ),
+  studio: cn(
+    badgeBase,
+    "bg-[color:var(--badge-studio-bg)] text-[color:var(--badge-studio-text)] ring-1 ring-inset ring-[color:var(--studio-border)]"
+  ),
+  accent: cn(
+    badgeBase,
+    "bg-[color:var(--badge-accent-bg)] text-[color:var(--badge-accent-text)] ring-1 ring-inset ring-[color:var(--badge-accent-ring)]"
+  ),
+  success: cn(
+    badgeBase,
+    "bg-[color:var(--badge-success-bg)] text-[color:var(--badge-success-text)] ring-1 ring-inset ring-[color:var(--badge-success-ring)]"
+  ),
+  warning: cn(
+    badgeBase,
+    "bg-[color:var(--badge-warning-bg)] text-[color:var(--badge-warning-text)] ring-1 ring-inset ring-[color:var(--badge-warning-ring)]"
+  ),
+  danger: cn(
+    badgeBase,
+    "bg-[color:var(--badge-danger-bg)] text-[color:var(--badge-danger-text)] ring-1 ring-inset ring-[color:var(--badge-danger-ring)]"
+  ),
 };
 
 export default function Badge({

@@ -230,18 +230,18 @@ export default function ClientsPage() {
     <div className={clientsListPage}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-white/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
             <span className={accentBar} aria-hidden />
             Clients
           </h1>
-          <p className="mt-0.5 text-xs text-white/40 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
             Gérez vos clients et leurs projets
           </p>
         </div>
         <button
           type="button"
           onClick={openCreate}
-          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-white/[0.08] bg-white/[0.04] px-4 text-sm font-medium text-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-white/[0.06] hover:text-studio-light sm:inline-flex"
+          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-glass bg-[color:var(--glass-bg-hover)] px-4 text-sm font-medium text-glass shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light sm:inline-flex"
         >
           <Plus className="h-4 w-4" />
           Nouveau client
@@ -258,7 +258,7 @@ export default function ClientsPage() {
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-white/[0.08] bg-white/[0.04] text-white/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-white/[0.06] hover:text-studio-light sm:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-glass bg-[color:var(--glass-bg-hover)] text-glass shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light sm:hidden"
             aria-label="Nouveau client"
           >
             <Plus className="h-4 w-4" />
@@ -266,7 +266,7 @@ export default function ClientsPage() {
 
           <div className="relative min-w-0 flex-1 sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -383,7 +383,7 @@ export default function ClientsPage() {
                       resetFilters();
                       setFilterOpen(false);
                     }}
-                    className={cn(dropdownItem, "mt-1 text-white/45 hover:text-white/70")}
+                    className={cn(dropdownItem, "mt-1 text-glass-muted hover:text-glass-secondary")}
                   >
                     Réinitialiser les filtres
                   </button>
@@ -448,7 +448,7 @@ export default function ClientsPage() {
               )}
             </div>
 
-            <div className="flex rounded-lg border border-white/[0.08] bg-white/[0.03] p-0.5">
+            <div className="flex rounded-lg border border-glass bg-[color:var(--glass-bg)] p-0.5">
               <button
                 type="button"
                 onClick={() => setView("grid")}
@@ -456,7 +456,7 @@ export default function ClientsPage() {
                   "rounded-md p-2 transition",
                   view === "grid"
                     ? "bg-studio-muted text-studio-light"
-                    : "text-white/45 hover:text-white/70"
+                    : "text-glass-muted hover:text-glass-secondary"
                 )}
                 aria-label="Vue grille"
               >
@@ -469,7 +469,7 @@ export default function ClientsPage() {
                   "rounded-md p-2 transition",
                   view === "list"
                     ? "bg-studio-muted text-studio-light"
-                    : "text-white/45 hover:text-white/70"
+                    : "text-glass-muted hover:text-glass-secondary"
                 )}
                 aria-label="Vue liste"
               >

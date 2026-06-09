@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CheckCheck } from "lucide-react";
 import NotificationListItem from "./NotificationListItem";
-import { glassDropdownPlain } from "@/lib/glass-styles";
+import { glassDropdown } from "@/lib/glass-styles";
 import { cn } from "@/lib/utils";
 import {
   countUrgentUnread,
@@ -69,7 +69,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
   return (
     <div
       className={cn(
-        glassDropdownPlain,
+        glassDropdown,
         "z-[100] flex flex-col overflow-hidden",
         /* Mobile : panneau sous le header, centré dans l'écran */
         "fixed inset-x-3 top-[3.35rem] w-auto max-w-none",
@@ -82,15 +82,15 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
     >
       <div className="flex items-center justify-between gap-2 px-3 py-2.5">
         <div className="min-w-0">
-          <h3 className="text-[13px] font-medium text-white/88">Notifications</h3>
-          <p className="mt-0.5 text-[11px] text-white/38">{statusLine}</p>
+          <h3 className="text-[13px] font-medium text-glass">Notifications</h3>
+          <p className="mt-0.5 text-[11px] text-glass-muted">{statusLine}</p>
         </div>
         {unreadCount > 0 && (
           <button
             type="button"
             onClick={() => markAllAsRead.mutate()}
             title="Tout marquer comme lu"
-            className="shrink-0 rounded-md px-2 py-1 text-[11px] text-studio-light/70 transition hover:bg-white/[0.06] hover:text-studio-light"
+            className="shrink-0 rounded-md px-2 py-1 text-[11px] text-studio-light/70 transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
           >
             <span className="inline-flex items-center gap-1">
               <CheckCheck className="h-3 w-3" strokeWidth={1.75} />
@@ -100,7 +100,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
         )}
       </div>
 
-      <div className="flex gap-4 overflow-x-auto border-t border-white/[0.06] px-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="flex gap-4 overflow-x-auto border-t border-app px-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {FILTER_TABS.map((f) => {
           const count =
             f.id === "urgent"
@@ -117,7 +117,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
                 "shrink-0 border-b-2 py-2 text-[11px] font-medium transition",
                 filter === f.id
                   ? "border-studio-light text-studio-light"
-                  : "border-transparent text-white/40 hover:text-white/60"
+                  : "border-transparent text-glass-muted hover:text-glass-secondary"
               )}
             >
               {f.label}
@@ -127,15 +127,15 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
         })}
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/[0.06] md:max-h-[min(300px,50vh)]">
+      <div className="min-h-0 flex-1 overflow-y-auto border-t border-app md:max-h-[min(300px,50vh)]">
         {isLoading ? (
           <div className="space-y-2 px-3 py-3">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="h-12 animate-pulse rounded bg-white/[0.04]" />
+              <div key={i} className="h-12 animate-pulse rounded bg-[color:var(--glass-bg-hover)]" />
             ))}
           </div>
         ) : recent.length === 0 ? (
-          <p className="px-3 py-8 text-center text-[12px] text-white/38">
+          <p className="px-3 py-8 text-center text-[12px] text-glass-muted">
             {filter === "urgent"
               ? "Aucune alerte prioritaire"
               : filter === "unread"
@@ -159,7 +159,7 @@ export default function NotificationDropdown({ onClose }: NotificationDropdownPr
       <Link
         href="/notifications"
         onClick={onClose}
-        className="block border-t border-white/[0.06] px-3 py-2.5 text-center text-[11px] text-studio-light/65 transition hover:bg-white/[0.04] hover:text-studio-light"
+        className="block border-t border-app px-3 py-2.5 text-center text-[11px] text-studio-light/65 transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
       >
         Voir tout l&apos;historique
       </Link>

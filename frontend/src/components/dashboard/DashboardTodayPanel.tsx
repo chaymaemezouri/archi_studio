@@ -13,6 +13,14 @@ import type { Deadline, Priority, Task } from "@/types";
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
 import { cn, formatDate } from "@/lib/utils";
 import { accentBar } from "@/lib/glass-styles";
+import Badge from "@/components/ui/Badge";
+import {
+  dashboardLink,
+  dashboardPanel,
+  dashboardPanelHeader,
+  dashboardPanelTitle,
+  dashboardSectionLabel,
+} from "./dashboard-ui";
 
 export interface DashboardAgendaItem {
   id: string;
@@ -30,12 +38,7 @@ interface DashboardTodayPanelProps {
   className?: string;
 }
 
-const panelShell = cn(
-  "rounded-xl border border-white/[0.08] bg-white/[0.035]",
-  "shadow-[0_6px_24px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.04)] backdrop-blur-xl"
-);
-
-const row = "flex items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-white/[0.04]";
+const row = "flex items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-studio-muted/40";
 
 function TodaySection({
   icon: Icon,
@@ -51,17 +54,15 @@ function TodaySection({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border-b border-white/[0.05] last:border-0">
+    <div className="border-b border-app last:border-0">
       <div className="flex items-center justify-between px-2.5 py-2">
         <div className="flex items-center gap-1.5">
-          <Icon className="h-3 w-3 text-studio-light/65" strokeWidth={1.75} />
-          <span className="text-[10px] font-semibold uppercase tracking-wide text-white/45">
-            {label}
-          </span>
+          <Icon className="h-3 w-3 text-studio-light" strokeWidth={1.75} />
+          <span className={dashboardSectionLabel}>{label}</span>
         </div>
         <Link
           href={href}
-          className="inline-flex items-center gap-0.5 text-[10px] font-medium text-white/35 transition hover:text-studio-light/80"
+          className={cn(dashboardLink, "inline-flex items-center gap-0.5 text-[10px]")}
         >
           {linkLabel}
           <ArrowUpRight className="h-3 w-3" />
@@ -95,19 +96,21 @@ function TaskCheckbox({
       className={cn(
         "flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-[4px] border transition sm:h-[14px] sm:w-[14px] sm:rounded-[3px]",
         checked
-          ? "border-emerald-500/45 bg-emerald-500/15"
-          : "border-white/28 bg-white/[0.02] hover:border-studio-light/40",
+          ? "border-emerald-500 bg-emerald-100 dark:border-emerald-500/45 dark:bg-emerald-500/15"
+          : "border-glass bg-[color:var(--glass-bg)] hover:border-studio-border",
         "disabled:opacity-40"
       )}
       aria-label={checked ? "Tâche terminée" : "Marquer terminée"}
     >
-      {checked && <Check className="h-2.5 w-2.5 text-emerald-400" strokeWidth={3} />}
+      {checked && (
+        <Check className="h-2.5 w-2.5 text-emerald-700 dark:text-emerald-400" strokeWidth={3} />
+      )}
     </button>
   );
 }
 
 function EmptyLine({ children }: { children: React.ReactNode }) {
-  return <p className="px-2 py-1 text-[11px] text-white/35">{children}</p>;
+  return <p className="px-2 py-1 text-[11px] text-glass-muted">{children}</p>;
 }
 
 export default function DashboardTodayPanel({
@@ -126,9 +129,9 @@ export default function DashboardTodayPanel({
   };
 
   return (
-    <section className={cn(panelShell, className)}>
-      <div className="border-b border-white/[0.06] px-3.5 py-2.5">
-        <h2 className="flex items-center gap-2 text-[13px] font-semibold text-white/90">
+    <section className={cn(dashboardPanel, className)}>
+      <div className={dashboardPanelHeader}>
+        <h2 className={dashboardPanelTitle}>
           <span className={cn(accentBar, "h-3 opacity-80")} aria-hidden />
           Aujourd&apos;hui
         </h2>
@@ -140,8 +143,8 @@ export default function DashboardTodayPanel({
         ) : (
           agenda.map((item) => (
             <Link key={item.id} href={item.href} className={cn(row, "justify-between")}>
-              <span className="min-w-0 truncate text-[12px] text-white/85">{item.title}</span>
-              <span className="shrink-0 rounded border border-studio-light/15 bg-studio-light/[0.07] px-1.5 py-px text-[10px] tabular-nums text-studio-light/80">
+              <span className="min-w-0 truncate text-[12px] text-glass">{item.title}</span>
+              <span className="shrink-0 rounded-md border border-[color:var(--studio-border)] bg-studio-muted px-1.5 py-px text-[10px] font-medium tabular-nums text-studio-light">
                 {item.meta}
               </span>
             </Link>
@@ -166,17 +169,22 @@ export default function DashboardTodayPanel({
                 <Link href={href} className="min-w-0 flex-1">
                   <p
                     className={cn(
-                      "truncate text-[12px] text-white/85",
-                      checked && "text-white/40 line-through"
+                      "truncate text-[12px] text-glass",
+                      checked && "text-glass-muted line-through"
                     )}
                   >
                     {task.title}
                   </p>
-                  <p className="text-[10px] text-white/35">
-                    {TASK_STATUS_LABELS[task.status]}
-                    {(task.priority === "URGENT" || task.priority === "HIGH") &&
-                      ` · ${PRIORITY_LABELS[task.priority as Priority]}`}
-                  </p>
+                  <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                    <Badge variant={task.status === "DONE" ? "success" : "studio"}>
+                      {TASK_STATUS_LABELS[task.status]}
+                    </Badge>
+                    {(task.priority === "URGENT" || task.priority === "HIGH") && (
+                      <Badge variant={task.priority === "URGENT" ? "danger" : "warning"}>
+                        {PRIORITY_LABELS[task.priority as Priority]}
+                      </Badge>
+                    )}
+                  </div>
                 </Link>
               </div>
             );
@@ -190,12 +198,12 @@ export default function DashboardTodayPanel({
         ) : (
           deadlines.map((deadline) => (
             <div key={deadline.id} className={row}>
-              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-studio-light/70" aria-hidden />
+              <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" aria-hidden />
               <div className="min-w-0 flex-1">
-                <p className="truncate text-[12px] text-white/85">{deadline.title}</p>
-                <p className="text-[10px] text-white/38">
+                <p className="truncate text-[12px] font-medium text-glass">{deadline.title}</p>
+                <Badge variant="warning" className="mt-0.5">
                   {formatDate(deadline.date, "HH:mm")}
-                </p>
+                </Badge>
               </div>
             </div>
           ))

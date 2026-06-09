@@ -76,7 +76,7 @@ export default function ProjectActivityTab({ project }: ProjectActivityTabProps)
                 <button
                   type="button"
                   onClick={() => setVisibleCount(ACTIVITY_PAGE_SIZE)}
-                  className="text-[11px] text-[#9aa3b0]/50 transition hover:text-[#b8c9dc]/75"
+                  className="text-[11px] text-[#9aa3b0]/50 transition hover:text-glass-secondary"
                 >
                   Réduire
                 </button>

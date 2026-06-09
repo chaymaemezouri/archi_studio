@@ -86,7 +86,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
       <div className="min-w-0">
         <p
           className={cn(
-            "font-medium text-[#e8edf4]/88",
+            "font-medium text-glass",
             task.status === "DONE" && "line-through"
           )}
         >
@@ -104,8 +104,8 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         )}
       </div>
 
-      <span className="text-[#9aa3b0]/65">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Projet · </span>
+      <span className="text-glass-secondary">
+        <span className="text-[10px] text-glass-muted md:hidden">Projet · </span>
         {task.projectId && projectName ? (
           <Link href={`/projects/${task.projectId}?tab=tasks`} className={tasksListLink}>
             {projectName}
@@ -115,8 +115,8 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         )}
       </span>
 
-      <span className="text-[#9aa3b0]/65">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Client · </span>
+      <span className="text-glass-secondary">
+        <span className="text-[10px] text-glass-muted md:hidden">Client · </span>
         {task.clientId && clientName ? (
           <Link href={`/clients/${task.clientId}`} className={tasksListLink}>
             {clientName}
@@ -126,8 +126,8 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         )}
       </span>
 
-      <span className="text-[#9aa3b0]/65">
-        <span className="text-[10px] text-[#8ba4c7]/40 md:hidden">Deadline · </span>
+      <span className="text-glass-secondary">
+        <span className="text-[10px] text-glass-muted md:hidden">Deadline · </span>
         {task.dueDate ? formatDate(task.dueDate) : TASK_DEADLINE_BADGE_LABELS.none}
       </span>
 
@@ -180,7 +180,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
             {task.projectId && (
               <Link
                 href={`/projects/${task.projectId}?tab=tasks`}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 onClick={() => setMenuOpen(false)}
               >
                 <ExternalLink className="h-4 w-4" /> Ouvrir projet
@@ -189,7 +189,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
             {task.clientId && (
               <Link
                 href={`/clients/${task.clientId}`}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 onClick={() => setMenuOpen(false)}
               >
                 <ExternalLink className="h-4 w-4" /> Ouvrir client
@@ -230,7 +230,7 @@ function MenuBtn({
         "flex w-full items-center gap-2 px-3 py-2 text-sm",
         danger
           ? "text-red-400 hover:bg-red-500/10"
-          : "text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+          : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
       )}
     >
       {children}

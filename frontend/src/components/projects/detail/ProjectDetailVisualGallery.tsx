@@ -44,8 +44,8 @@ export default function ProjectDetailVisualGallery({
   return (
     <>
       <div className={cn(detailVisualShell, "flex w-full flex-col")}>
-        <div className="flex items-center justify-between gap-2 border-b border-white/[0.05] px-2.5 py-2">
-          <span className="text-[10px] font-medium text-white/40">
+        <div className="flex items-center justify-between gap-2 border-b border-app px-2.5 py-2">
+          <span className="text-[10px] font-medium text-glass-muted">
             {items.length > 0
               ? `${items.length} image${items.length > 1 ? "s" : ""}`
               : "Galerie"}
@@ -63,10 +63,10 @@ export default function ProjectDetailVisualGallery({
 
         {items.length === 0 ? (
           <div className="flex min-h-[160px] flex-col items-center justify-center gap-2 px-4 py-8">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-white/[0.08] bg-white/[0.02]">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-dashed border-glass bg-[color:var(--glass-bg)]">
               <Building2 className="h-6 w-6 text-white/22" strokeWidth={1.25} />
             </div>
-            <p className="text-center text-[11px] text-white/38">Aucun visuel pour ce projet</p>
+            <p className="text-center text-[11px] text-glass-muted">Aucun visuel pour ce projet</p>
             <button
               type="button"
               onClick={() => onUpload("image")}
@@ -95,7 +95,7 @@ export default function ProjectDetailVisualGallery({
                     : "h-[200px] max-h-[240px] sm:max-h-[280px]"
                 )}
               />
-              <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md border border-white/10 bg-black/50 px-1.5 py-0.5 text-[10px] text-white/70 opacity-0 backdrop-blur-sm transition group-hover/preview:opacity-100">
+              <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md border border-glass bg-black/50 px-1.5 py-0.5 text-[10px] text-glass-secondary opacity-0 backdrop-blur-sm transition group-hover/preview:opacity-100">
                 <Expand className="h-3 w-3" />
                 Agrandir
               </span>
@@ -132,11 +132,11 @@ export default function ProjectDetailVisualGallery({
           </>
         )}
 
-        <div className="mt-auto flex items-center gap-2 border-t border-white/[0.05] px-2.5 py-2">
+        <div className="mt-auto flex items-center gap-2 border-t border-app px-2.5 py-2">
           <button
             type="button"
             onClick={() => onUpload("render")}
-            className={cn(detailBtnGhost, "flex-1 justify-center gap-1 border border-white/[0.06] py-1.5")}
+            className={cn(detailBtnGhost, "flex-1 justify-center gap-1 border border-app py-1.5")}
           >
             <ImagePlus className="h-3.5 w-3.5" />
             Ajouter un rendu
@@ -144,7 +144,7 @@ export default function ProjectDetailVisualGallery({
           <button
             type="button"
             onClick={() => onTabChange("renders")}
-            className={cn(detailBtnGhost, "gap-1 border border-white/[0.06] px-2.5 py-1.5")}
+            className={cn(detailBtnGhost, "gap-1 border border-app px-2.5 py-1.5")}
           >
             <Layers className="h-3.5 w-3.5" />
             <span className="hidden sm:inline">Galerie</span>
@@ -162,7 +162,7 @@ export default function ProjectDetailVisualGallery({
           <button
             type="button"
             onClick={() => setLightboxUrl(null)}
-            className="absolute right-4 top-4 rounded-lg p-2 text-white/60 transition hover:bg-white/10 hover:text-white"
+            className="absolute right-4 top-4 rounded-lg p-2 text-glass-secondary transition hover:bg-[color:var(--glass-bg-hover)] hover:text-white"
             aria-label="Fermer"
           >
             <X className="h-5 w-5" />

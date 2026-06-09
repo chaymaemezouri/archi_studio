@@ -152,7 +152,7 @@ export const PROJECT_DISPLAY_STATUS_STYLES: Record<ProjectDisplayStatus, string>
   overdue: "bg-red-50/90 text-red-700/90 ring-red-100",
   today: "bg-amber-50 text-amber-800 ring-amber-100",
   tomorrow: "bg-amber-50/80 text-amber-700 ring-amber-100",
-  soon: "bg-yellow-50 text-yellow-800 ring-yellow-100",
+  soon: "bg-sky-50 text-sky-800 ring-sky-100",
   urgent: "bg-orange-50 text-orange-700 ring-orange-100",
   new: "bg-sky-50 text-sky-700 ring-sky-100",
   in_progress: "bg-stone-100 text-stone-600 ring-stone-200/80",
@@ -160,28 +160,37 @@ export const PROJECT_DISPLAY_STATUS_STYLES: Record<ProjectDisplayStatus, string>
 
 /** Accent coloré (barre gauche / point) pour badges glass dashboard */
 export const PROJECT_DISPLAY_STATUS_ACCENT: Record<ProjectDisplayStatus, string> = {
-  archived: "bg-white/35",
+  archived: "bg-glass-muted dark:bg-white/35",
   delivered: "bg-emerald-400",
   overdue: "bg-red-400",
   today: "bg-orange-400",
-  tomorrow: "bg-yellow-400",
-  soon: "bg-amber-300",
+  tomorrow: "bg-amber-500",
+  soon: "bg-sky-500",
   urgent: "bg-orange-500",
   new: "bg-sky-400",
-  in_progress: "bg-[#8BA4C7]",
+  in_progress: "bg-studio-light",
 };
 
-/** Pill premium dark — fond, bordure, texte */
+/** Pill statut — saturé en clair, inchangé en sombre */
 export const PROJECT_DISPLAY_STATUS_PILL: Record<ProjectDisplayStatus, string> = {
-  archived: "border-white/10 bg-black/30 text-white/55",
-  delivered: "border-emerald-400/25 bg-emerald-500/10 text-emerald-200/90",
-  overdue: "border-red-400/25 bg-red-500/10 text-red-200/90",
-  today: "border-orange-400/25 bg-orange-500/10 text-orange-200/90",
-  tomorrow: "border-yellow-400/25 bg-yellow-500/10 text-yellow-100/90",
-  soon: "border-amber-400/22 bg-amber-500/10 text-amber-100/85",
-  urgent: "border-orange-500/28 bg-orange-600/12 text-orange-100/90",
-  new: "border-sky-400/25 bg-sky-500/10 text-sky-200/90",
-  in_progress: "border-white/12 bg-white/[0.05] text-white/58",
+  archived:
+    "border-slate-300 bg-slate-100 text-slate-600 dark:border-glass dark:bg-black/30 dark:text-glass-muted",
+  delivered:
+    "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-400/25 dark:bg-emerald-500/10 dark:text-emerald-200/90",
+  overdue:
+    "border-red-300 bg-red-100 text-red-800 dark:border-red-400/25 dark:bg-red-500/10 dark:text-red-200/90",
+  today:
+    "border-orange-300 bg-orange-100 text-orange-800 dark:border-orange-400/25 dark:bg-orange-500/10 dark:text-orange-200/90",
+  tomorrow:
+    "border-amber-200 bg-amber-50 text-amber-900 dark:border-yellow-400/25 dark:bg-yellow-500/10 dark:text-yellow-100/90",
+  soon:
+    "border-sky-200 bg-sky-50 text-sky-900 dark:border-amber-400/22 dark:bg-amber-500/10 dark:text-amber-100/85",
+  urgent:
+    "border-orange-400 bg-orange-100 text-orange-900 dark:border-orange-500/28 dark:bg-orange-600/10 dark:text-orange-100/90",
+  new:
+    "border-sky-300 bg-sky-100 text-sky-800 dark:border-sky-400/25 dark:bg-sky-500/10 dark:text-sky-200/90",
+  in_progress:
+    "border-blue-200 bg-blue-50 text-blue-800 dark:border-white/12 dark:bg-studio-muted dark:text-white/58",
 };
 
 /** Couleur barre / arc de progression selon statut */
@@ -190,11 +199,11 @@ export const PROJECT_DISPLAY_STATUS_PROGRESS: Record<ProjectDisplayStatus, strin
   delivered: "bg-emerald-400",
   overdue: "bg-red-400",
   today: "bg-orange-400",
-  tomorrow: "bg-amber-400",
-  soon: "bg-amber-300",
+  tomorrow: "bg-amber-500",
+  soon: "bg-sky-400",
   urgent: "bg-orange-500",
   new: "bg-sky-400",
-  in_progress: "bg-[#8BA4C7]",
+  in_progress: "bg-studio-light",
 };
 
 /** Couleur stroke SVG — arc circulaire */
@@ -203,8 +212,8 @@ export const PROJECT_DISPLAY_STATUS_PROGRESS_STROKE: Record<ProjectDisplayStatus
   delivered: "#34d399",
   overdue: "#f87171",
   today: "#fb923c",
-  tomorrow: "#fbbf24",
-  soon: "#fcd34d",
+  tomorrow: "#d97706",
+  soon: "#0ea5e9",
   urgent: "#f97316",
   new: "#38bdf8",
   in_progress: "#8BA4C7",

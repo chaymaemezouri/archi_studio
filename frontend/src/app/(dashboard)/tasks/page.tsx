@@ -208,18 +208,18 @@ export default function TasksPage() {
     <div className={tasksListPage}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
             <span className={accentBar} aria-hidden />
             Tâches
           </h1>
-          <p className="mt-0.5 text-xs text-[#8ba4c7]/45 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
             Suivez vos tâches, priorités et deadlines
           </p>
         </div>
         <button
           type="button"
           onClick={openCreate}
-          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:inline-flex"
+          className="hidden h-9 shrink-0 items-center justify-center gap-2 self-start rounded-lg border border-app bg-[color:var(--glass-bg)] px-4 text-sm font-medium text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:inline-flex"
         >
           <Plus className="h-4 w-4" strokeWidth={1.75} />
           Nouvelle tâche
@@ -236,7 +236,7 @@ export default function TasksPage() {
           <button
             type="button"
             onClick={openCreate}
-            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:hidden"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-app bg-[color:var(--glass-bg)] text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light sm:hidden"
             aria-label="Nouvelle tâche"
           >
             <Plus className="h-4 w-4" strokeWidth={1.75} />
@@ -244,7 +244,7 @@ export default function TasksPage() {
 
           <div className="relative min-w-0 flex-1 sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -396,12 +396,12 @@ export default function TasksPage() {
                   </button>
                 ))}
 
-                <label className="mt-2 flex cursor-pointer items-center gap-2 border-t border-white/[0.06] px-3 py-2.5 text-[12px] text-[#8ba4c7]/65">
+                <label className="mt-2 flex cursor-pointer items-center gap-2 border-t border-app px-3 py-2.5 text-[12px] text-glass-muted">
                   <input
                     type="checkbox"
                     checked={showDone}
                     onChange={(e) => setShowDone(e.target.checked)}
-                    className="rounded border-[#8ba4c7]/[0.12] bg-white/[0.03] text-studio-light focus:ring-[#8ba4c7]/20"
+                    className="rounded border-[#8ba4c7]/[0.12] bg-[color:var(--glass-bg)] text-studio-light focus:ring-[#8ba4c7]/20"
                   />
                   Afficher terminées
                 </label>
@@ -413,7 +413,7 @@ export default function TasksPage() {
                       resetFilters();
                       setFilterOpen(false);
                     }}
-                    className={cn(dropdownItem, "text-white/45 hover:text-white/70")}
+                    className={cn(dropdownItem, "text-glass-muted hover:text-glass-secondary")}
                   >
                     Réinitialiser les filtres
                   </button>
@@ -478,7 +478,7 @@ export default function TasksPage() {
               )}
             </div>
 
-            <div className="flex rounded-lg border border-[#8ba4c7]/[0.06] bg-white/[0.03] p-0.5">
+            <div className="flex rounded-lg border border-app bg-[color:var(--glass-bg)] p-0.5">
               <button
                 type="button"
                 onClick={() => setView("list")}
@@ -486,7 +486,7 @@ export default function TasksPage() {
                   "rounded-md p-2 transition",
                   view === "list"
                     ? "bg-studio-muted text-studio-light"
-                    : "text-white/45 hover:text-white/70"
+                    : "text-glass-muted hover:text-glass-secondary"
                 )}
                 aria-label="Vue liste"
               >
@@ -499,7 +499,7 @@ export default function TasksPage() {
                   "rounded-md p-2 transition",
                   view === "board"
                     ? "bg-studio-muted text-studio-light"
-                    : "text-white/45 hover:text-white/70"
+                    : "text-glass-muted hover:text-glass-secondary"
                 )}
                 aria-label="Vue board"
               >

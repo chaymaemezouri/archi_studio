@@ -32,13 +32,13 @@ interface DailyFlowPanelProps {
 }
 
 const flowBlockShell = cn(
-  "rounded-lg border border-white/[0.07] bg-white/[0.025]",
+  "rounded-lg border border-glass bg-[color:var(--glass-bg)]",
   "shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]"
 );
 
 const flowItemRow = cn(
   "group/row relative flex items-center gap-2 rounded-lg px-2 py-1.5",
-  "transition duration-200 hover:bg-white/[0.04]"
+  "transition duration-200 hover:bg-[color:var(--glass-bg-hover)]"
 );
 
 function FlowCountBadge({ count }: { count: number }) {
@@ -69,12 +69,12 @@ function FlowBlock({
 }) {
   return (
     <section className={flowBlockShell}>
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-3 py-2">
+      <div className="flex items-center justify-between border-b border-app px-3 py-2">
         <div className="flex items-center gap-2">
           <span className="flex h-5 w-5 items-center justify-center rounded-md border border-studio-light/12 bg-studio-light/[0.06]">
             <Icon className="h-3 w-3 text-studio-light/75" strokeWidth={1.75} />
           </span>
-          <h3 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/50">
+          <h3 className="text-[10px] font-semibold uppercase tracking-[0.12em] text-glass-muted">
             {label}
           </h3>
           <FlowCountBadge count={count} />
@@ -82,7 +82,7 @@ function FlowBlock({
         {href && linkLabel && (
           <Link
             href={href}
-            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-white/38 transition hover:text-studio-light/85"
+            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-glass-muted transition hover:text-studio-light/85"
           >
             {linkLabel}
             <ArrowUpRight className="h-3 w-3" />
@@ -125,7 +125,7 @@ function formatFlowDate(dateStr: string): string {
 
 function EmptyHint({ children }: { children: React.ReactNode }) {
   return (
-    <p className="px-2 py-2.5 text-center text-[11px] leading-relaxed text-white/38">{children}</p>
+    <p className="px-2 py-2.5 text-center text-[11px] leading-relaxed text-glass-muted">{children}</p>
   );
 }
 
@@ -151,7 +151,7 @@ function TaskCheckbox({
         "mt-0.5 flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] border transition duration-200",
         checked
           ? "border-emerald-500/45 bg-emerald-500/15"
-          : "border-white/30 bg-white/[0.02] hover:border-studio-light/45 hover:bg-studio-light/10",
+          : "border-white/30 bg-[color:var(--glass-bg)] hover:border-studio-light/45 hover:bg-studio-light/10",
         "disabled:opacity-40"
       )}
       title={checked ? "Terminée" : "Marquer terminée"}
@@ -195,7 +195,7 @@ export default function DailyFlowPanel({
             {agenda.map((item) => (
               <li key={item.id}>
                 <Link href={item.href} className={cn(flowItemRow, "justify-between")}>
-                  <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-white/90">
+                  <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-glass">
                     {item.title}
                   </p>
                   <span className="ml-2 shrink-0 rounded-md border border-studio-light/15 bg-studio-light/[0.08] px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-studio-light/85">
@@ -242,14 +242,14 @@ export default function DailyFlowPanel({
                   <Link href={href} className="min-w-0 flex-1">
                     <p
                       className={cn(
-                        "truncate text-[13px] font-medium leading-snug text-white/88 transition group-hover/row:text-white",
-                        checkedIds.has(task.id) && "text-white/45 line-through"
+                        "truncate text-[13px] font-medium leading-snug text-glass transition group-hover/row:text-white",
+                        checkedIds.has(task.id) && "text-glass-muted line-through"
                       )}
                     >
                       {task.title}
                     </p>
                     <div className="mt-1 flex flex-wrap items-center gap-1.5">
-                      <span className="text-[10px] text-white/35">
+                      <span className="text-[10px] text-glass-muted">
                         {task.dueDate
                           ? formatFlowDate(task.dueDate)
                           : TASK_STATUS_LABELS[task.status]}
@@ -289,8 +289,8 @@ export default function DailyFlowPanel({
                     aria-hidden
                   />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[13px] font-medium text-white/88">{deadline.title}</p>
-                    <p className="mt-1 flex items-center gap-1.5 text-[10px] capitalize text-white/38">
+                    <p className="truncate text-[13px] font-medium text-glass">{deadline.title}</p>
+                    <p className="mt-1 flex items-center gap-1.5 text-[10px] capitalize text-glass-muted">
                       <CalendarClock
                         className="h-3 w-3 shrink-0 text-studio-light/55"
                         strokeWidth={1.75}
@@ -317,15 +317,15 @@ export function DailyFlowPanelHeader({
   linkLabel?: string;
 }) {
   return (
-    <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
-      <h2 className="flex items-center gap-2 text-[14px] font-semibold tracking-tight text-white/90">
+    <div className="flex items-center justify-between border-b border-app px-4 py-3">
+      <h2 className="flex items-center gap-2 text-[14px] font-semibold tracking-tight text-glass">
         <span className={cn(accentBar, "h-3.5")} aria-hidden />
         Flux du jour
       </h2>
       {href && (
         <Link
           href={href}
-          className="inline-flex items-center gap-0.5 text-[12px] font-medium text-white/45 transition hover:text-studio-light"
+          className="inline-flex items-center gap-0.5 text-[12px] font-medium text-glass-muted transition hover:text-studio-light"
         >
           {linkLabel}
           <ArrowUpRight className="h-3.5 w-3.5" />

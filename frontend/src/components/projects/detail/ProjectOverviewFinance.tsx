@@ -48,7 +48,7 @@ export default function ProjectOverviewFinance({
               ? `${followUp} facture${followUp > 1 ? "s" : ""} à suivre`
               : "Paiements à jour"}
           </p>
-          <p className="mt-1.5 text-[11px] text-white/38">
+          <p className="mt-1.5 text-[11px] text-glass-muted">
             {devisCount} devis · {invoiceCount} facture{invoiceCount > 1 ? "s" : ""}
           </p>
         </>

@@ -92,7 +92,7 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
         <a
           href={href}
           download
-          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+          className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
           onClick={closeMenu}
         >
           <Download className="h-4 w-4" /> Télécharger
@@ -126,18 +126,18 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
 
   return (
     <div className={plansRendersListRow}>
-      <div className="hidden h-10 w-10 overflow-hidden rounded-lg border border-[#8ba4c7]/[0.05] md:block">
+      <div className="hidden h-10 w-10 overflow-hidden rounded-lg border border-app md:block">
         {thumb && asset.mimeType.startsWith("image/") ? (
           <img src={thumb} alt="" className="h-full w-full object-cover" />
         ) : (
-          <div className="flex h-full w-full items-center justify-center bg-white/[0.02]">
+          <div className="flex h-full w-full items-center justify-center bg-[color:var(--glass-bg)]">
             <FileIcon mimeType={asset.mimeType} name={asset.name} className="h-5 w-5" />
           </div>
         )}
       </div>
 
       <div className="min-w-0">
-        <p className="flex items-center gap-1 font-medium text-[#e8edf4]/88">
+        <p className="flex items-center gap-1 font-medium text-glass">
           {asset.isFavorite && (
             <Star className="h-3.5 w-3.5 shrink-0 fill-amber-400/90 text-amber-400" />
           )}
@@ -149,9 +149,9 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
         <Badge variant="studio">{PLAN_RENDER_KIND_LABELS[asset.kind]}</Badge>
       </span>
 
-      <span className="text-[#9aa3b0]/65">{categoryLabel(asset)}</span>
+      <span className="text-glass-secondary">{categoryLabel(asset)}</span>
 
-      <span className="text-[#9aa3b0]/65">
+      <span className="text-glass-secondary">
         {asset.projectId && asset.projectName ? (
           <Link
             href={`/projects/${asset.projectId}?tab=plans`}
@@ -164,7 +164,7 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
         )}
       </span>
 
-      <span className="text-[#9aa3b0]/65">
+      <span className="text-glass-secondary">
         {asset.clientId && asset.clientName ? (
           <Link href={`/clients/${asset.clientId}`} className={plansRendersListLink}>
             {asset.clientName}
@@ -174,9 +174,9 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
         )}
       </span>
 
-      <span className="text-[#9aa3b0]/65">{asset.version ?? "—"}</span>
-      <span className="text-[#9aa3b0]/65">{formatPlanRenderSize(asset.size)}</span>
-      <span className="text-[#9aa3b0]/65">
+      <span className="text-glass-secondary">{asset.version ?? "—"}</span>
+      <span className="text-glass-secondary">{formatPlanRenderSize(asset.size)}</span>
+      <span className="text-glass-secondary">
         {formatDate(asset.uploadedAt ?? asset.createdAt)}
       </span>
 
@@ -221,7 +221,7 @@ function MenuBtn({
         "flex w-full items-center gap-2 px-3 py-2 text-sm",
         danger
           ? "text-red-400 hover:bg-red-500/10"
-          : "text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+          : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
       )}
     >
       {children}

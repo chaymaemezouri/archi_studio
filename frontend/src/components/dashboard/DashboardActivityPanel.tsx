@@ -5,7 +5,7 @@ import { ArrowUpRight } from "lucide-react";
 import type { ActivityLog } from "@/types";
 import { accentBar } from "@/lib/glass-styles";
 import { cn, formatActivityLabel, formatRelativeTime } from "@/lib/utils";
-import { dashboardPanel, dashboardPanelHeader, dashboardPanelTitle } from "./dashboard-ui";
+import { dashboardLink, dashboardPanel, dashboardPanelHeader, dashboardPanelTitle } from "./dashboard-ui";
 
 interface DashboardActivityPanelProps {
   activities: ActivityLog[];
@@ -27,16 +27,16 @@ export default function DashboardActivityPanel({
         </h3>
         <Link
           href="/activity"
-          className="inline-flex items-center gap-0.5 text-[10px] font-medium text-white/40 transition hover:text-studio-light"
+          className={cn(dashboardLink, "inline-flex items-center gap-0.5 text-[10px]")}
         >
           Journal
           <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
       {items.length === 0 ? (
-        <p className="px-3.5 py-6 text-center text-[11px] text-white/35">Aucune activité récente</p>
+        <p className="px-3.5 py-6 text-center text-[11px] text-glass-muted">Aucune activité récente</p>
       ) : (
-        <ul className="divide-y divide-white/[0.05] px-1 py-1">
+        <ul className="divide-y divide-[color:var(--color-border)] px-1 py-1">
           {items.map((activity) => (
             <li key={activity.id}>
               <Link
@@ -45,14 +45,14 @@ export default function DashboardActivityPanel({
                     ? `/projects/${activity.projectId}`
                     : "/activity"
                 }
-                className="block rounded-md px-2.5 py-2 transition hover:bg-white/[0.04]"
+                className="block rounded-md px-2.5 py-2 transition hover:bg-studio-muted/40"
               >
-                <p className="line-clamp-2 text-[12px] leading-snug text-white/82">
+                <p className="line-clamp-2 text-[12px] leading-snug text-glass">
                   {formatActivityLabel(activity)}
                 </p>
-                <p className="mt-0.5 text-[10px] text-white/35">
+                <p className="mt-0.5 text-[10px] text-glass-muted">
                   {activity.project?.name && (
-                    <span className="text-white/45">{activity.project.name} · </span>
+                    <span className="text-glass-muted">{activity.project.name} · </span>
                   )}
                   {formatRelativeTime(activity.createdAt)}
                 </p>

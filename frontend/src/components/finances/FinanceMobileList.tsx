@@ -30,7 +30,7 @@ function MobileField({
 }) {
   return (
     <div className={cn("min-w-0", className)}>
-      <p className="text-[10px] text-[#8ba4c7]/40">{label}</p>
+      <p className="text-[10px] text-glass-muted">{label}</p>
       <div className="text-[13px] text-[#9aa3b0]/75">{children}</div>
     </div>
   );
@@ -47,8 +47,8 @@ export function DevisMobileCard({
     <article className={financeMobileCard}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-medium text-[#e8edf4]/88">{devis.number}</p>
-          <p className="mt-0.5 truncate text-[11px] text-[#9aa3b0]/55">
+          <p className="font-medium text-glass">{devis.number}</p>
+          <p className="mt-0.5 truncate text-[11px] text-glass-muted">
             {devis.client?.name ?? "—"}
             {devis.project?.name ? ` · ${devis.project.name}` : ""}
           </p>
@@ -70,7 +70,7 @@ export function DevisMobileCard({
         </MobileField>
       </div>
 
-      <div className="border-t border-[#8ba4c7]/[0.06] pt-2">{actions}</div>
+      <div className="border-t border-app pt-2">{actions}</div>
     </article>
   );
 }
@@ -88,8 +88,8 @@ export function InvoiceMobileCard({
     <article className={financeMobileCard}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-medium text-[#e8edf4]/88">{invoice.number}</p>
-          <p className="mt-0.5 truncate text-[11px] text-[#9aa3b0]/55">
+          <p className="font-medium text-glass">{invoice.number}</p>
+          <p className="mt-0.5 truncate text-[11px] text-glass-muted">
             {invoice.client?.name ?? "—"}
             {invoice.project?.name ? ` · ${invoice.project.name}` : ""}
           </p>
@@ -111,7 +111,7 @@ export function InvoiceMobileCard({
         <MobileField label="Reste">{formatCurrency(remaining)}</MobileField>
       </div>
 
-      <div className="border-t border-[#8ba4c7]/[0.06] pt-2">{actions}</div>
+      <div className="border-t border-app pt-2">{actions}</div>
     </article>
   );
 }
@@ -137,14 +137,14 @@ export function PaymentMobileCard({
     <article className={financeMobileCard}>
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <p className="font-medium tabular-nums text-[#e8edf4]/88">
+          <p className="font-medium tabular-nums text-glass">
             {formatCurrency(payment.amount)}
           </p>
-          <p className="mt-0.5 text-[11px] text-[#9aa3b0]/55">
+          <p className="mt-0.5 text-[11px] text-glass-muted">
             {payment.reference ?? "Sans référence"}
           </p>
         </div>
-        <span className="shrink-0 text-[11px] text-[#8ba4c7]/50">
+        <span className="shrink-0 text-[11px] text-glass-muted">
           {formatDate(payment.date)}
         </span>
       </div>
@@ -159,7 +159,7 @@ export function PaymentMobileCard({
         </MobileField>
       </div>
 
-      <div className="border-t border-[#8ba4c7]/[0.06] pt-2">{actions}</div>
+      <div className="border-t border-app pt-2">{actions}</div>
     </article>
   );
 }

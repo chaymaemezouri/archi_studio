@@ -1,11 +1,14 @@
 import { cn } from "@/lib/utils";
 import { glassInput, glassSelect } from "@/lib/glass-styles";
+import { formSection, formSectionTitle, textLabel } from "@/lib/theme-classes";
 
-export const financeFieldClass = cn(glassInput, "px-3 py-2.5 [color-scheme:dark]");
-export const financeSelectClass = cn(glassSelect, "w-full px-3 py-2.5 [color-scheme:dark]");
+export const financeFieldClass = cn(glassInput, "px-3 py-2.5");
+export const financeSelectClass = cn(glassSelect, "w-full px-3 py-2.5");
 
-export const financeChipBtn =
-  "rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-white/55 transition hover:bg-white/[0.06] hover:text-studio-light";
+export const financeChipBtn = cn(
+  "rounded-lg border border-glass bg-[color:var(--glass-bg)] px-2 py-1",
+  "text-[11px] text-glass-muted transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+);
 
 export function FinanceFieldLabel({
   children,
@@ -15,9 +18,9 @@ export function FinanceFieldLabel({
   required?: boolean;
 }) {
   return (
-    <label className="mb-1.5 block text-[11px] font-medium text-white/40">
+    <label className={cn(textLabel, "mb-1.5 block")}>
       {children}
-      {required && <span className="text-white/28"> *</span>}
+      {required && <span className="text-glass-muted/70"> *</span>}
     </label>
   );
 }
@@ -32,9 +35,9 @@ export function FinanceFormSection({
   action?: React.ReactNode;
 }) {
   return (
-    <div className="space-y-3 rounded-xl border border-white/[0.06] bg-white/[0.02] p-3.5">
+    <div className={formSection}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-white/32">{title}</p>
+        <p className={formSectionTitle}>{title}</p>
         {action}
       </div>
       <div className="space-y-3">{children}</div>

@@ -82,8 +82,8 @@ interface ClientTabPanelsProps {
 function ProjectRow({ project }: { project: Project }) {
   return (
     <li className={detailChecklistItem}>
-      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-[#8ba4c7]/10">
-        <FolderKanban className="h-4 w-4 text-[#8ba4c7]/65" aria-hidden />
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-studio-muted">
+        <FolderKanban className="h-4 w-4 text-glass-muted" aria-hidden />
       </span>
       <div className="min-w-0 flex-1">
         <Link
@@ -665,7 +665,7 @@ export default function ClientTabPanels({ client, tab }: ClientTabPanelsProps) {
                     <span className="text-[#8ba4c7]/75">{log.user?.name ?? "Système"}</span>
                     {" · "}
                     {log.action}{" "}
-                    <span className="text-[#9aa3b0]/55">{log.entity}</span>
+                    <span className="text-glass-muted">{log.entity}</span>
                   </p>
                   <p className={detailChecklistDate}>
                     {formatRelativeTime(log.createdAt)}

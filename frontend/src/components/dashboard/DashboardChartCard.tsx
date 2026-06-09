@@ -34,7 +34,7 @@ export default function DashboardChartCard({
         {href && (
           <Link
             href={href}
-            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-white/40 transition hover:text-studio-light"
+            className="inline-flex items-center gap-0.5 text-[10px] font-medium text-glass-muted transition hover:text-studio-light"
           >
             {linkLabel}
             <ArrowUpRight className="h-3 w-3" />

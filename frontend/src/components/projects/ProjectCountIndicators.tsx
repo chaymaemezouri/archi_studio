@@ -89,25 +89,28 @@ function Item({
   const content = (
     <span
       className={cn(
-        "group/count inline-flex cursor-default items-center gap-0.5 rounded px-0.5 text-white/48 transition hover:text-white/70",
+        "group/count inline-flex cursor-default items-center gap-0.5 rounded px-0.5 text-glass-muted transition hover:text-glass-secondary",
         compact ? "text-[10px]" : "text-xs"
       )}
       title={showTooltips ? undefined : tooltipText}
       aria-label={tooltipText}
     >
       <Icon
-        className={cn("text-studio-light/55", compact ? "h-3 w-3" : "h-3.5 w-3.5")}
+        className={cn(
+          "text-[color:var(--pc-count-icon)]",
+          compact ? "h-3 w-3" : "h-3.5 w-3.5"
+        )}
         strokeWidth={1.75}
         aria-hidden
       />
       <span className="tabular-nums">{value}</span>
       {showHoverLabel && (
-        <span className="max-w-0 overflow-hidden whitespace-nowrap text-[9px] font-medium text-white/35 opacity-0 transition-all duration-200 group-hover/count:ml-0.5 group-hover/count:max-w-[3.5rem] group-hover/count:opacity-100">
+        <span className="max-w-0 overflow-hidden whitespace-nowrap text-[9px] font-medium text-glass-muted opacity-0 transition-all duration-200 group-hover/count:ml-0.5 group-hover/count:max-w-[3.5rem] group-hover/count:opacity-100">
           {shortLabel}
         </span>
       )}
       {!compact && !showHoverLabel && (
-        <span className="hidden text-white/35 sm:inline">{shortLabel}</span>
+        <span className="hidden text-glass-muted sm:inline">{shortLabel}</span>
       )}
     </span>
   );
@@ -161,16 +164,16 @@ export default function ProjectCountIndicators({
       .filter((s) => s.value > 0);
 
     if (segments.length === 0) {
-      return <span className={cn("text-[10px] text-white/25", className)}>—</span>;
+      return <span className={cn("text-[10px] text-glass-muted", className)}>—</span>;
     }
 
     return (
-      <p className={cn("truncate text-[10px] leading-snug text-white/45", className)}>
+      <p className={cn("truncate text-[10px] leading-snug text-glass-muted", className)}>
         {segments.map((seg, i) => (
           <span key={seg.key}>
-            {i > 0 && <span className="mx-1 text-white/20">·</span>}
+            {i > 0 && <span className="mx-1 text-glass-muted">·</span>}
             <Tooltip label={seg.tooltip}>
-              <span className="cursor-default transition hover:text-white/70">{seg.text}</span>
+              <span className="cursor-default transition hover:text-glass-secondary">{seg.text}</span>
             </Tooltip>
           </span>
         ))}

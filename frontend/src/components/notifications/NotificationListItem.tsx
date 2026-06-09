@@ -45,25 +45,25 @@ export default function NotificationListItem({
           <span
             className={cn(
               "truncate text-[13px] leading-snug",
-              unread ? "font-medium text-white/90" : "text-white/52"
+              unread ? "font-medium text-glass" : "text-glass-secondary"
             )}
           >
             {notification.title}
           </span>
-          <span className="shrink-0 text-[10px] tabular-nums text-white/28">{timeLabel}</span>
+          <span className="shrink-0 text-[10px] tabular-nums text-glass-muted">{timeLabel}</span>
         </span>
         <span className="mt-0.5 line-clamp-2 block text-[11px] leading-relaxed text-white/36">
           {notification.message}
         </span>
         {!compact && (
-          <span className="mt-1 block text-[10px] text-white/30">{meta.label}</span>
+          <span className="mt-1 block text-[10px] text-glass-muted">{meta.label}</span>
         )}
       </span>
     </div>
   );
 
   const rowClass = cn(
-    "w-full text-left transition hover:bg-white/[0.04]",
+    "w-full text-left transition hover:bg-[color:var(--glass-bg-hover)]",
     compact ? "px-3" : "border-l-2 border-transparent px-4 py-0.5",
     !compact && unread && "border-studio-light/50",
     className

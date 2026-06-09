@@ -11,6 +11,7 @@ import {
   filterChipInactive,
   glassPanel,
 } from "@/lib/glass-styles";
+import { modalOverlay } from "@/lib/theme-classes";
 import {
   useCreateDashboardTask,
   useCreateDeadline,
@@ -185,7 +186,7 @@ export default function QuickAddModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm"
+      className={cn("fixed inset-0 z-50 flex items-center justify-center p-4", modalOverlay)}
       role="dialog"
       aria-modal="true"
       aria-labelledby="quick-add-title"
@@ -194,17 +195,17 @@ export default function QuickAddModal({
       }}
     >
       <div className={cn(glassPanel, "flex max-h-[92dvh] w-full max-w-md flex-col overflow-hidden")}>
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-5 py-4">
+        <div className="flex items-center justify-between border-b border-app px-5 py-4">
           <div className="flex items-center gap-2">
             <span className="h-4 w-0.5 shrink-0 rounded-full bg-studio-light" />
-            <h3 id="quick-add-title" className="text-base font-semibold text-white/90">
+            <h3 id="quick-add-title" className="text-base font-semibold text-app-primary">
               Ajout rapide
             </h3>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-lg p-1.5 text-white/45 transition hover:bg-white/[0.06] hover:text-white/80"
+            className="rounded-lg p-1.5 text-glass-muted transition hover:bg-[color:var(--glass-bg-hover)] hover:text-glass"
             aria-label="Fermer"
           >
             <X className="h-4 w-4" />
@@ -339,7 +340,7 @@ export default function QuickAddModal({
             </QuickAddField>
           )}
 
-          <div className="flex justify-end gap-2 border-t border-white/[0.06] pt-4">
+          <div className="flex justify-end gap-2 border-t border-app pt-4">
             <button type="button" onClick={onClose} className={glassBtnSecondary}>
               Annuler
             </button>

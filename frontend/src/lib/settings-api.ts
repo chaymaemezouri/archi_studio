@@ -2,6 +2,8 @@ import api from "@/lib/api";
 import type { User } from "@/types";
 
 export interface StudioSettings {
+  id?: string;
+  studioId?: string;
   cabinetName?: string;
   cabinetAddress?: string;
   cabinetPhone?: string;
@@ -25,6 +27,45 @@ export interface StudioSettings {
   updatedAt?: string;
 }
 
+/** Champs acceptés par PATCH /settings (hors id, studioId, updatedAt). */
+const SETTINGS_UPDATE_KEYS = [
+  "cabinetName",
+  "cabinetAddress",
+  "cabinetPhone",
+  "cabinetEmail",
+  "cabinetLogo",
+  "cabinetCity",
+  "cabinetIce",
+  "cabinetRc",
+  "cabinetCnss",
+  "cabinetPatente",
+  "cabinetWebsite",
+  "cabinetCountry",
+  "bankName",
+  "bankRib",
+  "paymentTermsDays",
+  "invoiceFooter",
+  "tvaDefault",
+  "invoicePrefix",
+  "devisPrefix",
+  "cgv",
+] as const satisfies readonly (keyof StudioSettings)[];
+
+export type StudioSettingsUpdate = Pick<
+  StudioSettings,
+  (typeof SETTINGS_UPDATE_KEYS)[number]
+>;
+
+export function toUpdateSettingsPayload(form: StudioSettings): StudioSettingsUpdate {
+  const payload: StudioSettingsUpdate = {};
+  for (const key of SETTINGS_UPDATE_KEYS) {
+    if (key in form) {
+      (payload as Record<string, unknown>)[key] = form[key];
+    }
+  }
+  return payload;
+}
+
 export interface StudioTeamMember {
   id: string;
   email: string;
@@ -45,7 +86,10 @@ export async function fetchStudioSettings() {
 }
 
 export async function updateStudioSettings(payload: StudioSettings) {
-  const { data } = await api.patch<StudioSettings>("/settings", payload);
+  const { data } = await api.patch<StudioSettings>(
+    "/settings",
+    toUpdateSettingsPayload(payload)
+  );
   return data;
 }
 

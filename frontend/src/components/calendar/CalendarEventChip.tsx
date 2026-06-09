@@ -85,10 +85,10 @@ export function CalendarEventRow({
         {CALENDAR_EVENT_TYPE_LABELS[event.type]}
       </span>
       <div className="min-w-0 flex-1">
-        <p className={cn("text-[13px] font-medium text-[#e8edf4]/88", done && "line-through")}>
+        <p className={cn("text-[13px] font-medium text-glass", done && "line-through")}>
           {event.title}
         </p>
-        <p className="mt-0.5 text-[11px] text-[#9aa3b0]/55">
+        <p className="mt-0.5 text-[11px] text-glass-muted">
           {formatDate(event.date)}
           {time && ` · ${time}`}
           {event.projectName && ` · ${event.projectName}`}

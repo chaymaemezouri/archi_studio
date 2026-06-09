@@ -108,7 +108,7 @@ export default function CalendarEventDetailModal({
             {event.notes && (
               <div className="flex gap-2">
                 <dt className={calendarModalLabel}>Notes</dt>
-                <dd className="whitespace-pre-wrap text-[12px] text-white/50">
+                <dd className="whitespace-pre-wrap text-[12px] text-glass-muted">
                   {event.notes}
                 </dd>
               </div>
@@ -116,7 +116,7 @@ export default function CalendarEventDetailModal({
           </dl>
         </FinanceFormSection>
 
-        <div className="flex flex-wrap gap-2 border-t border-white/[0.06] pt-4">
+        <div className="flex flex-wrap gap-2 border-t border-app pt-4">
           {projectLink && (
             <Link href={projectLink} className={glassBtnSecondary}>
               Ouvrir projet

@@ -49,7 +49,7 @@ export default function ProjectDetailInfoBar({
           onChange={(e) =>
             updateProjectMeta.mutate({ phase: e.target.value as ProjectPhase })
           }
-          className={cn(detailSelect, "mt-px w-full  border-white/[0.06] bg-white/[0.03] py-0.5 text-[12px]")}
+          className={cn(detailSelect, "mt-px w-full  border-app bg-[color:var(--glass-bg)] py-0.5 text-[12px]")}
           aria-label="Phase du projet"
         >
           {PHASES.map(([value, label]) => (
@@ -66,7 +66,7 @@ export default function ProjectDetailInfoBar({
           className={cn(
             detailInfoValue,
             deadlineUrgent && "text-red-300/90",
-            !project.deadline && "text-white/30"
+            !project.deadline && "text-glass-muted"
           )}
         >
           {project.deadline

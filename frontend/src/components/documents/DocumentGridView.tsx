@@ -83,17 +83,17 @@ function DocumentCard({
           </button>
         </div>
       </div>
-      <p className="line-clamp-2 text-[13px] font-medium text-[#e8edf4]/88">{doc.name}</p>
+      <p className="line-clamp-2 text-[13px] font-medium text-glass">{doc.name}</p>
       <div className="mt-1.5 flex flex-wrap items-center gap-1">
         <Badge variant="studio">{DOCUMENT_TYPE_LABELS[doc.type] ?? doc.type}</Badge>
-        <span className="text-[10px] text-[#8ba4c7]/40">{formatDocumentSize(doc.size)}</span>
+        <span className="text-[10px] text-glass-muted">{formatDocumentSize(doc.size)}</span>
       </div>
       {(doc.projectName || doc.clientName) && (
-        <p className="mt-1 line-clamp-1 text-[11px] text-[#9aa3b0]/55">
+        <p className="mt-1 line-clamp-1 text-[11px] text-glass-muted">
           {doc.projectName ?? doc.clientName}
         </p>
       )}
-      <p className="mt-1 text-[10px] text-[#8ba4c7]/38">
+      <p className="mt-1 text-[10px] text-glass-muted">
         {formatDate(doc.uploadedAt ?? doc.createdAt)}
       </p>
     </div>

@@ -156,7 +156,7 @@ export default function InvoiceForm({
           <div>
             <FinanceFieldLabel required>Client</FinanceFieldLabel>
             <select
-              className={cn(financeSelectClass, !clientId && "text-white/35")}
+              className={cn(financeSelectClass, !clientId && "text-glass-muted")}
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
               required
@@ -174,7 +174,7 @@ export default function InvoiceForm({
           <div>
             <FinanceFieldLabel>Projet lié</FinanceFieldLabel>
             <select
-              className={cn(financeSelectClass, !projectId && "text-white/35")}
+              className={cn(financeSelectClass, !projectId && "text-glass-muted")}
               value={projectId}
               onChange={(e) => setProjectId(e.target.value)}
             >
@@ -210,7 +210,7 @@ export default function InvoiceForm({
           <div>
             <FinanceFieldLabel>Mode de paiement</FinanceFieldLabel>
             <select
-              className={cn(financeSelectClass, !paymentMethod && "text-white/35")}
+              className={cn(financeSelectClass, !paymentMethod && "text-glass-muted")}
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
             >
@@ -264,7 +264,7 @@ export default function InvoiceForm({
           {items.map((item, index) => (
             <div
               key={index}
-              className="grid grid-cols-1 gap-2 rounded-lg border border-white/[0.05] bg-white/[0.015] p-2 sm:grid-cols-12"
+              className="grid grid-cols-1 gap-2 rounded-lg border border-app bg-[color:var(--glass-bg)] p-2 sm:grid-cols-12"
             >
               <div className="sm:col-span-5">
                 <input
@@ -323,19 +323,19 @@ export default function InvoiceForm({
           />
         </div>
 
-        <div className="rounded-lg border border-white/[0.06] bg-white/[0.03] px-3.5 py-3 space-y-1">
-          <p className="text-[12px] text-white/45">Total HT : {formatCurrency(totalHT)}</p>
-          <p className="text-[12px] text-white/45">
+        <div className="rounded-lg border border-app bg-[color:var(--glass-bg)] px-3.5 py-3 space-y-1">
+          <p className="text-[12px] text-glass-muted">Total HT : {formatCurrency(totalHT)}</p>
+          <p className="text-[12px] text-glass-muted">
             TVA ({tva}%) : {formatCurrency(tvaAmount)}
           </p>
-          <p className="text-base font-semibold text-white/88">
+          <p className="text-base font-semibold text-glass">
             Total TTC : {formatCurrency(totalTTC)}
           </p>
-          <p className="text-[11px] italic text-white/35">{totalInWords}</p>
+          <p className="text-[11px] italic text-glass-muted">{totalInWords}</p>
         </div>
       </FinanceFormSection>
 
-      <div className="flex flex-col-reverse gap-2 border-t border-white/[0.06] pt-4 sm:flex-row sm:justify-end sm:gap-3">
+      <div className="flex flex-col-reverse gap-2 border-t border-app pt-4 sm:flex-row sm:justify-end sm:gap-3">
         <button
           type="button"
           disabled={loading}

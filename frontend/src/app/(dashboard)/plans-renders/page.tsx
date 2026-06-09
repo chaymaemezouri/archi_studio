@@ -249,11 +249,11 @@ export default function PlansRendersPage() {
     <div className={plansRendersListPage}>
       <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-[#e8edf4]/92 sm:text-2xl">
+          <h1 className="flex items-center gap-2 text-xl font-bold tracking-tight text-app-primary sm:text-2xl">
             <span className={accentBar} aria-hidden />
             Plans & Rendus
           </h1>
-          <p className="mt-0.5 text-xs text-[#8ba4c7]/45 sm:text-sm">
+          <p className="mt-0.5 text-xs text-glass-muted sm:text-sm">
             Centralisez vos plans, coupes, façades et rendus de projets
           </p>
         </div>
@@ -269,7 +269,7 @@ export default function PlansRendersPage() {
               setFilterOpen(false);
               setSortOpen(false);
             }}
-            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] px-4 text-sm font-medium text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
+            className="inline-flex h-9 items-center justify-center gap-2 rounded-lg border border-app bg-[color:var(--glass-bg)] px-4 text-sm font-medium text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
             aria-expanded={addMenuOpen}
             aria-haspopup="menu"
           >
@@ -285,7 +285,7 @@ export default function PlansRendersPage() {
                 type="button"
                 role="menuitem"
                 onClick={() => openCreate("PLAN")}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
               >
                 <Layers className="h-4 w-4" strokeWidth={1.75} /> Ajouter un plan
               </button>
@@ -293,7 +293,7 @@ export default function PlansRendersPage() {
                 type="button"
                 role="menuitem"
                 onClick={() => openCreate("RENDER")}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
               >
                 <ImageIcon className="h-4 w-4" strokeWidth={1.75} /> Ajouter un rendu
               </button>
@@ -320,7 +320,7 @@ export default function PlansRendersPage() {
                 setFilterOpen(false);
                 setSortOpen(false);
               }}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-[#8ba4c7]/[0.08] bg-white/[0.03] text-[#e8edf4]/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-app bg-[color:var(--glass-bg)] text-app-primary/80 shadow-[0_4px_16px_rgba(0,0,0,0.35)] transition hover:border-[#8ba4c7]/[0.14] hover:bg-[#8ba4c7]/[0.05] hover:text-studio-light"
               aria-label="Ajouter"
               aria-expanded={addMenuOpen}
               aria-haspopup="menu"
@@ -336,7 +336,7 @@ export default function PlansRendersPage() {
                   type="button"
                   role="menuitem"
                   onClick={() => openCreate("PLAN")}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 >
                   <Layers className="h-4 w-4" strokeWidth={1.75} /> Ajouter un plan
                 </button>
@@ -344,7 +344,7 @@ export default function PlansRendersPage() {
                   type="button"
                   role="menuitem"
                   onClick={() => openCreate("RENDER")}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-white/55 hover:bg-white/[0.06] hover:text-studio-light"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 >
                   <ImageIcon className="h-4 w-4" strokeWidth={1.75} /> Ajouter un rendu
                 </button>
@@ -354,7 +354,7 @@ export default function PlansRendersPage() {
 
           <div className="relative min-w-0 flex-1 sm:max-w-md">
             <Search
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-glass-muted"
               strokeWidth={1.75}
             />
             <input
@@ -540,7 +540,7 @@ export default function PlansRendersPage() {
               )}
             </div>
 
-            <div className="flex rounded-lg border border-[#8ba4c7]/[0.06] bg-white/[0.03] p-0.5">
+            <div className="flex rounded-lg border border-app bg-[color:var(--glass-bg)] p-0.5">
               <button
                 type="button"
                 onClick={() => setView("grid")}
@@ -548,7 +548,7 @@ export default function PlansRendersPage() {
                   "rounded-md p-2 transition",
                   view === "grid"
                     ? "bg-studio-muted text-studio-light"
-                    : "text-white/45 hover:text-white/70"
+                    : "text-glass-muted hover:text-glass-secondary"
                 )}
                 aria-label="Vue grille"
               >
@@ -561,7 +561,7 @@ export default function PlansRendersPage() {
                   "rounded-md p-2 transition",
                   view === "list"
                     ? "bg-studio-muted text-studio-light"
-                    : "text-white/45 hover:text-white/70"
+                    : "text-glass-muted hover:text-glass-secondary"
                 )}
                 aria-label="Vue liste"
               >

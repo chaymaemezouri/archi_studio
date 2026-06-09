@@ -37,14 +37,14 @@ export default function DashboardProjectGlassCard({
       />
 
       <div className={dashboardGlassCardFooter}>
-        <p className="truncate text-[12px] font-semibold leading-snug text-white/95 transition group-hover/card:text-white">
+        <p className="truncate text-[12px] font-semibold leading-snug text-[color:var(--pc-title)] transition group-hover/card:text-studio-light">
           {project.name}
         </p>
         {clientLabel && (
-          <p className="mt-0.5 truncate text-[10px] text-white/55">{clientLabel}</p>
+          <p className="mt-0.5 truncate text-[10px] text-[color:var(--pc-subtitle)]">{clientLabel}</p>
         )}
         {metaLine && (
-          <p className="mt-0.5 truncate text-[9px] text-white/38">{metaLine}</p>
+          <p className="mt-0.5 truncate text-[9px] text-[color:var(--pc-meta)]">{metaLine}</p>
         )}
       </div>
     </Link>
