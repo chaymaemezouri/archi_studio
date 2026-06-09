@@ -32,4 +32,12 @@ jobs:
             -o BatchMode=yes \
             -o StrictHostKeyChecking=yes \
             "${VPS_USER}@${VPS_HOST}" \
-            "cd '${VPS_PATH}' && bash deploy/deploy.sh"
+            "set -euo pipefail
+            cd '${VPS_PATH}'
+            if [[ ! -f deploy/deploy.sh ]]; then
+              echo '==> Bootstrap: deploy/deploy.sh missing, pulling main...'
+              git fetch origin main
+              git checkout main 2>/dev/null || git checkout -B main origin/main
+              git reset --hard origin/main
+            fi
+            bash deploy/deploy.sh"
