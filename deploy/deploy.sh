@@ -11,9 +11,10 @@ BRANCH="${DEPLOY_BRANCH:-main}"
 git_fetch_origin() {
   local branch="$1"
   if [[ -n "${GH_TOKEN:-}" ]]; then
+    local repo_path
+    repo_path="$(git remote get-url origin | sed -E 's#(https://github.com/|git@github.com:)##; s#\.git$##')"
     GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
-      -c "http.https://github.com/.extraheader=AUTHORIZATION: bearer ${GH_TOKEN}" \
-      fetch origin "$branch"
+      fetch "https://x-access-token:${GH_TOKEN}@github.com/${repo_path}.git" "$branch"
   else
     git fetch origin "$branch"
   fi
