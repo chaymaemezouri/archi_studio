@@ -1,5 +1,7 @@
 import { Suspense } from "react";
 
+export const dynamic = "force-dynamic";
+
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-app-shell p-4">
