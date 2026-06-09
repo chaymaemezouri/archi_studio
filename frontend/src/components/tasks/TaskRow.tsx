@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import {
   CheckCircle2,
   Copy,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
 import { useDialog } from "@/components/providers/DialogProvider";
+import { portalMenuStyle, usePortalRowMenu } from "@/hooks/usePortalRowMenu";
 import {
   useCompleteTask,
   useDeleteTask,
@@ -35,6 +36,9 @@ import {
 import { glassBtnIcon, glassMenu } from "@/lib/glass-styles";
 import { cn, formatDate } from "@/lib/utils";
 
+const MENU_WIDTH = 192;
+const MENU_HEIGHT = 280;
+
 interface TaskRowProps {
   task: Task;
   onEdit: (task: Task) => void;
@@ -56,8 +60,10 @@ export function TaskListHeader() {
 
 export default function TaskRow({ task, onEdit }: TaskRowProps) {
   const { confirm } = useDialog();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
+  const { ref, menuRef, menuOpen, menuPos, closeMenu, toggleMenu } = usePortalRowMenu(
+    MENU_WIDTH,
+    MENU_HEIGHT
+  );
   const completeTask = useCompleteTask();
   const updateStatus = useUpdateTaskStatus();
   const deleteTask = useDeleteTask();
@@ -67,15 +73,6 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
   const closed = isTaskClosed(task.status);
   const projectName = task.projectName ?? task.project?.name;
   const clientName = task.clientName ?? task.project?.client?.name;
-
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onClick = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setMenuOpen(false);
-    };
-    document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
-  }, [menuOpen]);
 
   const handleDelete = async () => {
     if (
@@ -89,8 +86,71 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
       return;
     }
     deleteTask.mutate(task.id);
-    setMenuOpen(false);
+    closeMenu();
   };
+
+  const menuPanel =
+    menuOpen && menuPos ? (
+      <div
+        ref={menuRef}
+        role="menu"
+        className={cn(glassMenu, "fixed z-[200] w-48 py-1")}
+        style={portalMenuStyle(menuPos)}
+      >
+        <MenuBtn onClick={() => { onEdit(task); closeMenu(); }}>
+          <Pencil className="h-4 w-4" /> Modifier
+        </MenuBtn>
+        {task.status !== "IN_PROGRESS" && task.status !== "DONE" && (
+          <MenuBtn
+            onClick={() => {
+              updateStatus.mutate({ id: task.id, status: "IN_PROGRESS" });
+              closeMenu();
+            }}
+          >
+            <PlayCircle className="h-4 w-4" /> En cours
+          </MenuBtn>
+        )}
+        {task.status !== "DONE" && (
+          <MenuBtn
+            onClick={() => {
+              completeTask.mutate(task.id);
+              closeMenu();
+            }}
+          >
+            <CheckCircle2 className="h-4 w-4" /> Terminer
+          </MenuBtn>
+        )}
+        {task.projectId && (
+          <Link
+            href={`/projects/${task.projectId}?tab=tasks`}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+            onClick={closeMenu}
+          >
+            <ExternalLink className="h-4 w-4" /> Ouvrir projet
+          </Link>
+        )}
+        {task.clientId && (
+          <Link
+            href={`/clients/${task.clientId}`}
+            className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+            onClick={closeMenu}
+          >
+            <ExternalLink className="h-4 w-4" /> Ouvrir client
+          </Link>
+        )}
+        <MenuBtn
+          onClick={() => {
+            duplicateTask.mutate(task);
+            closeMenu();
+          }}
+        >
+          <Copy className="h-4 w-4" /> Dupliquer
+        </MenuBtn>
+        <MenuBtn danger onClick={() => void handleDelete()}>
+          <Trash2 className="h-4 w-4" /> Supprimer
+        </MenuBtn>
+      </div>
+    ) : null;
 
   return (
     <div className={cn(tasksListRow, closed && "opacity-65")}>
@@ -104,7 +164,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
           {task.title}
         </p>
         {task.description && (
-          <p className="mt-0.5 line-clamp-1 text-[11px] text-[#9aa3b0]/50">
+          <p className="mt-0.5 line-clamp-1 text-[11px] text-glass-muted">
             {task.description}
           </p>
         )}
@@ -115,7 +175,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         )}
       </div>
 
-      <span className="text-glass-secondary">
+      <span className="min-w-0 text-glass-secondary">
         <span className="text-[10px] text-glass-muted md:hidden">Projet · </span>
         {task.projectId && projectName ? (
           <Link href={`/projects/${task.projectId}?tab=tasks`} className={tasksListLink}>
@@ -126,7 +186,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         )}
       </span>
 
-      <span className="text-glass-secondary">
+      <span className="min-w-0 text-glass-secondary">
         <span className="text-[10px] text-glass-muted md:hidden">Client · </span>
         {task.clientId && clientName ? (
           <Link href={`/clients/${task.clientId}`} className={tasksListLink}>
@@ -154,71 +214,21 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         </Badge>
       </span>
 
-      <div ref={ref} className="relative justify-self-end">
+      <div ref={ref} className="relative z-10 flex shrink-0 justify-end justify-self-end">
         <button
           type="button"
-          onClick={() => setMenuOpen(!menuOpen)}
-          className={cn(glassBtnIcon, "h-8 w-8 border-0")}
+          onClick={toggleMenu}
+          className={cn(
+            glassBtnIcon,
+            "h-8 w-8 shrink-0 border-glass bg-[color:var(--glass-input-bg)] text-glass-muted",
+            "hover:text-studio-light"
+          )}
           aria-label="Actions tâche"
+          aria-expanded={menuOpen}
         >
-          <MoreVertical className="h-4 w-4" />
+          <MoreVertical className="h-4 w-4" strokeWidth={2} />
         </button>
-        {menuOpen && (
-          <div className={cn(glassMenu, "absolute right-0 top-full z-20 mt-1 w-48")}>
-            <MenuBtn onClick={() => { onEdit(task); setMenuOpen(false); }}>
-              <Pencil className="h-4 w-4" /> Modifier
-            </MenuBtn>
-            {task.status !== "IN_PROGRESS" && task.status !== "DONE" && (
-              <MenuBtn
-                onClick={() => {
-                  updateStatus.mutate({ id: task.id, status: "IN_PROGRESS" });
-                  setMenuOpen(false);
-                }}
-              >
-                <PlayCircle className="h-4 w-4" /> En cours
-              </MenuBtn>
-            )}
-            {task.status !== "DONE" && (
-              <MenuBtn
-                onClick={() => {
-                  completeTask.mutate(task.id);
-                  setMenuOpen(false);
-                }}
-              >
-                <CheckCircle2 className="h-4 w-4" /> Terminer
-              </MenuBtn>
-            )}
-            {task.projectId && (
-              <Link
-                href={`/projects/${task.projectId}?tab=tasks`}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
-                onClick={() => setMenuOpen(false)}
-              >
-                <ExternalLink className="h-4 w-4" /> Ouvrir projet
-              </Link>
-            )}
-            {task.clientId && (
-              <Link
-                href={`/clients/${task.clientId}`}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
-                onClick={() => setMenuOpen(false)}
-              >
-                <ExternalLink className="h-4 w-4" /> Ouvrir client
-              </Link>
-            )}
-            <MenuBtn
-              onClick={() => {
-                duplicateTask.mutate(task);
-                setMenuOpen(false);
-              }}
-            >
-              <Copy className="h-4 w-4" /> Dupliquer
-            </MenuBtn>
-            <MenuBtn danger onClick={handleDelete}>
-              <Trash2 className="h-4 w-4" /> Supprimer
-            </MenuBtn>
-          </div>
-        )}
+        {typeof document !== "undefined" && menuPanel ? createPortal(menuPanel, document.body) : null}
       </div>
     </div>
   );

@@ -7,9 +7,9 @@ import {
   listPanel,
   listRowBase,
   listShell,
-  listTable,
   pageStack,
 } from "@/lib/theme-classes";
+import { glassPanel } from "@/lib/glass-styles";
 
 export function taskBoardDeadlineAccent(
   badge: ReturnType<typeof getTaskDeadlineBadge>
@@ -51,7 +51,7 @@ export const tasksListPage = pageStack;
 
 export const tasksListPanel = listPanel;
 
-export const tasksListTable = listTable;
+export const tasksListTable = cn(glassPanel, "overflow-x-auto overflow-y-visible");
 
 export const tasksListFilterChip =
   "rounded-lg px-2.5 py-1 text-[11px] font-medium transition";
@@ -59,12 +59,12 @@ export const tasksListFilterChip =
 export const tasksListRow = cn(
   listRowBase,
   "grid grid-cols-1 gap-2 px-4 py-2.5 text-[13px]",
-  "md:grid-cols-[1.4fr_0.9fr_0.8fr_0.8fr_0.6fr_0.7fr_2rem] md:items-center md:gap-3"
+  "md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_2.75rem] md:items-center md:gap-3"
 );
 
 export const tasksListHeader = cn(
   listHeaderBase,
-  "hidden grid-cols-[1.4fr_0.9fr_0.8fr_0.8fr_0.6fr_0.7fr_2rem] gap-3 px-4 py-2 md:grid"
+  "hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_2.75rem] gap-3 px-4 py-2 md:grid"
 );
 
 export const tasksListLink = listLink;
