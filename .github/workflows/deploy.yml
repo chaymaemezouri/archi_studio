@@ -8,6 +8,9 @@ concurrency:
   group: deploy-production
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   deploy:
     name: Deploy a2workspace.studio
@@ -19,6 +22,7 @@ jobs:
           VPS_HOST: ${{ secrets.VPS_HOST }}
           VPS_USER: ${{ secrets.VPS_USER }}
           VPS_PATH: ${{ secrets.VPS_PATH }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           VPS_HOST="$(printf '%s' "$VPS_HOST" | tr -d '\r\n' | xargs)"
@@ -33,10 +37,13 @@ jobs:
             -o StrictHostKeyChecking=yes \
             "${VPS_USER}@${VPS_HOST}" \
             "set -euo pipefail
+            export GH_TOKEN='${{ secrets.GITHUB_TOKEN }}'
             cd '${VPS_PATH}'
             if [[ ! -f deploy/deploy.sh ]]; then
               echo '==> Bootstrap: deploy/deploy.sh missing, pulling main...'
-              git fetch origin main
+              GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
+                -c 'http.https://github.com/.extraheader=AUTHORIZATION: bearer '"\${GH_TOKEN}" \
+                fetch origin main
               git checkout main 2>/dev/null || git checkout -B main origin/main
               git reset --hard origin/main
             fi

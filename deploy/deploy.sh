@@ -8,6 +8,17 @@ cd "$ROOT"
 
 BRANCH="${DEPLOY_BRANCH:-main}"
 
+git_fetch_origin() {
+  local branch="$1"
+  if [[ -n "${GH_TOKEN:-}" ]]; then
+    GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
+      -c "http.https://github.com/.extraheader=AUTHORIZATION: bearer ${GH_TOKEN}" \
+      fetch origin "$branch"
+  else
+    git fetch origin "$branch"
+  fi
+}
+
 echo "==> Deploy Architecture Studio"
 echo "    path:   $ROOT"
 echo "    branch: $BRANCH"
@@ -19,7 +30,7 @@ if [[ ! -f .env ]]; then
 fi
 
 echo "==> git fetch + reset"
-git fetch origin "$BRANCH"
+git_fetch_origin "$BRANCH"
 git checkout "$BRANCH" 2>/dev/null || git checkout -B "$BRANCH" "origin/$BRANCH"
 git reset --hard "origin/$BRANCH"
 
