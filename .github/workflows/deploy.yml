@@ -21,6 +21,9 @@ jobs:
           VPS_PATH: ${{ secrets.VPS_PATH }}
         run: |
           set -euo pipefail
+          VPS_HOST="$(printf '%s' "$VPS_HOST" | tr -d '\r\n' | xargs)"
+          VPS_USER="$(printf '%s' "$VPS_USER" | tr -d '\r\n' | xargs)"
+          VPS_PATH="$(printf '%s' "$VPS_PATH" | tr -d '\r\n' | xargs)"
           install -m 700 -d ~/.ssh
           printf '%s' "$SSH_KEY" | tr -d '\r' > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
