@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Payment, PaymentMethod } from "@/types";
 import type { PaymentInput } from "@/hooks/usePayments";
 import { cn, formatCurrency } from "@/lib/utils";
@@ -27,13 +27,48 @@ type InvoiceOption = {
   paidAmount: number;
   clientId?: string | null;
   projectId?: string | null;
+  client?: { id: string; name: string } | null;
+  project?: {
+    id: string;
+    name: string;
+    clientId?: string | null;
+    client?: { id: string; name: string } | null;
+  } | null;
 };
+
+type ProjectOption = {
+  id: string;
+  name: string;
+  clientId?: string | null;
+  client?: { id: string; name: string } | null;
+};
+
+function resolveClientId(
+  invoice: InvoiceOption | undefined,
+  projectId: string,
+  projects: ProjectOption[]
+): string {
+  if (invoice?.clientId) return invoice.clientId;
+  if (invoice?.client?.id) return invoice.client.id;
+
+  if (invoice?.project?.clientId) return invoice.project.clientId;
+  if (invoice?.project?.client?.id) return invoice.project.client.id;
+
+  const linkedProjectId = invoice?.projectId ?? projectId;
+  if (linkedProjectId) {
+    const project = projects.find((p) => p.id === linkedProjectId);
+    if (project?.clientId) return project.clientId;
+    if (project?.client?.id) return project.client.id;
+  }
+
+  return "";
+}
 
 interface PaymentFormProps {
   payment?: Payment | null;
   invoices: InvoiceOption[];
   clients: { id: string; name: string }[];
-  projects: { id: string; name: string; clientId?: string | null }[];
+  projects: ProjectOption[];
   onSubmit: (payload: PaymentInput) => void;
   onCancel: () => void;
   loading: boolean;
@@ -64,9 +99,14 @@ export default function PaymentForm({
     () => invoices.find((inv) => inv.id === invoiceId),
     [invoices, invoiceId]
   );
-  const remaining = selectedInvoice
-    ? Math.max(0, selectedInvoice.totalTTC - selectedInvoice.paidAmount)
-    : null;
+  const remaining = useMemo(() => {
+    if (!selectedInvoice) return null;
+    let max = Math.max(0, selectedInvoice.totalTTC - selectedInvoice.paidAmount);
+    if (payment?.invoiceId && payment.invoiceId === invoiceId) {
+      max += payment.amount ?? 0;
+    }
+    return max;
+  }, [selectedInvoice, payment, invoiceId]);
 
   const filteredProjects = useMemo(() => {
     if (!clientId) return projects;
@@ -76,20 +116,40 @@ export default function PaymentForm({
   const onInvoiceChange = (nextInvoiceId: string) => {
     setInvoiceId(nextInvoiceId);
     const inv = invoices.find((x) => x.id === nextInvoiceId);
-    if (!inv) return;
-    if (inv.clientId) setClientId(inv.clientId);
-    if (inv.projectId) setProjectId(inv.projectId);
+    if (!inv) {
+      setClientId("");
+      setProjectId("");
+      return;
+    }
+    const nextProjectId = inv.projectId ?? "";
+    setProjectId(nextProjectId);
+    setClientId(resolveClientId(inv, nextProjectId, projects));
     setAmount(Math.max(0, inv.totalTTC - inv.paidAmount));
   };
 
+  const onProjectChange = (nextProjectId: string) => {
+    setProjectId(nextProjectId);
+    if (!nextProjectId) return;
+    const project = projects.find((p) => p.id === nextProjectId);
+    if (project?.clientId) setClientId(project.clientId);
+  };
+
+  useEffect(() => {
+    if (clientId) return;
+    const inv = invoiceId ? invoices.find((x) => x.id === invoiceId) : undefined;
+    const resolved = resolveClientId(inv, projectId, projects);
+    if (resolved) setClientId(resolved);
+  }, [invoiceId, clientId, projectId, invoices, projects]);
+
   const amountExceeds = remaining !== null && amount > remaining + 0.001;
+  const canSubmit = (clientId || invoiceId) && date && method && amount > 0 && !amountExceeds;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!clientId || !date || !method || !(amount > 0) || amountExceeds) return;
+    if (!canSubmit) return;
     onSubmit({
       invoiceId: invoiceId || undefined,
-      clientId,
+      clientId: clientId || undefined,
       projectId: projectId || undefined,
       amount,
       date,
@@ -121,7 +181,9 @@ export default function PaymentForm({
           </select>
           {remaining !== null && (
             <p className="mt-1.5 text-[11px] text-studio-light/65">
-              Reste à payer : {formatCurrency(remaining)}
+              {payment?.invoiceId === invoiceId
+                ? `Montant modifiable jusqu'à ${formatCurrency(remaining)}`
+                : `Reste à payer : ${formatCurrency(remaining)}`}
             </p>
           )}
         </div>
@@ -133,7 +195,7 @@ export default function PaymentForm({
               className={cn(paymentSelectClass, !clientId && "text-glass-muted")}
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              required
+              required={!invoiceId}
             >
               <option value="" className="bg-[#101014]">
                 Sélectionner…
@@ -150,7 +212,7 @@ export default function PaymentForm({
             <select
               className={cn(paymentSelectClass, !projectId && "text-glass-muted")}
               value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
+              onChange={(e) => onProjectChange(e.target.value)}
             >
               <option value="" className="bg-[#101014]">
                 Aucun
@@ -257,7 +319,7 @@ export default function PaymentForm({
         </button>
         <button
           type="submit"
-          disabled={loading || !clientId || amountExceeds || !(amount > 0)}
+          disabled={loading || !canSubmit}
           className={cn(glassBtnPrimary, "w-full sm:w-auto")}
         >
           {loading

@@ -30,17 +30,18 @@ export const projectCardFooter = cn(
 
 export const projectCardActionBtn = cn(
   "flex h-7 w-7 shrink-0 items-center justify-center rounded-lg",
-  "border border-[color:var(--studio-border)] bg-[color:var(--glass-bg)] text-glass-secondary backdrop-blur-md",
+  "border border-[color:var(--pc-overlay-btn-border)]",
+  "bg-[color:var(--pc-overlay-btn-bg)] text-[color:var(--pc-overlay-btn-color)]",
+  "shadow-sm backdrop-blur-md",
   "opacity-[var(--pc-action-opacity)] transition duration-200",
-  "hover:border-[color:var(--studio-border)] hover:bg-studio-muted hover:text-studio-light",
-  "group-hover/card:opacity-100",
-  "dark:bg-black/50 dark:text-glass-secondary"
+  "hover:border-[color:var(--pc-overlay-btn-border)]",
+  "hover:bg-[color:var(--pc-overlay-btn-hover-bg)] hover:text-[color:var(--pc-overlay-btn-hover-color)]",
+  "group-hover/card:opacity-100"
 );
 
 export const projectCardImageActionGroup = cn(
   detailIconActionGroup,
-  "bg-[color:var(--pc-action-bg)] backdrop-blur-md",
-  "dark:bg-black/45"
+  "border-[color:var(--pc-action-group-border)] bg-[color:var(--pc-action-bg)] shadow-sm backdrop-blur-md"
 );
 
 export const projectCardImageOverlayTop =

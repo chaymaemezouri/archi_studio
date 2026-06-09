@@ -11,6 +11,7 @@ import {
   documentsListLink,
   documentsListRow,
 } from "./documents-list-ui";
+import { useDialog } from "@/components/providers/DialogProvider";
 import { useDeleteDocument } from "@/hooks/useDocuments";
 import {
   canPreviewDocument,
@@ -43,12 +44,22 @@ export function DocumentListHeader() {
 }
 
 export default function DocumentRow({ doc, onEdit, onPreview }: DocumentRowProps) {
+  const { confirm } = useDialog();
   const deleteDoc = useDeleteDocument();
   const href = resolveMediaUrl(doc.url) ?? doc.url;
   const previewable = canPreviewDocument(doc);
 
-  const handleDelete = () => {
-    if (!window.confirm(`Supprimer « ${doc.name} » ?`)) return;
+  const handleDelete = async () => {
+    if (
+      !(await confirm({
+        title: "Supprimer le document",
+        message: `Supprimer « ${doc.name} » ?`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      }))
+    ) {
+      return;
+    }
     deleteDoc.mutate(doc.id);
   };
 

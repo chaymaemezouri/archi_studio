@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import DialogProvider from "@/components/providers/DialogProvider";
 import QueryProvider from "@/components/providers/QueryProvider";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import ThemeScript from "@/components/providers/ThemeScript";
@@ -29,7 +30,9 @@ export default function RootLayout({
         className={`${inter.variable} min-h-screen bg-dark-base text-text-primary antialiased`}
       >
         <ThemeProvider>
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <DialogProvider>{children}</DialogProvider>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

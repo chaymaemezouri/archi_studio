@@ -125,7 +125,6 @@ export default function NotificationsPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className={cn(glassPanel, "py-12")}>
           <EmptyState
             icon={Bell}
             title={
@@ -137,7 +136,6 @@ export default function NotificationsPage() {
             }
             description="Les rappels apparaissent automatiquement pour les tâches en retard, réunions du jour et deadlines."
           />
-        </div>
       ) : (
         <div className={cn(glassPanel, "overflow-hidden py-1")}>
           {filtered.map((notif) => (

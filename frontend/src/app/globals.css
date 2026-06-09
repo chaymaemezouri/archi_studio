@@ -254,7 +254,13 @@
   --pc-progress-text: rgba(255, 255, 255, 0.62);
   --pc-progress-text-zero: rgba(255, 255, 255, 0.26);
   --pc-action-bg: rgba(0, 0, 0, 0.5);
+  --pc-action-group-border: rgba(255, 255, 255, 0.12);
   --pc-action-opacity: 0.75;
+  --pc-overlay-btn-bg: rgba(0, 0, 0, 0.52);
+  --pc-overlay-btn-color: rgba(255, 255, 255, 0.9);
+  --pc-overlay-btn-border: rgba(255, 255, 255, 0.16);
+  --pc-overlay-btn-hover-bg: rgba(0, 0, 0, 0.68);
+  --pc-overlay-btn-hover-color: #ffffff;
   --pc-count-icon: rgba(139, 164, 199, 0.55);
 
   /* Accents deadline tâches (kanban) */
@@ -511,8 +517,14 @@
   --pc-progress-track: #e2e8f0;
   --pc-progress-text: #334155;
   --pc-progress-text-zero: #94a3b8;
-  --pc-action-bg: rgba(255, 255, 255, 0.92);
+  --pc-action-bg: rgba(255, 255, 255, 0.96);
+  --pc-action-group-border: #e2e8f0;
   --pc-action-opacity: 1;
+  --pc-overlay-btn-bg: #f8fafc;
+  --pc-overlay-btn-color: #475569;
+  --pc-overlay-btn-border: #cbd5e1;
+  --pc-overlay-btn-hover-bg: #e2e8f0;
+  --pc-overlay-btn-hover-color: #0f172a;
   --pc-count-icon: #2563eb;
 
   /* Accents deadline tâches — lignes visibles */

@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import Badge from "@/components/ui/Badge";
+import { useDialog } from "@/components/providers/DialogProvider";
 import {
   useCompleteTask,
   useDeleteTask,
@@ -54,6 +55,7 @@ export function TaskListHeader() {
 }
 
 export default function TaskRow({ task, onEdit }: TaskRowProps) {
+  const { confirm } = useDialog();
   const [menuOpen, setMenuOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const completeTask = useCompleteTask();
@@ -75,8 +77,17 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
     return () => document.removeEventListener("mousedown", onClick);
   }, [menuOpen]);
 
-  const handleDelete = () => {
-    if (!window.confirm(`Supprimer la tâche « ${task.title} » ?`)) return;
+  const handleDelete = async () => {
+    if (
+      !(await confirm({
+        title: "Supprimer la tâche",
+        message: `Supprimer la tâche « ${task.title} » ?`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      }))
+    ) {
+      return;
+    }
     deleteTask.mutate(task.id);
     setMenuOpen(false);
   };

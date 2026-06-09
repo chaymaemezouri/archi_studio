@@ -26,6 +26,7 @@ import { PROJECT_LIST_DEADLINE_PILL } from "../list/project-list-utils";
 import { resolveMediaUrl } from "@/lib/assets";
 import type { Project } from "@/types";
 import { cn } from "@/lib/utils";
+import { detailIconActionBtn } from "../detail/project-detail-ui";
 import {
   dashboardProjectCardImageOverlayBottom,
   dashboardProjectCardImageOverlayTop,
@@ -38,18 +39,55 @@ import {
 
 import type { ProjectMenuQuickAdd } from "../ProjectCardMenu";
 
+const PROJECT_DISPLAY_STATUS_MINIMAL_TEXT: Record<ProjectDisplayStatus, string> = {
+  archived: "text-glass-muted",
+  delivered: "text-emerald-600 dark:text-emerald-400/90",
+  overdue: "text-red-600 dark:text-red-400/90",
+  today: "text-amber-700 dark:text-amber-400/90",
+  tomorrow: "text-amber-700 dark:text-amber-300/85",
+  soon: "text-sky-700 dark:text-sky-400/85",
+  urgent: "text-orange-700 dark:text-orange-400/85",
+  new: "text-sky-700 dark:text-sky-400/85",
+  in_progress: "text-glass-secondary",
+};
+
 export function ProjectStatusBadge({
   status,
   className,
   size = "md",
   context = "card",
+  variant = "pill",
 }: {
   status: ProjectDisplayStatus;
   className?: string;
   size?: "sm" | "md";
   /** Liste : pills plus contrastées sur fond blanc */
   context?: "card" | "list";
+  /** minimal : discret, pour le corps de carte */
+  variant?: "pill" | "minimal";
 }) {
+  if (variant === "minimal") {
+    return (
+      <span
+        className={cn(
+          "inline-flex items-center gap-1 rounded-md border border-[color:var(--glass-input-border)]",
+          "bg-[color:var(--glass-bg-hover)] px-1.5 py-0.5 text-[9px] font-medium leading-none",
+          PROJECT_DISPLAY_STATUS_MINIMAL_TEXT[status],
+          className
+        )}
+      >
+        <span
+          className={cn(
+            "h-1 w-1 shrink-0 rounded-full",
+            PROJECT_DISPLAY_STATUS_ACCENT[status]
+          )}
+          aria-hidden
+        />
+        {PROJECT_DISPLAY_STATUS_LABELS[status]}
+      </span>
+    );
+  }
+
   const listPill =
     context === "list"
       ? PROJECT_LIST_DEADLINE_PILL[status]
@@ -245,7 +283,9 @@ export function ProjectCardImageActions({
             <Star
               className={cn(
                 "h-3.5 w-3.5",
-                project.isFavorite ? "fill-amber-400 text-amber-400" : ""
+                project.isFavorite
+                  ? "fill-amber-400 text-amber-400"
+                  : "text-[color:var(--pc-overlay-btn-color)]"
               )}
             />
           </button>
@@ -272,22 +312,22 @@ export function ProjectCardImageActions({
               }}
             />
           )}
-          <Tooltip label="Ajouter une deadline">
-            <button
-              type="button"
-              onClick={onQuickDeadline}
-              className={projectCardActionBtn}
-              aria-label="Ajouter une deadline"
-            >
-              <CalendarPlus className="h-3.5 w-3.5" strokeWidth={1.75} />
-            </button>
-          </Tooltip>
+          <IconActionButton
+            label="Ajouter une deadline"
+            icon={CalendarPlus}
+            tone="upload"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              onQuickDeadline(e);
+            }}
+          />
           <ProjectCardMenu
             project={project}
             variant="list"
             onEdit={onEdit}
             onQuickAdd={onQuickAdd}
-            triggerClassName={cn(projectCardActionBtn, "!rounded-lg !h-6 !w-6")}
+            triggerClassName={cn(detailIconActionBtn, "!h-7 !w-7 !rounded-md")}
           />
         </div>
       </div>

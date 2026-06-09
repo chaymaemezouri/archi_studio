@@ -59,10 +59,26 @@ export class PaymentsService {
             status: true,
             totalTTC: true,
             paidAmount: true,
+            client: { select: { id: true, name: true } },
+            project: {
+              select: {
+                id: true,
+                name: true,
+                clientId: true,
+                client: { select: { id: true, name: true } },
+              },
+            },
           },
         },
         client: { select: { id: true, name: true } },
-        project: { select: { id: true, name: true } },
+        project: {
+          select: {
+            id: true,
+            name: true,
+            clientId: true,
+            client: { select: { id: true, name: true } },
+          },
+        },
       },
     });
   }
@@ -83,6 +99,40 @@ export class PaymentsService {
     });
     if (!payment) throw new NotFoundException('Payment not found');
     return payment;
+  }
+
+  private async resolvePaymentLinks(dto: {
+    clientId?: string;
+    projectId?: string;
+    invoiceId?: string;
+  }) {
+    let clientId = dto.clientId;
+    let projectId = dto.projectId;
+
+    if (dto.invoiceId) {
+      const invoice = await this.prisma.invoice.findUnique({
+        where: { id: dto.invoiceId },
+        select: {
+          clientId: true,
+          projectId: true,
+          project: { select: { clientId: true } },
+        },
+      });
+      if (!projectId) projectId = invoice?.projectId ?? undefined;
+      if (!clientId) {
+        clientId = invoice?.clientId ?? invoice?.project?.clientId ?? undefined;
+      }
+    }
+
+    if (!clientId && projectId) {
+      const project = await this.prisma.project.findUnique({
+        where: { id: projectId },
+        select: { clientId: true },
+      });
+      clientId = project?.clientId ?? undefined;
+    }
+
+    return { clientId, projectId };
   }
 
   async create(dto: CreatePaymentDto, userId?: string) {
@@ -115,11 +165,13 @@ export class PaymentsService {
       }
     }
 
+    const resolved = await this.resolvePaymentLinks(dto);
+
     const payment = await this.prisma.payment.create({
       data: {
         invoiceId: dto.invoiceId,
-        clientId: dto.clientId ?? linkedInvoice?.clientId ?? undefined,
-        projectId: dto.projectId ?? linkedInvoice?.projectId ?? undefined,
+        clientId: resolved.clientId,
+        projectId: resolved.projectId,
         amount: dto.amount,
         date: dto.date ? new Date(dto.date) : undefined,
         method: dto.method,
@@ -172,12 +224,18 @@ export class PaymentsService {
       }
     }
 
+    const resolved = await this.resolvePaymentLinks({
+      clientId: dto.clientId ?? existing.clientId ?? undefined,
+      projectId: dto.projectId ?? existing.projectId ?? undefined,
+      invoiceId: targetInvoiceId,
+    });
+
     const payment = await this.prisma.payment.update({
       where: { id },
       data: {
         invoiceId: dto.invoiceId,
-        clientId: dto.clientId,
-        projectId: dto.projectId,
+        clientId: resolved.clientId ?? existing.clientId ?? undefined,
+        projectId: resolved.projectId ?? existing.projectId ?? undefined,
         amount: dto.amount,
         date: dto.date ? new Date(dto.date) : undefined,
         method: dto.method,

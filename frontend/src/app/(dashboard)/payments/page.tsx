@@ -21,6 +21,7 @@ import {
   paymentsTableRow,
   paymentsTableWrap,
 } from "@/components/payments/payments-list-ui";
+import { useDialog } from "@/components/providers/DialogProvider";
 import Modal from "@/components/ui/Modal";
 import EmptyState from "@/components/ui/EmptyState";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
@@ -40,6 +41,11 @@ import {
   glassInput,
 } from "@/lib/glass-styles";
 import { downloadPaymentReceiptPdf } from "@/lib/finance-pdf";
+import {
+  getInvoiceFinanceHref,
+  getPaymentClientId,
+  getPaymentClientName,
+} from "@/lib/payment-utils";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { INVOICE_STATUS_LABELS } from "@/types";
 import toast from "react-hot-toast";
@@ -133,6 +139,7 @@ export default function PaymentsPage() {
   const { data: invoices = [] } = useInvoices();
   const { data: clients = [] } = useClients();
   const { data: projects = [] } = useProjects();
+  const { confirm } = useDialog();
   const createPayment = useCreatePayment();
   const updatePayment = useUpdatePayment();
   const deletePayment = useDeletePayment();
@@ -188,7 +195,16 @@ export default function PaymentsPage() {
         clientId: inv.clientId ?? undefined,
         projectId: inv.projectId ?? undefined,
         client: inv.client ? { id: inv.client.id, name: inv.client.name } : null,
-        project: inv.project ? { id: inv.project.id, name: inv.project.name } : null,
+        project: inv.project
+          ? {
+              id: inv.project.id,
+              name: inv.project.name,
+              clientId: inv.project.clientId ?? inv.project.client?.id,
+              client: inv.project.client
+                ? { id: inv.project.client.id, name: inv.project.client.name }
+                : null,
+            }
+          : null,
       })),
     [invoices]
   );
@@ -202,9 +218,9 @@ export default function PaymentsPage() {
       if (linkFilter === "with_invoice" && !p.invoiceId) return false;
       if (linkFilter === "without_invoice" && p.invoiceId) return false;
       if (linkFilter === "with_project" && !p.projectId && !p.invoice?.projectId) return false;
-      if (linkFilter === "with_client" && !p.clientId && !p.invoice?.clientId) return false;
+      if (linkFilter === "with_client" && !getPaymentClientId(p, projects)) return false;
       if (!q) return true;
-      const clientName = p.client?.name ?? p.invoice?.client?.name ?? "";
+      const clientName = getPaymentClientName(p, projects);
       const projectName = p.project?.name ?? p.invoice?.project?.name ?? "";
       const haystack = [
         p.reference ?? "",
@@ -226,8 +242,8 @@ export default function PaymentsPage() {
       if (sortBy === "amount_desc") return b.amount - a.amount;
       if (sortBy === "amount_asc") return a.amount - b.amount;
       if (sortBy === "client_asc") {
-        const ac = (a.client?.name ?? a.invoice?.client?.name ?? "").toLowerCase();
-        const bc = (b.client?.name ?? b.invoice?.client?.name ?? "").toLowerCase();
+        const ac = getPaymentClientName(a, projects).toLowerCase();
+        const bc = getPaymentClientName(b, projects).toLowerCase();
         return ac.localeCompare(bc, "fr");
       }
       if (sortBy === "invoice") return (a.invoice?.number ?? "").localeCompare(b.invoice?.number ?? "", "fr");
@@ -235,7 +251,7 @@ export default function PaymentsPage() {
       return 0;
     });
     return sorted;
-  }, [payments, debounced, period, customFrom, customTo, method, statusFilter, linkFilter, sortBy]);
+  }, [payments, projects, debounced, period, customFrom, customTo, method, statusFilter, linkFilter, sortBy]);
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -279,6 +295,19 @@ export default function PaymentsPage() {
   const openEdit = (payment: Payment) => {
     setEditing(payment);
     setIsModalOpen(true);
+  };
+
+  const confirmDeletePayment = async (id: string) => {
+    if (
+      await confirm({
+        title: "Supprimer le paiement",
+        message: "Supprimer ce paiement ?",
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      })
+    ) {
+      deletePayment.mutate(id);
+    }
   };
 
   const submitForm = (payload: PaymentInput) => {
@@ -591,10 +620,10 @@ export default function PaymentsPage() {
         <>
         <div className={financeMobileList}>
           {filtered.map((p) => {
-            const client = p.client?.name ?? p.invoice?.client?.name ?? "—";
+            const client = getPaymentClientName(p, projects);
             const project = p.project?.name ?? p.invoice?.project?.name ?? "—";
             const invoice = p.invoice?.number ?? "Non liée";
-            const clientId = p.clientId ?? p.invoice?.clientId;
+            const clientId = getPaymentClientId(p, projects);
             const projectId = p.projectId ?? p.invoice?.projectId;
 
             return (
@@ -612,15 +641,11 @@ export default function PaymentsPage() {
                   <FinanceRowActions
                     id={p.id}
                     onEdit={() => openEdit(p)}
-                    onDelete={() => {
-                      if (window.confirm("Supprimer ce paiement ?")) {
-                        deletePayment.mutate(p.id);
-                      }
-                    }}
+                    onDelete={() => void confirmDeletePayment(p.id)}
                     menuItems={
                       <>
                         {p.invoice?.id && (
-                          <FinanceMenuLink href={`/invoices/${p.invoice.id}`}>
+                          <FinanceMenuLink href={getInvoiceFinanceHref(p.invoice.id)}>
                             Ouvrir facture liée
                           </FinanceMenuLink>
                         )}
@@ -688,10 +713,10 @@ export default function PaymentsPage() {
             </thead>
             <tbody>
               {filtered.map((p) => {
-                const client = p.client?.name ?? p.invoice?.client?.name ?? "—";
+                const client = getPaymentClientName(p, projects);
                 const project = p.project?.name ?? p.invoice?.project?.name ?? "—";
                 const invoice = p.invoice?.number ?? "Non liée";
-                const clientId = p.clientId ?? p.invoice?.clientId;
+                const clientId = getPaymentClientId(p, projects);
                 const projectId = p.projectId ?? p.invoice?.projectId;
 
                 return (
@@ -714,15 +739,11 @@ export default function PaymentsPage() {
                       <FinanceRowActions
                         id={p.id}
                         onEdit={() => openEdit(p)}
-                        onDelete={() => {
-                          if (window.confirm("Supprimer ce paiement ?")) {
-                            deletePayment.mutate(p.id);
-                          }
-                        }}
+                        onDelete={() => void confirmDeletePayment(p.id)}
                         menuItems={
                           <>
                             {p.invoice?.id && (
-                              <FinanceMenuLink href={`/invoices/${p.invoice.id}`}>
+                              <FinanceMenuLink href={getInvoiceFinanceHref(p.invoice.id)}>
                                 Ouvrir facture liée
                               </FinanceMenuLink>
                             )}
@@ -786,10 +807,16 @@ export default function PaymentsPage() {
         variant="glass"
       >
         <PaymentForm
+          key={editing?.id ?? "new"}
           payment={editing}
           invoices={enrichedInvoices}
           clients={clients.map((c) => ({ id: c.id, name: c.name }))}
-          projects={projects.map((p) => ({ id: p.id, name: p.name, clientId: p.clientId }))}
+          projects={projects.map((p) => ({
+            id: p.id,
+            name: p.name,
+            clientId: p.clientId ?? p.client?.id,
+            client: p.client ? { id: p.client.id, name: p.client.name } : null,
+          }))}
           onCancel={() => setIsModalOpen(false)}
           onSubmit={submitForm}
           loading={loadingMutation}

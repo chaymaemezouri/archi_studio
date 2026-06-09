@@ -1,5 +1,6 @@
 import { LucideIcon } from "lucide-react";
-import Button from "./Button";
+import { cn } from "@/lib/utils";
+import { glassBtnPrimary, glassPanel } from "@/lib/glass-styles";
 
 interface EmptyStateProps {
   icon: LucideIcon;
@@ -17,18 +18,23 @@ export default function EmptyState({
   onAction,
 }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-card border border-dashed border-dark-border bg-dark-surface px-6 py-16 text-center">
-      <div className="mb-4 rounded-full bg-dark-elevated p-4">
-        <Icon className="h-8 w-8 text-text-muted" />
+    <div
+      className={cn(
+        glassPanel,
+        "flex flex-col items-center justify-center border-dashed px-6 py-16 text-center"
+      )}
+    >
+      <div className="mb-4 rounded-full bg-[color:var(--glass-bg-hover)] p-4 ring-1 ring-inset ring-[color:var(--glass-input-border)]">
+        <Icon className="h-8 w-8 text-glass-muted" />
       </div>
-      <h3 className="text-lg font-medium text-text-primary">{title}</h3>
+      <h3 className="text-lg font-medium text-app-primary">{title}</h3>
       {description && (
-        <p className="mt-2 max-w-sm text-sm text-text-secondary">{description}</p>
+        <p className="mt-2 max-w-sm text-sm text-glass-secondary">{description}</p>
       )}
       {actionLabel && onAction && (
-        <Button className="mt-6" onClick={onAction}>
+        <button type="button" className={cn(glassBtnPrimary, "mt-6")} onClick={onAction}>
           {actionLabel}
-        </Button>
+        </button>
       )}
     </div>
   );

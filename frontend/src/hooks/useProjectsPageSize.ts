@@ -37,9 +37,9 @@ export function getProjectsPageSize(
   breakpoint: ProjectsBreakpoint
 ): number {
   if (view === "grid") {
-    if (breakpoint === "mobile") return 3;
-    if (breakpoint === "tablet") return 4;
-    return 6;
+    if (breakpoint === "mobile") return 4;
+    if (breakpoint === "tablet") return 6;
+    return 8;
   }
 
   if (breakpoint === "mobile") return 4;

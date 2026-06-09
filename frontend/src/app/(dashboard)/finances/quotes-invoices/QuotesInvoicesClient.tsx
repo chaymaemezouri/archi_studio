@@ -32,6 +32,7 @@ import {
   quotesInvoicesTableWrap,
 } from "@/components/finances/quotes-invoices-ui";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
+import { useDialog } from "@/components/providers/DialogProvider";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
@@ -130,6 +131,7 @@ export default function QuotesInvoicesPage() {
   const duplicateInvoice = useDuplicateInvoice();
   const createPayment = useCreatePayment();
 
+  const { confirm } = useDialog();
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -414,6 +416,32 @@ export default function QuotesInvoicesPage() {
       toast.error("Impossible de générer le PDF");
     } finally {
       setPdfLoadingId(null);
+    }
+  };
+
+  const confirmDeleteDevis = async (d: Devis) => {
+    if (
+      await confirm({
+        title: "Supprimer le devis",
+        message: `Supprimer le devis ${d.number} ?`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      })
+    ) {
+      deleteDevis.mutate(d.id);
+    }
+  };
+
+  const confirmDeleteInvoice = async (inv: Invoice) => {
+    if (
+      await confirm({
+        title: "Supprimer la facture",
+        message: `Supprimer la facture ${inv.number} ?`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      })
+    ) {
+      deleteInvoice.mutate(inv.id);
     }
   };
 
@@ -888,11 +916,7 @@ export default function QuotesInvoicesPage() {
                       pdfLoading={pdfLoadingId === d.id}
                       onEdit={() => openEditDevis(d)}
                       onDownloadPdf={() => handleDownloadPdf("devis", d)}
-                      onDelete={() => {
-                        if (window.confirm(`Supprimer le devis ${d.number} ?`)) {
-                          deleteDevis.mutate(d.id);
-                        }
-                      }}
+                      onDelete={() => void confirmDeleteDevis(d)}
                       menuItems={
                         <>
                           {d.status === "DRAFT" && (
@@ -976,11 +1000,7 @@ export default function QuotesInvoicesPage() {
                           pdfLoading={pdfLoadingId === d.id}
                           onEdit={() => openEditDevis(d)}
                           onDownloadPdf={() => handleDownloadPdf("devis", d)}
-                          onDelete={() => {
-                            if (window.confirm(`Supprimer le devis ${d.number} ?`)) {
-                              deleteDevis.mutate(d.id);
-                            }
-                          }}
+                          onDelete={() => void confirmDeleteDevis(d)}
                           menuItems={
                             <>
                               {d.status === "DRAFT" && (
@@ -1063,11 +1083,7 @@ export default function QuotesInvoicesPage() {
                         pdfLoading={pdfLoadingId === inv.id}
                         onEdit={() => openEditInvoice(inv)}
                         onDownloadPdf={() => handleDownloadPdf("invoices", inv)}
-                        onDelete={() => {
-                          if (window.confirm(`Supprimer la facture ${inv.number} ?`)) {
-                            deleteInvoice.mutate(inv.id);
-                          }
-                        }}
+                        onDelete={() => void confirmDeleteInvoice(inv)}
                         extraIcons={
                           <IconActionButton
                             label="Ajouter paiement"
@@ -1152,11 +1168,7 @@ export default function QuotesInvoicesPage() {
                             pdfLoading={pdfLoadingId === inv.id}
                             onEdit={() => openEditInvoice(inv)}
                             onDownloadPdf={() => handleDownloadPdf("invoices", inv)}
-                            onDelete={() => {
-                              if (window.confirm(`Supprimer la facture ${inv.number} ?`)) {
-                                deleteInvoice.mutate(inv.id);
-                              }
-                            }}
+                            onDelete={() => void confirmDeleteInvoice(inv)}
                             extraIcons={
                               <IconActionButton
                                 label="Ajouter paiement"

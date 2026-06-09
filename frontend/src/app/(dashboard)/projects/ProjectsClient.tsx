@@ -1049,8 +1049,6 @@ export default function ProjectsPage() {
 
       ) : isError ? (
 
-        <div className={cn(glassPanel, "py-10")}>
-
           <EmptyState
 
             icon={FolderKanban}
@@ -1065,11 +1063,7 @@ export default function ProjectsPage() {
 
           />
 
-        </div>
-
       ) : !hasProjects ? (
-
-        <div className={cn(glassPanel, "py-10")}>
 
           <EmptyState
 
@@ -1085,11 +1079,7 @@ export default function ProjectsPage() {
 
           />
 
-        </div>
-
       ) : noResults ? (
-
-        <div className={cn(glassPanel, "py-10")}>
 
           <EmptyState
 
@@ -1104,8 +1094,6 @@ export default function ProjectsPage() {
             onAction={resetFilters}
 
           />
-
-        </div>
 
       ) : view === "grid" ? (
 

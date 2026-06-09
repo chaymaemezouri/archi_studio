@@ -19,6 +19,7 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import { useDialog } from "@/components/providers/DialogProvider";
 import { useDeleteProject, useUpdateProject } from "@/hooks/useProjects";
 import { useAuthStore } from "@/store/authStore";
 import {
@@ -97,6 +98,7 @@ export default function ProjectCardMenu({
   const ref = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const { confirm } = useDialog();
   const user = useAuthStore((s) => s.user);
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
@@ -169,13 +171,17 @@ export default function ProjectCardMenu({
     close();
   };
 
-  const archive = (e: React.MouseEvent) => {
+  const archive = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const archiving = project.status !== "ARCHIVED";
     if (
       archiving &&
-      !window.confirm(`Archiver le projet « ${project.name} » ? Il restera accessible dans Archivés.`)
+      !(await confirm({
+        title: "Archiver le projet",
+        message: `Archiver le projet « ${project.name} » ? Il restera accessible dans Archivés.`,
+        confirmLabel: "Archiver",
+      }))
     ) {
       return;
     }
@@ -186,13 +192,16 @@ export default function ProjectCardMenu({
     close();
   };
 
-  const remove = (e: React.MouseEvent) => {
+  const remove = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     if (
-      !window.confirm(
-        `Supprimer définitivement le projet « ${project.name} » ? Cette action est irréversible.`
-      )
+      !(await confirm({
+        title: "Supprimer le projet",
+        message: `Supprimer définitivement le projet « ${project.name} » ? Cette action est irréversible.`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      }))
     ) {
       return;
     }
@@ -379,7 +388,7 @@ export default function ProjectCardMenu({
           if (usePortal) updateMenuPosition();
           setOpen(true);
         }}
-        className={cn(glassBtnIcon, "h-8 w-8", triggerClassName)}
+        className={cn(triggerClassName ?? glassBtnIcon, triggerClassName ? "h-7 w-7" : "h-8 w-8")}
         aria-label="Options du projet"
         aria-expanded={open}
         aria-haspopup="menu"

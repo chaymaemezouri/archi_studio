@@ -1,9 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useDialog } from "@/components/providers/DialogProvider";
 import { useCreateDeadline } from "@/hooks/useDashboard";
 import { useUpdateProject } from "@/hooks/useProjects";
 import {
+  getProjectDisplayStatus,
   getProjectNextDeadline,
   isProjectOverdue,
 } from "@/lib/project-status";
@@ -24,6 +26,7 @@ import {
   ProjectCardLocationRow,
   ProjectCardMedia,
   ProjectProgressRing,
+  ProjectStatusBadge,
 } from "./card/ProjectCardParts";
 
 import type { ProjectMenuQuickAdd } from "./ProjectCardMenu";
@@ -69,9 +72,11 @@ export function ProjectCardFull({
   const deadlineDate = nextDeadline?.date ?? project.deadline ?? null;
   const overdue = isProjectOverdue(project);
   const progress = project.progress ?? 0;
+  const displayStatus = getProjectDisplayStatus(project);
   const href = `/projects/${project.id}`;
   const metaLine = getMetaLine(project);
 
+  const { prompt } = useDialog();
   const updateProject = useUpdateProject();
   const createDeadline = useCreateDeadline();
 
@@ -84,8 +89,12 @@ export function ProjectCardFull({
   const quickDeadline = async (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    const title = window.prompt("Titre de la deadline :");
-    if (!title?.trim()) return;
+    const title = await prompt({
+      title: "Nouvelle deadline",
+      label: "Titre de la deadline",
+      confirmLabel: "Ajouter",
+    });
+    if (!title) return;
     await createDeadline.mutateAsync({
       title: title.trim(),
       date: toLocalDateInput(new Date()),
@@ -95,7 +104,7 @@ export function ProjectCardFull({
 
   return (
     <article className={cn(projectCardShell, "min-w-0")}>
-      <ProjectCardMedia project={project} href={href} aspectClass="aspect-[5/3]">
+      <ProjectCardMedia project={project} href={href} aspectClass="aspect-[5/3]" showBadge={false}>
         <ProjectCardImageActions
           project={project}
           onToggleFavorite={toggleFavorite}
@@ -115,7 +124,8 @@ export function ProjectCardFull({
               {getClientLabel(project)}
             </p>
           </Link>
-          <div className="shrink-0 pt-px">
+          <div className="flex shrink-0 flex-col items-end gap-1 pt-px">
+            <ProjectStatusBadge status={displayStatus} variant="minimal" />
             <ProjectProgressRing progress={progress} compact />
           </div>
         </div>

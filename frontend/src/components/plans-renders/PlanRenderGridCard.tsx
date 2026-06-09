@@ -17,6 +17,7 @@ import {
   plansRendersGridThumb,
 } from "./plans-renders-list-ui";
 import { portalMenuStyle, usePortalRowMenu } from "@/hooks/usePortalRowMenu";
+import { useDialog } from "@/components/providers/DialogProvider";
 import {
   useDeletePlanRender,
   useSetMainImage,
@@ -49,6 +50,7 @@ export default function PlanRenderGridCard({
     MENU_WIDTH,
     300
   );
+  const { confirm } = useDialog();
   const deleteAsset = useDeletePlanRender();
   const setMain = useSetMainImage();
   const toggleFav = useToggleFavorite();
@@ -56,8 +58,17 @@ export default function PlanRenderGridCard({
   const thumb = resolveMediaUrl(asset.thumbnailUrl ?? asset.url);
   const previewable = canPreviewPlanRender(asset);
 
-  const handleDelete = () => {
-    if (!window.confirm(`Supprimer « ${asset.name} » ?`)) return;
+  const handleDelete = async () => {
+    if (
+      !(await confirm({
+        title: "Supprimer l'élément",
+        message: `Supprimer « ${asset.name} » ?`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      }))
+    ) {
+      return;
+    }
     deleteAsset.mutate(asset.id);
     closeMenu();
   };
