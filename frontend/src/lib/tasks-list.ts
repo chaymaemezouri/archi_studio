@@ -272,11 +272,12 @@ export function groupTasksByProject(
     map.get(key)!.tasks.push(task);
   }
 
-  for (const group of map.values()) {
+  const groups = Array.from(map.values());
+  for (const group of groups) {
     group.tasks = sortTasks(group.tasks, sort);
   }
 
-  return Array.from(map.values()).sort((a, b) => {
+  return groups.sort((a, b) => {
     if (a.isPersonal && !b.isPersonal) return -1;
     if (!a.isPersonal && b.isPersonal) return 1;
     return a.projectName.localeCompare(b.projectName, "fr");

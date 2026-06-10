@@ -210,11 +210,12 @@ export function groupDocumentsByProject(
     map.get(key)!.documents.push(doc);
   }
 
-  for (const group of map.values()) {
+  const groups = Array.from(map.values());
+  for (const group of groups) {
     group.documents = sortDocuments(group.documents, sort);
   }
 
-  return Array.from(map.values()).sort((a, b) => {
+  return groups.sort((a, b) => {
     const aUnclassified = a.key === "unclassified";
     const bUnclassified = b.key === "unclassified";
     if (aUnclassified && !bUnclassified) return 1;

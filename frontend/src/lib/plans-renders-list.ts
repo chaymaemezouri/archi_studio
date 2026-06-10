@@ -218,12 +218,13 @@ export function groupPlanRendersByProject(
     else group.plans.push(asset);
   }
 
-  for (const group of map.values()) {
+  const groups = Array.from(map.values());
+  for (const group of groups) {
     group.renders = sortPlanRenders(group.renders, sort);
     group.plans = sortPlanRenders(group.plans, sort);
   }
 
-  return Array.from(map.values()).sort((a, b) => {
+  return groups.sort((a, b) => {
     const aUnclassified = a.key === "unclassified";
     const bUnclassified = b.key === "unclassified";
     if (aUnclassified && !bUnclassified) return 1;
