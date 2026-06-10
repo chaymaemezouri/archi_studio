@@ -8,11 +8,23 @@ export class CreatePaymentDto {
 
   @IsOptional()
   @IsString()
+  invoiceName?: string;
+
+  @IsOptional()
+  @IsString()
   clientId?: string;
 
   @IsOptional()
   @IsString()
+  clientName?: string;
+
+  @IsOptional()
+  @IsString()
   projectId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 
   @IsNumber()
   @Min(0.01)

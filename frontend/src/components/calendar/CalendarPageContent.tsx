@@ -37,10 +37,9 @@ import {
   getRangeForView,
 } from "@/lib/calendar";
 import {
-  getInitialCalendarShowDone,
-  getInitialCalendarView,
-  VIEW_KEYS,
-} from "@/lib/settings-user-prefs";
+  useCalendarShowDonePreference,
+  useCalendarViewPreference,
+} from "@/hooks/useUserPreferences";
 import {
   accentBar,
   dropdownItem,
@@ -79,28 +78,15 @@ const FILTER_OPTIONS: { id: CalendarTypeFilter; label: string }[] = [
 export default function CalendarPageContent() {
   const [anchor, setAnchor] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
-  const [view, setView] = useState<CalendarViewMode>("month");
+  const [view, setView] = useCalendarViewPreference();
   const [typeFilter, setTypeFilter] = useState<CalendarTypeFilter>("all");
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 300);
-  const [showDone, setShowDone] = useState(false);
+  const [showDone, setShowDone] = useCalendarShowDonePreference();
   const [filterOpen, setFilterOpen] = useState(false);
   const [viewOpen, setViewOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const viewRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setView(getInitialCalendarView());
-    setShowDone(getInitialCalendarShowDone());
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(VIEW_KEYS.calendar, view);
-  }, [view]);
-
-  useEffect(() => {
-    localStorage.setItem(VIEW_KEYS.calendarShowDone, String(showDone));
-  }, [showDone]);
 
   const [createOpen, setCreateOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);

@@ -10,8 +10,17 @@ import DashboardStatsStrip from "@/components/dashboard/DashboardStatsStrip";
 import DashboardTodayMeetings from "@/components/dashboard/DashboardTodayMeetings";
 import DashboardTomorrowTasks from "@/components/dashboard/DashboardTomorrowTasks";
 import DashboardWeekCalendar from "@/components/dashboard/DashboardWeekCalendar";
+import DashboardZoneLabel from "@/components/dashboard/DashboardZoneLabel";
 import QuickAddModal, { type QuickAddMode } from "@/components/dashboard/QuickAddModal";
-import { dashboardPageStack, dashboardPanel } from "@/components/dashboard/dashboard-ui";
+import {
+  dashboardBelowCalendarGrid,
+  dashboardCalendarColumn,
+  dashboardDayColumn,
+  dashboardPageStack,
+  dashboardPageZone,
+  dashboardPanel,
+  dashboardPlanningGrid,
+} from "@/components/dashboard/dashboard-ui";
 import type { QuickAddAction } from "@/components/dashboard/DashboardAddMenu";
 import { useDashboardOverview } from "@/hooks/useDashboard";
 import { buildDashboardPriorityProjects } from "@/lib/dashboard-urgency";
@@ -106,52 +115,74 @@ export default function DashboardPage() {
           </button>
         </section>
       ) : isLoading ? (
-        <div className="space-y-2.5">
+        <div className="flex flex-col gap-4">
           <div className={cn(dashboardPanel, "h-24 animate-pulse")} />
-          <div className="grid gap-2.5 lg:grid-cols-12">
-            <div className={cn(dashboardPanel, "h-[32rem] animate-pulse lg:col-span-4")} />
-            <div className={cn(dashboardPanel, "h-[32rem] animate-pulse lg:col-span-8")} />
+          <div className={cn(dashboardPanel, "h-16 animate-pulse")} />
+          <div className={dashboardPlanningGrid}>
+            <div className={cn(dashboardCalendarColumn, "animate-pulse space-y-2.5")}>
+              <div className={cn(dashboardPanel, "h-[22rem]")} />
+              <div className={dashboardBelowCalendarGrid}>
+                <div className={cn(dashboardPanel, "h-28")} />
+                <div className={cn(dashboardPanel, "h-28")} />
+              </div>
+            </div>
+            <div className={cn(dashboardDayColumn, "animate-pulse")}>
+              <div className={cn(dashboardPanel, "h-[28rem]")} />
+            </div>
           </div>
+          <div className={cn(dashboardPanel, "h-44 animate-pulse")} />
         </div>
       ) : data ? (
         <>
-          <DashboardStatsStrip
-            stats={data.stats}
-            todayTasksCount={openTodayTasksCount}
-          />
-
-          <DashboardPrioritySection
-            alerts={priorityAlerts}
-            notifications={data.importantNotifications ?? []}
-            stats={data.stats}
-          />
-
-          <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12 lg:items-start">
-            <div className="flex flex-col gap-2.5 lg:col-span-4">
-              <DashboardDayTasks
-                tasks={data.todayTasks ?? []}
-                projects={data.projectsInProgress}
-                defaultDate={today}
-              />
-              <DashboardTomorrowTasks
-                tasks={data.tomorrowTasks ?? []}
-                onAddTomorrow={() => openQuickAdd("task", tomorrow)}
-              />
-              <DashboardTodayMeetings
-                meetings={data.meetings ?? []}
-                today={today}
-              />
-            </div>
-
-            <DashboardWeekCalendar
-              tasks={weekTasks}
-              deadlines={allDeadlines}
-              meetings={data.meetings ?? []}
-              className="lg:col-span-8"
+          {/* Vue d'ensemble */}
+          <section aria-label="Vue d'ensemble" className={dashboardPageZone}>
+            <DashboardStatsStrip
+              stats={data.stats}
+              todayTasksCount={openTodayTasksCount}
             />
-          </div>
+            <DashboardPrioritySection alerts={priorityAlerts} stats={data.stats} />
+          </section>
 
-          <DashboardActiveProjects projects={activeProjects} />
+          {/* Journée + semaine */}
+          <section aria-labelledby="dashboard-planning" className={dashboardPageZone}>
+            <DashboardZoneLabel id="dashboard-planning">
+              Aujourd&apos;hui &amp; cette semaine
+            </DashboardZoneLabel>
+
+            <div className={dashboardPlanningGrid}>
+              <div className={dashboardCalendarColumn}>
+                <DashboardWeekCalendar
+                  tasks={weekTasks}
+                  deadlines={allDeadlines}
+                  meetings={data.meetings ?? []}
+                />
+                <div className={dashboardBelowCalendarGrid}>
+                  <DashboardTodayMeetings
+                    meetings={data.meetings ?? []}
+                    today={today}
+                  />
+                  <DashboardTomorrowTasks
+                    tasks={data.tomorrowTasks ?? []}
+                    onAddTomorrow={() => openQuickAdd("task", tomorrow)}
+                  />
+                </div>
+              </div>
+
+              <aside className={dashboardDayColumn}>
+                <DashboardDayTasks
+                  tasks={data.todayTasks ?? []}
+                  projects={data.projectsInProgress}
+                  defaultDate={today}
+                  className="min-h-[28rem] xl:min-h-[32rem]"
+                />
+              </aside>
+            </div>
+          </section>
+
+          {/* Projets */}
+          <section aria-label="Projets actifs" className={dashboardPageZone}>
+            <DashboardActiveProjects projects={activeProjects} />
+          </section>
         </>
       ) : null}
 

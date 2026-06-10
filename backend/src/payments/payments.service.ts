@@ -1,5 +1,6 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
+import { emptyToUndefined } from '../common/utils/dto.util';
 import { InvoicesService } from '../invoices/invoices.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
@@ -26,6 +27,8 @@ export class PaymentsService {
   ) {
     const where: Record<string, unknown> = {
       OR: [
+        { studioId },
+        { invoice: { studioId } },
         { invoice: { client: { studioId } } },
         { invoice: { project: { studioId } } },
         { client: { studioId } },
@@ -115,8 +118,8 @@ export class PaymentsService {
     projectId?: string;
     invoiceId?: string;
   }) {
-    let clientId = dto.clientId;
-    let projectId = dto.projectId;
+    let clientId = emptyToUndefined(dto.clientId);
+    let projectId = emptyToUndefined(dto.projectId);
 
     if (dto.invoiceId) {
       const invoice = await this.prisma.invoice.findUnique({
@@ -144,7 +147,32 @@ export class PaymentsService {
     return { clientId, projectId };
   }
 
-  async create(dto: CreatePaymentDto, userId?: string) {
+  private buildFreeTextFields(dto: {
+    invoiceId?: string;
+    invoiceName?: string;
+    clientId?: string;
+    clientName?: string;
+    projectId?: string;
+    projectName?: string;
+  }) {
+    const invoiceId = emptyToUndefined(dto.invoiceId);
+    const clientId = emptyToUndefined(dto.clientId);
+    const projectId = emptyToUndefined(dto.projectId);
+    const invoiceName = emptyToUndefined(dto.invoiceName);
+    const clientName = emptyToUndefined(dto.clientName);
+    const projectName = emptyToUndefined(dto.projectName);
+
+    return {
+      invoiceId: invoiceId ?? null,
+      invoiceName: invoiceId ? null : invoiceName ?? null,
+      clientId: clientId ?? null,
+      clientName: clientId ? null : clientName ?? null,
+      projectId: projectId ?? null,
+      projectName: projectId ? null : projectName ?? null,
+    };
+  }
+
+  async create(dto: CreatePaymentDto, studioId: string, userId?: string) {
     let linkedInvoice:
       | {
           id: string;
@@ -175,12 +203,27 @@ export class PaymentsService {
     }
 
     const resolved = await this.resolvePaymentLinks(dto);
+    const freeText = this.buildFreeTextFields({
+      ...dto,
+      clientId: resolved.clientId,
+      projectId: resolved.projectId,
+    });
+
+    if (
+      !freeText.invoiceId &&
+      !freeText.invoiceName &&
+      !freeText.clientId &&
+      !freeText.clientName
+    ) {
+      throw new BadRequestException(
+        'Indiquez un client ou une facture (liste ou nom saisi).',
+      );
+    }
 
     const payment = await this.prisma.payment.create({
       data: {
-        invoiceId: dto.invoiceId,
-        clientId: resolved.clientId,
-        projectId: resolved.projectId,
+        studioId,
+        ...freeText,
         amount: dto.amount,
         date: dto.date ? new Date(dto.date) : undefined,
         method: dto.method,
@@ -213,7 +256,12 @@ export class PaymentsService {
     return payment;
   }
 
-  async update(id: string, dto: UpdatePaymentDto, userId?: string) {
+  async update(
+    id: string,
+    dto: UpdatePaymentDto,
+    studioId: string,
+    userId?: string,
+  ) {
     const existing = await this.findOne(id);
     const previousInvoiceId = existing.invoiceId;
     let targetInvoiceId = dto.invoiceId ?? previousInvoiceId ?? undefined;
@@ -239,19 +287,54 @@ export class PaymentsService {
       invoiceId: targetInvoiceId,
     });
 
+    const nextLinks = {
+      invoiceId:
+        dto.invoiceId !== undefined
+          ? emptyToUndefined(dto.invoiceId)
+          : existing.invoiceId ?? undefined,
+      invoiceName:
+        dto.invoiceName !== undefined
+          ? emptyToUndefined(dto.invoiceName)
+          : existing.invoiceName ?? undefined,
+      clientId: resolved.clientId ?? existing.clientId ?? undefined,
+      clientName:
+        dto.clientName !== undefined
+          ? emptyToUndefined(dto.clientName)
+          : existing.clientName ?? undefined,
+      projectId: resolved.projectId ?? existing.projectId ?? undefined,
+      projectName:
+        dto.projectName !== undefined
+          ? emptyToUndefined(dto.projectName)
+          : existing.projectName ?? undefined,
+    };
+    const freeText = this.buildFreeTextFields(nextLinks);
+
+    const data: Record<string, unknown> = {
+      studioId: existing.studioId ?? studioId,
+      amount: dto.amount,
+      date: dto.date ? new Date(dto.date) : undefined,
+      method: dto.method,
+      reference: dto.reference,
+      notes: dto.notes,
+      proofUrl: dto.proofUrl,
+    };
+
+    if (dto.invoiceId !== undefined || dto.invoiceName !== undefined) {
+      data.invoiceId = freeText.invoiceId;
+      data.invoiceName = freeText.invoiceName;
+    }
+    if (dto.clientId !== undefined || dto.clientName !== undefined) {
+      data.clientId = freeText.clientId;
+      data.clientName = freeText.clientName;
+    }
+    if (dto.projectId !== undefined || dto.projectName !== undefined) {
+      data.projectId = freeText.projectId;
+      data.projectName = freeText.projectName;
+    }
+
     const payment = await this.prisma.payment.update({
       where: { id },
-      data: {
-        invoiceId: dto.invoiceId,
-        clientId: resolved.clientId ?? existing.clientId ?? undefined,
-        projectId: resolved.projectId ?? existing.projectId ?? undefined,
-        amount: dto.amount,
-        date: dto.date ? new Date(dto.date) : undefined,
-        method: dto.method,
-        reference: dto.reference,
-        notes: dto.notes,
-        proofUrl: dto.proofUrl,
-      },
+      data,
       include: { invoice: true, client: true, project: true },
     });
 

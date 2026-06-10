@@ -10,7 +10,26 @@ function projectClient(project?: {
   return project.client ?? null;
 }
 
+export function getPaymentInvoiceLabel(payment: Payment): string {
+  return payment.invoice?.number ?? payment.invoiceName?.trim() ?? "—";
+}
+
+export function getPaymentProjectLabel(payment: Payment, projects: Project[] = []): string {
+  if (payment.project?.name) return payment.project.name;
+  if (payment.projectName?.trim()) return payment.projectName.trim();
+  if (payment.invoice?.project?.name) return payment.invoice.project.name;
+
+  const projectId = payment.projectId ?? payment.invoice?.projectId;
+  if (projectId) {
+    const project = projects.find((item) => item.id === projectId);
+    if (project?.name) return project.name;
+  }
+
+  return "—";
+}
+
 export function getPaymentClientName(payment: Payment, projects: Project[] = []): string {
+  if (payment.clientName?.trim()) return payment.clientName.trim();
   if (payment.client?.name) return payment.client.name;
   if (payment.invoice?.client?.name) return payment.invoice.client.name;
   if (projectClient(payment.project)?.name) return projectClient(payment.project)!.name;

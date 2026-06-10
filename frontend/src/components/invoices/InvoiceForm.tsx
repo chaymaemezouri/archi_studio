@@ -129,13 +129,15 @@ export default function InvoiceForm({
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const hasClient = !!clientId;
+  const hasClient = !!clientId || !!clientName.trim();
 
   const handleSubmit = (e: React.FormEvent, nextStatus?: InvoiceStatus) => {
     e.preventDefault();
-    if (!clientId) return;
+    if (!hasClient) return;
     onSubmit({
-      clientId,
+      ...(clientId
+        ? { clientId }
+        : { clientName: clientName.trim() }),
       ...(projectId ? { projectId } : projectName.trim() ? { projectName: projectName.trim() } : {}),
       object,
       status: nextStatus ?? status,
@@ -160,8 +162,9 @@ export default function InvoiceForm({
           <FinanceEntityPicker
             label="Client"
             required
-            allowManualEntry={false}
             placeholder="Choisir un client…"
+            manualLabel="Autre client — saisir le nom"
+            manualPlaceholder="Nom du client"
             options={clients.map((c) => ({ id: c.id, name: c.name }))}
             entityId={clientId}
             entityName={clientName}

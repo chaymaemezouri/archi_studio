@@ -6,10 +6,9 @@ import { ArrowUpRight, ListTodo, Plus } from "lucide-react";
 import DashboardTaskCheckbox from "@/components/dashboard/DashboardTaskCheckbox";
 import { useUpdateDashboardTask } from "@/hooks/useDashboard";
 import type { Task } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 import { accentBar } from "@/lib/glass-styles";
-import Badge from "@/components/ui/Badge";
+import DashboardTaskMeta from "@/components/dashboard/DashboardTaskMeta";
 import {
   dashboardLink,
   dashboardPanel,
@@ -125,21 +124,11 @@ export default function DashboardTomorrowTasks({
                   />
                   <Link href={href} className="min-w-0 flex-1">
                     <p className="truncate text-[12px] text-glass">{task.title}</p>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-1">
-                      <Badge variant="studio">{TASK_STATUS_LABELS[task.status]}</Badge>
-                      {(task.priority === "URGENT" || task.priority === "HIGH") && (
-                        <Badge
-                          variant={task.priority === "URGENT" ? "danger" : "warning"}
-                        >
-                          {PRIORITY_LABELS[task.priority]}
-                        </Badge>
-                      )}
-                      {(task.projectName ?? task.project?.name) && (
-                        <span className="truncate text-[10px] text-glass-muted">
-                          {task.projectName ?? task.project?.name}
-                        </span>
-                      )}
-                    </div>
+                    <DashboardTaskMeta
+                      status={task.status}
+                      priority={task.priority}
+                      projectName={task.projectName ?? task.project?.name}
+                    />
                   </Link>
                 </li>
               );

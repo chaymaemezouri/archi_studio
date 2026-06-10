@@ -23,11 +23,10 @@ import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/decorators/current-user.decorator';
 
 import { CreateNotificationDto } from './dto/create-notification.dto';
-
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-
+import { UpdateNotificationPreferencesDto } from './dto/update-notification-preferences.dto';
+import { NotificationPreferencesService } from './notification-preferences.service';
 import { NotificationsService } from './notifications.service';
-
 import { SmartAlertsService } from './smart-alerts.service';
 
 
@@ -37,11 +36,9 @@ import { SmartAlertsService } from './smart-alerts.service';
 export class NotificationsController {
 
   constructor(
-
     private notificationsService: NotificationsService,
-
     private smartAlerts: SmartAlertsService,
-
+    private notificationPreferences: NotificationPreferencesService,
   ) {}
 
 
@@ -75,14 +72,27 @@ export class NotificationsController {
 
 
 
+  @Get('preferences')
+  getPreferences(@CurrentUser() user: AuthUser) {
+    return this.notificationPreferences.getForUser(user.id);
+  }
+
+  @Patch('preferences')
+  async updatePreferences(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: UpdateNotificationPreferencesDto,
+  ) {
+    const prefs = await this.notificationPreferences.update(user.id, dto);
+    if (prefs.enabled) {
+      await this.smartAlerts.syncForUser(user.id, user.studioId);
+    }
+    return prefs;
+  }
+
   @Post('sync')
-
   async sync(@CurrentUser() user: AuthUser) {
-
     await this.smartAlerts.syncForUser(user.id, user.studioId);
-
     return { synced: true };
-
   }
 
 

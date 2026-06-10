@@ -540,6 +540,7 @@ export interface InvoiceItem {
 export interface Payment {
   id: string;
   invoiceId?: string | null;
+  invoiceName?: string | null;
   clientId?: string | null;
   clientName?: string | null;
   client?: Client | null;
@@ -889,13 +890,24 @@ export interface CalendarEvent {
 
 export const CALENDAR_EVENT_TYPE_LABELS: Record<CalendarEventType, string> = {
   DEADLINE_PROJECT: "Deadline projet",
-  DEADLINE_TASK: "Deadline tâche",
+  DEADLINE_TASK: "Tâche",
   MEETING: "Réunion",
   SITE_VISIT: "Visite chantier",
   INVOICE_REMINDER: "Rappel facture",
   PAYMENT_REMINDER: "Rappel paiement",
   CUSTOM_EVENT: "Événement",
 };
+
+/** Ordre d'affichage dans le formulaire calendrier */
+export const CALENDAR_FORM_TYPE_ORDER: CalendarEventType[] = [
+  "DEADLINE_TASK",
+  "CUSTOM_EVENT",
+  "MEETING",
+  "SITE_VISIT",
+  "DEADLINE_PROJECT",
+  "INVOICE_REMINDER",
+  "PAYMENT_REMINDER",
+];
 
 /** Fond + texte événements (contour via calendarEventChipBase / calendarListRow) */
 export const CALENDAR_EVENT_TYPE_COLORS: Record<CalendarEventType, string> = {

@@ -147,9 +147,9 @@ export class InvoicesService {
     const projectId = emptyToUndefined(dto.projectId);
     const projectName = emptyToUndefined(dto.projectName);
 
-    if (!clientId) {
+    if (!clientId && !clientName?.trim()) {
       throw new BadRequestException(
-        'Le client doit être sélectionné dans la liste des clients.',
+        'Le client est requis (sélection dans la liste ou nom saisi).',
       );
     }
 
@@ -186,8 +186,8 @@ export class InvoicesService {
         number,
         status,
         studioId,
-        clientId,
-        clientName: null,
+        clientId: clientId ?? null,
+        clientName: clientId ? null : clientName ?? null,
         projectId: projectId ?? null,
         projectName: projectId ? null : projectName ?? null,
         devisId: emptyToUndefined(dto.devisId),
@@ -233,13 +233,13 @@ export class InvoicesService {
     };
 
     if (dto.clientId !== undefined) {
-      if (!dto.clientId) {
-        throw new BadRequestException(
-          'Le client doit être sélectionné dans la liste des clients.',
-        );
-      }
-      data.client = { connect: { id: dto.clientId } };
-      data.clientName = null;
+      data.client = dto.clientId
+        ? { connect: { id: dto.clientId } }
+        : { disconnect: true };
+      if (dto.clientId) data.clientName = null;
+    }
+    if (dto.clientName !== undefined && !dto.clientId) {
+      data.clientName = dto.clientName.trim() || null;
     }
     if (dto.projectId !== undefined) {
       data.project = dto.projectId

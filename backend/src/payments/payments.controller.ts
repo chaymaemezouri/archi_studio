@@ -7,16 +7,23 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/decorators/current-user.decorator';
+import { tempUploadInterceptor } from '../common/temp-upload.interceptor';
+import { UploadsService } from '../uploads/uploads.service';
 import { CreatePaymentDto } from './dto/create-payment.dto';
 import { UpdatePaymentDto } from './dto/update-payment.dto';
 import { PaymentsService } from './payments.service';
 
 @Controller('payments')
 export class PaymentsController {
-  constructor(private paymentsService: PaymentsService) {}
+  constructor(
+    private paymentsService: PaymentsService,
+    private uploadsService: UploadsService,
+  ) {}
 
   @Get()
   findAll(
@@ -38,6 +45,15 @@ export class PaymentsController {
     });
   }
 
+  @Post('upload-proof')
+  @UseInterceptors(tempUploadInterceptor())
+  uploadProof(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.uploadsService.savePaymentProof(file, user.studioId);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.paymentsService.findOne(id);
@@ -45,7 +61,7 @@ export class PaymentsController {
 
   @Post()
   create(@Body() dto: CreatePaymentDto, @CurrentUser() user: AuthUser) {
-    return this.paymentsService.create(dto, user.id);
+    return this.paymentsService.create(dto, user.studioId, user.id);
   }
 
 
@@ -55,7 +71,7 @@ export class PaymentsController {
     @Body() dto: UpdatePaymentDto,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.paymentsService.update(id, dto, user.id);
+    return this.paymentsService.update(id, dto, user.studioId, user.id);
   }
 
   @Delete(':id')

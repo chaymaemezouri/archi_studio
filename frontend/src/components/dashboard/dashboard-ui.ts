@@ -70,7 +70,29 @@ export function dashboardViewBtn(active?: boolean) {
 export const dashboardSkeleton =
   "animate-pulse rounded-lg bg-[color:var(--glass-bg-hover)]";
 
-export const dashboardPageStack = "flex flex-col gap-2.5 pb-1";
+export const dashboardPageStack = "flex flex-col gap-4 pb-1";
+
+/** Groupe de panneaux dans une même zone thématique */
+export const dashboardPageZone = "flex flex-col gap-2.5";
+
+/** Bandeau alertes + prochaine échéance */
+export const dashboardPriorityGrid =
+  "grid grid-cols-1 gap-2.5 lg:grid-cols-[minmax(0,1fr)_minmax(14rem,18rem)] lg:items-start";
+
+/** Colonne focus journée (tâches + réunions) */
+export const dashboardDayColumn =
+  "flex flex-col gap-2.5 xl:col-span-4 xl:sticky xl:top-4 xl:self-start";
+
+/** Grille principale planning */
+export const dashboardPlanningGrid =
+  "grid grid-cols-1 gap-2.5 xl:grid-cols-12 xl:items-start";
+
+/** Colonne calendrier + réunions / demain en dessous */
+export const dashboardCalendarColumn =
+  "flex min-w-0 flex-col gap-2.5 xl:col-span-8";
+
+export const dashboardBelowCalendarGrid =
+  "grid grid-cols-1 gap-2.5 md:grid-cols-2";
 
 export const dashboardMobileScrollRow = cn(
   "flex gap-0 overflow-x-auto snap-x snap-mandatory",
@@ -95,6 +117,22 @@ export const dashboardChartMobileSlide = cn(
 );
 
 export const dashboardActionBtn = appActionBtn;
+
+/** Mini pastille tâche (dashboard) — légère, sans bordure */
+export const dashboardTaskChip = cn(
+  "inline-flex shrink-0 items-center rounded-md px-1.5 py-0.5",
+  "text-[9px] font-medium leading-none"
+);
+
+export const dashboardTaskRow = cn(
+  "group relative flex items-start gap-2.5 rounded-xl px-2.5 py-2.5",
+  "border border-transparent transition duration-200",
+  "hover:border-app hover:bg-[color:var(--glass-bg-hover)]/40"
+);
+
+export const dashboardTaskAddZone = cn(
+  "shrink-0 border-b border-app bg-gradient-to-b from-[color:var(--glass-bg)]/50 to-transparent px-3.5 py-3"
+);
 
 /** Pastilles événements — couleurs via variables CSS (.light / .dark) */
 export const dashboardEventChipTask = cn(

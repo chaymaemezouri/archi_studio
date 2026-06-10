@@ -76,7 +76,7 @@ import {
   type ProjectsMainFilter,
   type ProjectsSort,
 } from "@/lib/projects-list";
-import { getInitialProjectsView } from "@/lib/settings-user-prefs";
+import { useProjectsViewPreference } from "@/hooks/useUserPreferences";
 
 import {
 
@@ -106,10 +106,6 @@ import {
 } from "@/components/projects/card/project-card-styles";
 
 import { cn } from "@/lib/utils";
-
-
-
-const VIEW_STORAGE_KEY = "projects-list-view";
 
 
 
@@ -200,7 +196,7 @@ export default function ProjectsPage() {
 
   const [sort, setSort] = useState<ProjectsSort>("updated");
 
-  const [view, setView] = useState<"grid" | "list">("grid");
+  const [view, setView] = useProjectsViewPreference();
 
   const [page, setPage] = useState(1);
 
@@ -227,20 +223,6 @@ export default function ProjectsPage() {
 
 
   const pageSize = getProjectsPageSize(view, breakpoint);
-
-
-
-  useEffect(() => {
-    setView(getInitialProjectsView());
-  }, []);
-
-
-
-  useEffect(() => {
-
-    localStorage.setItem(VIEW_STORAGE_KEY, view);
-
-  }, [view]);
 
 
 

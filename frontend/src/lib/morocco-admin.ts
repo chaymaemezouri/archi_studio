@@ -212,7 +212,7 @@ export function getAllVilles(): string[] {
       }
     }
   }
-  return [...names].sort((a, b) => a.localeCompare(b, "fr"));
+  return Array.from(names).sort((a, b) => a.localeCompare(b, "fr"));
 }
 
 export function getMoroccoCommuneCount(): number {

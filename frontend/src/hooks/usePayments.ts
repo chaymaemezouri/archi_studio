@@ -9,8 +9,11 @@ import type { Payment } from "@/types";
 
 export type PaymentInput = {
   invoiceId?: string;
+  invoiceName?: string;
   clientId?: string;
+  clientName?: string;
   projectId?: string;
+  projectName?: string;
   amount: number;
   date: string;
   method: Payment["method"];

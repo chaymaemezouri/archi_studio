@@ -414,8 +414,8 @@ export default function QuotesInvoicesPage() {
   };
 
   const handleInvoiceSubmit = (values: InvoiceFormValues) => {
-    if (!values.clientId) {
-      toast.error("Sélectionnez un client dans la liste");
+    if (!values.clientId && !values.clientName?.trim()) {
+      toast.error("Choisissez un client ou saisissez un nom");
       return;
     }
     let items;
@@ -426,7 +426,9 @@ export default function QuotesInvoicesPage() {
       return;
     }
     const payload = {
-      clientId: values.clientId,
+      ...(values.clientId
+        ? { clientId: values.clientId }
+        : { clientName: values.clientName?.trim() }),
       projectId: values.projectId || undefined,
       projectName: values.projectName?.trim() || undefined,
       object: values.object.trim(),

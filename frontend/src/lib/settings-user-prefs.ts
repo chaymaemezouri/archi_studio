@@ -1,6 +1,8 @@
-import { isThemeMode, type ThemeMode } from "@/lib/theme";
+import { applyThemeToDocument, isThemeMode, type ThemeMode } from "@/lib/theme";
 
 const PREFS_KEY = "architecture-studio-user-prefs";
+
+export const USER_PREFS_CHANGED = "architecture-studio-prefs-changed";
 
 export const VIEW_KEYS = {
   projects: "projects-list-view",
@@ -28,6 +30,13 @@ const DEFAULTS: UserAppPreferences = {
   showDoneCalendarByDefault: false,
 };
 
+function emitPreferencesChanged(prefs: UserAppPreferences) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent<UserAppPreferences>(USER_PREFS_CHANGED, { detail: prefs })
+  );
+}
+
 export function loadUserPreferences(): UserAppPreferences {
   if (typeof window === "undefined") return DEFAULTS;
   try {
@@ -45,40 +54,105 @@ export function loadUserPreferences(): UserAppPreferences {
 }
 
 export function saveUserPreferences(prefs: UserAppPreferences) {
+  if (typeof window === "undefined") return;
+  const current = loadUserPreferences();
+  if (JSON.stringify(current) === JSON.stringify(prefs)) return;
+
   localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
   localStorage.setItem(VIEW_KEYS.projects, prefs.defaultProjectsView);
   localStorage.setItem(VIEW_KEYS.tasks, prefs.defaultTasksView);
   localStorage.setItem(VIEW_KEYS.calendar, prefs.defaultCalendarView);
   localStorage.setItem(VIEW_KEYS.tasksShowDone, String(prefs.showDoneTasksByDefault));
-  localStorage.setItem(VIEW_KEYS.calendarShowDone, String(prefs.showDoneCalendarByDefault));
+  localStorage.setItem(
+    VIEW_KEYS.calendarShowDone,
+    String(prefs.showDoneCalendarByDefault)
+  );
+  applyThemeToDocument(prefs.theme);
+  emitPreferencesChanged(prefs);
+}
+
+export function patchUserPreferences(
+  patch: Partial<UserAppPreferences>
+): UserAppPreferences {
+  const next = { ...loadUserPreferences(), ...patch };
+  saveUserPreferences(next);
+  return next;
+}
+
+export function subscribeUserPreferences(
+  listener: (prefs: UserAppPreferences) => void
+): () => void {
+  if (typeof window === "undefined") return () => undefined;
+
+  const onCustom = (event: Event) => {
+    const detail = (event as CustomEvent<UserAppPreferences>).detail;
+    listener(detail ?? loadUserPreferences());
+  };
+
+  const onStorage = (event: StorageEvent) => {
+    if (
+      event.key === PREFS_KEY ||
+      (event.key && Object.values(VIEW_KEYS).includes(event.key as (typeof VIEW_KEYS)[keyof typeof VIEW_KEYS]))
+    ) {
+      listener(loadUserPreferences());
+    }
+  };
+
+  window.addEventListener(USER_PREFS_CHANGED, onCustom);
+  window.addEventListener("storage", onStorage);
+  return () => {
+    window.removeEventListener(USER_PREFS_CHANGED, onCustom);
+    window.removeEventListener("storage", onStorage);
+  };
 }
 
 export function getInitialProjectsView(): "grid" | "list" {
-  const v = localStorage.getItem(VIEW_KEYS.projects);
-  if (v === "grid" || v === "list") return v;
+  if (typeof window === "undefined") return DEFAULTS.defaultProjectsView;
   return loadUserPreferences().defaultProjectsView;
 }
 
 export function getInitialTasksView(): "list" | "board" {
-  const v = localStorage.getItem(VIEW_KEYS.tasks);
-  if (v === "list" || v === "board") return v;
+  if (typeof window === "undefined") return DEFAULTS.defaultTasksView;
   return loadUserPreferences().defaultTasksView;
 }
 
 export function getInitialCalendarView(): UserAppPreferences["defaultCalendarView"] {
-  const v = localStorage.getItem(VIEW_KEYS.calendar);
-  if (v === "month" || v === "week" || v === "day" || v === "list") return v;
+  if (typeof window === "undefined") return DEFAULTS.defaultCalendarView;
   return loadUserPreferences().defaultCalendarView;
 }
 
 export function getInitialTasksShowDone(): boolean {
-  const v = localStorage.getItem(VIEW_KEYS.tasksShowDone);
-  if (v === "true" || v === "false") return v === "true";
+  if (typeof window === "undefined") return DEFAULTS.showDoneTasksByDefault;
   return loadUserPreferences().showDoneTasksByDefault;
 }
 
 export function getInitialCalendarShowDone(): boolean {
-  const v = localStorage.getItem(VIEW_KEYS.calendarShowDone);
-  if (v === "true" || v === "false") return v === "true";
+  if (typeof window === "undefined") return DEFAULTS.showDoneCalendarByDefault;
   return loadUserPreferences().showDoneCalendarByDefault;
+}
+
+export function persistProjectsView(view: "grid" | "list") {
+  patchUserPreferences({ defaultProjectsView: view });
+}
+
+export function persistTasksView(view: "list" | "board") {
+  patchUserPreferences({ defaultTasksView: view });
+}
+
+export function persistCalendarView(
+  view: UserAppPreferences["defaultCalendarView"]
+) {
+  patchUserPreferences({ defaultCalendarView: view });
+}
+
+export function persistTasksShowDone(show: boolean) {
+  patchUserPreferences({ showDoneTasksByDefault: show });
+}
+
+export function persistCalendarShowDone(show: boolean) {
+  patchUserPreferences({ showDoneCalendarByDefault: show });
+}
+
+export function persistTheme(theme: ThemeMode) {
+  patchUserPreferences({ theme });
 }

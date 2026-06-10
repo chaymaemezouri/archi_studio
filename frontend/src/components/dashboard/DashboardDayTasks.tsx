@@ -7,10 +7,9 @@ import DashboardTaskCheckbox from "@/components/dashboard/DashboardTaskCheckbox"
 import { useCreateDashboardTask, useUpdateDashboardTask } from "@/hooks/useDashboard";
 import { toLocalDateInput } from "@/lib/dates";
 import type { Priority, Project, Task } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 import { accentBar, glassInput, glassSelect } from "@/lib/glass-styles";
-import Badge from "@/components/ui/Badge";
+import DashboardTaskMeta from "@/components/dashboard/DashboardTaskMeta";
 import {
   dashboardLink,
   dashboardPanel,
@@ -82,7 +81,7 @@ export default function DashboardDayTasks({
   const selectClass = cn(glassSelect, "text-[13px]");
 
   return (
-    <section className={cn(dashboardPanel, className)}>
+    <section className={cn(dashboardPanel, "flex flex-col", className)}>
       <div className={dashboardPanelHeader}>
         <h2 className={dashboardPanelTitle}>
           <span className={cn(accentBar, "h-3 opacity-80")} aria-hidden />
@@ -99,7 +98,7 @@ export default function DashboardDayTasks({
 
       <form
         onSubmit={handleAdd}
-        className="space-y-2 border-b border-app px-3 py-3"
+        className="shrink-0 space-y-2 border-b border-app px-3 py-3"
       >
         <div className="flex gap-2">
           <input
@@ -145,7 +144,7 @@ export default function DashboardDayTasks({
         </div>
       </form>
 
-      <div className="max-h-[min(52vh,28rem)] overflow-y-auto px-1.5 py-2">
+      <div className="max-h-[min(72vh,36rem)] flex-1 overflow-y-auto px-1.5 py-2">
         {openTasks.length === 0 ? (
           <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
             <ListTodo className="h-8 w-8 text-glass-muted/40" strokeWidth={1.25} />
@@ -165,25 +164,17 @@ export default function DashboardDayTasks({
                   <DashboardTaskCheckbox
                     checked={false}
                     disabled={isCompleting}
-                    onToggle={() => updateTask.mutate({ id: task.id, status: "DONE" })}
+                    onToggle={() =>
+                      updateTask.mutate({ id: task.id, status: "DONE" })
+                    }
                   />
                   <Link href={href} className="min-w-0 flex-1">
                     <p className="truncate text-[13px] text-glass">{task.title}</p>
-                    <div className="mt-0.5 flex flex-wrap items-center gap-1">
-                      <Badge variant="studio">{TASK_STATUS_LABELS[task.status]}</Badge>
-                      {(task.priority === "URGENT" || task.priority === "HIGH") && (
-                        <Badge
-                          variant={task.priority === "URGENT" ? "danger" : "warning"}
-                        >
-                          {PRIORITY_LABELS[task.priority]}
-                        </Badge>
-                      )}
-                      {task.project?.name && (
-                        <span className="truncate text-[10px] text-glass-muted">
-                          {task.project.name}
-                        </span>
-                      )}
-                    </div>
+                    <DashboardTaskMeta
+                      status={task.status}
+                      priority={task.priority}
+                      projectName={task.project?.name}
+                    />
                   </Link>
                 </li>
               );
@@ -201,7 +192,9 @@ export default function DashboardDayTasks({
                 <li key={task.id} className={cn(row, "opacity-60")}>
                   <DashboardTaskCheckbox
                     checked
-                    onToggle={() => updateTask.mutate({ id: task.id, status: "TODO" })}
+                    onToggle={() =>
+                      updateTask.mutate({ id: task.id, status: "TODO" })
+                    }
                   />
                   <span className="truncate text-[12px] text-glass-muted line-through">
                     {task.title}

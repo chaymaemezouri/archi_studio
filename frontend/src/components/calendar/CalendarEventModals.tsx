@@ -9,6 +9,12 @@ import {
   useDeleteCalendarEvent,
   useUpdateCalendarEvent,
 } from "@/hooks/useCalendar";
+import { useCreateTask, useDeleteTask, useUpdateTask } from "@/hooks/useTasks";
+import {
+  calendarFormToTaskPayload,
+  getTaskIdFromCalendarEvent,
+  isCalendarTaskEvent,
+} from "@/lib/calendar-task";
 import type { CalendarEvent } from "@/types";
 import {
   CALENDAR_EVENT_TYPE_COLORS,
@@ -39,6 +45,7 @@ export default function CalendarEventDetailModal({
   onEditCustom,
 }: CalendarEventDetailModalProps) {
   const deleteEvent = useDeleteCalendarEvent();
+  const deleteTask = useDeleteTask();
   const { confirm } = useDialog();
 
   if (!event) return null;
@@ -47,14 +54,25 @@ export default function CalendarEventDetailModal({
   const time = formatEventTime(event);
 
   const handleDelete = async () => {
-    if (!event.editable || event.source !== "custom") return;
+    if (!event.editable) return;
+    const isTask = event.source === "task";
+    if (event.source !== "custom" && !isTask) return;
+
     const ok = await confirm({
-      title: "Supprimer l'événement",
+      title: isTask ? "Supprimer la tâche" : "Supprimer l'événement",
       message: `Supprimer « ${event.title} » ?`,
       variant: "danger",
       confirmLabel: "Supprimer",
     });
     if (!ok) return;
+
+    if (isTask) {
+      const taskId = getTaskIdFromCalendarEvent(event);
+      if (!taskId) return;
+      deleteTask.mutate(taskId, { onSuccess: onClose });
+      return;
+    }
+
     deleteEvent.mutate(event.id, { onSuccess: onClose });
   };
 
@@ -140,8 +158,11 @@ export default function CalendarEventDetailModal({
               Ouvrir facture
             </Link>
           )}
-          {event.source === "custom" && event.editable && (
+          {(event.source === "custom" || event.source === "task") && event.editable && (
             <>
+              <Link href="/tasks" className={glassBtnSecondary}>
+                Voir les tâches
+              </Link>
               <button
                 type="button"
                 onClick={() => {
@@ -182,8 +203,29 @@ export function CalendarEventCreateModal({
 }: CalendarEventCreateModalProps) {
   const createEvent = useCreateCalendarEvent();
   const updateEvent = useUpdateCalendarEvent();
+  const createTask = useCreateTask();
+  const updateTask = useUpdateTask();
 
   const handleSubmit = (payload: Partial<CalendarEvent>) => {
+    const asTask =
+      payload.type === "DEADLINE_TASK" || isCalendarTaskEvent(editing);
+
+    if (asTask) {
+      const taskPayload = calendarFormToTaskPayload(payload);
+      const taskId = editing ? getTaskIdFromCalendarEvent(editing) : null;
+
+      if (taskId) {
+        updateTask.mutate(
+          { id: taskId, ...taskPayload },
+          { onSuccess: onClose }
+        );
+        return;
+      }
+
+      createTask.mutate(taskPayload, { onSuccess: onClose });
+      return;
+    }
+
     if (editing?.source === "custom") {
       updateEvent.mutate(
         { id: editing.id, ...payload },
@@ -191,14 +233,24 @@ export function CalendarEventCreateModal({
       );
       return;
     }
+
     createEvent.mutate(payload, { onSuccess: onClose });
   };
+
+  const modalTitle = editing
+    ? isCalendarTaskEvent(editing)
+      ? "Modifier la tâche"
+      : "Modifier l'événement"
+    : "Ajouter au calendrier";
+
+  const taskLoading = createTask.isPending || updateTask.isPending;
+  const eventLoading = createEvent.isPending || updateEvent.isPending;
 
   return (
     <Modal
       isOpen={open}
       onClose={onClose}
-      title={editing ? "Modifier l'événement" : "Ajouter un événement"}
+      title={modalTitle}
       size="lg"
       variant="glass"
     >
@@ -206,7 +258,7 @@ export function CalendarEventCreateModal({
         initial={editing}
         defaultDate={defaultDate}
         onSubmit={handleSubmit}
-        loading={createEvent.isPending || updateEvent.isPending}
+        loading={taskLoading || eventLoading}
         submitLabel={editing ? "Enregistrer" : "Créer"}
       />
     </Modal>

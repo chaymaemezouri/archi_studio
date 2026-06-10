@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Bell, CheckCheck } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import NotificationListItem from "@/components/notifications/NotificationListItem";
+import NotificationPreferencesPanel from "@/components/notifications/NotificationPreferencesPanel";
 import {
   accentBar,
   filterChipActive,
@@ -98,6 +99,8 @@ export default function NotificationsPage() {
           )}
         </div>
       </div>
+
+      <NotificationPreferencesPanel />
 
       <div className="flex flex-wrap gap-1.5">
         {filters.map((f) => (

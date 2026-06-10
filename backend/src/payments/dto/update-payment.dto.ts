@@ -8,11 +8,23 @@ export class UpdatePaymentDto {
 
   @IsOptional()
   @IsString()
+  invoiceName?: string;
+
+  @IsOptional()
+  @IsString()
   clientId?: string;
 
   @IsOptional()
   @IsString()
+  clientName?: string;
+
+  @IsOptional()
+  @IsString()
   projectId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 
   @IsOptional()
   @IsNumber()

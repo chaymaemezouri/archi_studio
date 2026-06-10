@@ -94,9 +94,16 @@ export class CalendarService {
       }),
       this.prisma.task.findMany({
         where: {
-          project: projectScope,
-          status: { not: TaskStatus.DONE },
-          OR: [{ dueDate: dateRange }, { scheduledAt: dateRange }],
+          AND: [
+            {
+              OR: [
+                { project: projectScope },
+                { studioId, projectId: null },
+              ],
+            },
+            { status: { not: TaskStatus.DONE } },
+            { OR: [{ dueDate: dateRange }, { scheduledAt: dateRange }] },
+          ],
         },
         include: {
           project: {
@@ -107,6 +114,7 @@ export class CalendarService {
               client: { select: { id: true, name: true } },
             },
           },
+          client: { select: { id: true, name: true } },
         },
       }),
       this.prisma.meeting.findMany({
@@ -235,8 +243,8 @@ export class CalendarService {
         date: toIsoDate(eventDate),
         projectId: t.projectId,
         projectName: t.project?.name ?? null,
-        clientId: t.project?.clientId ?? null,
-        clientName: t.project?.client?.name ?? null,
+        clientId: t.clientId ?? t.project?.clientId ?? null,
+        clientName: t.client?.name ?? t.project?.client?.name ?? null,
         priority: mapPriority(t.priority),
         status: t.status === TaskStatus.DONE ? 'DONE' : t.status,
         notes: t.description,
@@ -367,6 +375,12 @@ export class CalendarService {
     dto: CreateCalendarEventDto,
     user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
+    if (dto.type === CalendarEventType.DEADLINE_TASK) {
+      throw new BadRequestException(
+        'Créez une tâche depuis le calendrier via l’API /tasks.',
+      );
+    }
+
     if (dto.projectId) {
       const project = await this.prisma.project.findFirst({
         where: projectByIdWhere(toProjectAccessContext(user), dto.projectId),

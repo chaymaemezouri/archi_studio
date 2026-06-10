@@ -163,6 +163,7 @@ model Studio {
   planRenders   PlanRender[]
   devis         Devis[]
   invoices      Invoice[]
+  payments      Payment[]
 }
 
 model User {
@@ -180,8 +181,9 @@ model User {
   projects      Project[]
   ownedProjects Project[]      @relation("ProjectOwner")
   projectCollaborations ProjectCollaborator[]
-  notifications Notification[]
-  activityLogs  ActivityLog[]
+  notifications       Notification[]
+  notificationPrefs   Json?
+  activityLogs        ActivityLog[]
 }
 
 model Client {
@@ -615,14 +617,19 @@ model InvoiceAttachment {
 }
 
 model Payment {
-  id        String        @id @default(cuid())
-  invoiceId String?
-  invoice   Invoice?      @relation(fields: [invoiceId], references: [id])
-  clientId  String?
-  client    Client?       @relation(fields: [clientId], references: [id])
-  projectId String?
-  project   Project?      @relation(fields: [projectId], references: [id])
-  amount    Float
+  id          String        @id @default(cuid())
+  studioId    String?
+  studio      Studio?       @relation(fields: [studioId], references: [id])
+  invoiceId   String?
+  invoice     Invoice?      @relation(fields: [invoiceId], references: [id])
+  invoiceName String?
+  clientId    String?
+  client      Client?       @relation(fields: [clientId], references: [id])
+  clientName  String?
+  projectId   String?
+  project     Project?      @relation(fields: [projectId], references: [id])
+  projectName String?
+  amount      Float
   date      DateTime      @default(now())
   method    PaymentMethod @default(VIREMENT)
   reference String?

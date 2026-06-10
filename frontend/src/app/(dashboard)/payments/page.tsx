@@ -44,10 +44,13 @@ import {
 } from "@/lib/glass-styles";
 import { groupPaymentsByProject } from "@/lib/finance-group";
 import { downloadPaymentReceiptPdf } from "@/lib/finance-pdf";
+import { resolveMediaUrl } from "@/lib/assets";
 import {
   getInvoiceFinanceHref,
   getPaymentClientId,
   getPaymentClientName,
+  getPaymentInvoiceLabel,
+  getPaymentProjectLabel,
 } from "@/lib/payment-utils";
 import { sumRemainingToCollectAcrossProjects } from "@/lib/project-finance";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
@@ -249,12 +252,12 @@ export default function PaymentsPage() {
       if (linkFilter === "with_client" && !getPaymentClientId(p, projects)) return false;
       if (!q) return true;
       const clientName = getPaymentClientName(p, projects);
-      const projectName = p.project?.name ?? p.invoice?.project?.name ?? "";
+      const projectName = getPaymentProjectLabel(p, projects);
       const haystack = [
         p.reference ?? "",
         clientName,
         projectName,
-        p.invoice?.number ?? "",
+        getPaymentInvoiceLabel(p),
         paymentMethodLabel[p.method] ?? p.method,
         p.notes ?? "",
       ]
@@ -274,7 +277,9 @@ export default function PaymentsPage() {
         const bc = getPaymentClientName(b, projects).toLowerCase();
         return ac.localeCompare(bc, "fr");
       }
-      if (sortBy === "invoice") return (a.invoice?.number ?? "").localeCompare(b.invoice?.number ?? "", "fr");
+      if (sortBy === "invoice") {
+        return getPaymentInvoiceLabel(a).localeCompare(getPaymentInvoiceLabel(b), "fr");
+      }
       if (sortBy === "method") return paymentMethodLabel[a.method].localeCompare(paymentMethodLabel[b.method], "fr");
       return 0;
     });
@@ -675,8 +680,8 @@ export default function PaymentsPage() {
         <div className={financeMobileList}>
           {group.items.map((p) => {
             const client = getPaymentClientName(p, projects);
-            const project = p.project?.name ?? p.invoice?.project?.name ?? "—";
-            const invoice = p.invoice?.number ?? "Non liée";
+            const project = getPaymentProjectLabel(p, projects);
+            const invoice = getPaymentInvoiceLabel(p);
             const clientId = getPaymentClientId(p, projects);
             const projectId = p.projectId ?? p.invoice?.projectId;
 
@@ -717,7 +722,11 @@ export default function PaymentsPage() {
                           <FinanceMenuItem
                             label="Télécharger justificatif"
                             onClick={() =>
-                              window.open(p.proofUrl!, "_blank", "noopener,noreferrer")
+                              window.open(
+                                resolveMediaUrl(p.proofUrl!) ?? p.proofUrl!,
+                                "_blank",
+                                "noopener,noreferrer"
+                              )
                             }
                           />
                         )}
@@ -768,8 +777,8 @@ export default function PaymentsPage() {
             <tbody>
               {group.items.map((p) => {
                 const client = getPaymentClientName(p, projects);
-                const project = p.project?.name ?? p.invoice?.project?.name ?? "—";
-                const invoice = p.invoice?.number ?? "Non liée";
+                const project = getPaymentProjectLabel(p, projects);
+                const invoice = getPaymentInvoiceLabel(p);
                 const clientId = getPaymentClientId(p, projects);
                 const projectId = p.projectId ?? p.invoice?.projectId;
 
@@ -815,7 +824,11 @@ export default function PaymentsPage() {
                               <FinanceMenuItem
                                 label="Télécharger justificatif"
                                 onClick={() =>
-                                  window.open(p.proofUrl!, "_blank", "noopener,noreferrer")
+                                  window.open(
+                                resolveMediaUrl(p.proofUrl!) ?? p.proofUrl!,
+                                "_blank",
+                                "noopener,noreferrer"
+                              )
                                 }
                               />
                             )}

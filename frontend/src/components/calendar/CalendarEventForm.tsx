@@ -12,7 +12,7 @@ import { useClients } from "@/hooks/useClients";
 import { toLocalDateInput } from "@/lib/dates";
 import { glassBtnPrimary } from "@/lib/glass-styles";
 import type { CalendarEvent, CalendarEventType } from "@/types";
-import { CALENDAR_EVENT_TYPE_LABELS } from "@/types";
+import { CALENDAR_EVENT_TYPE_LABELS, CALENDAR_FORM_TYPE_ORDER } from "@/types";
 import { cn } from "@/lib/utils";
 
 export type CalendarEventFormValues = {
@@ -95,6 +95,10 @@ export default function CalendarEventForm({
     val: CalendarEventFormValues[K]
   ) => setValues((prev) => ({ ...prev, [key]: val }));
 
+  const typeOptions = CALENDAR_FORM_TYPE_ORDER.map(
+    (value) => [value, CALENDAR_EVENT_TYPE_LABELS[value]] as const
+  );
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const err = validateEventForm(values);
@@ -142,7 +146,7 @@ export default function CalendarEventForm({
               value={values.type}
               onChange={(e) => set("type", e.target.value as CalendarEventType)}
             >
-              {Object.entries(CALENDAR_EVENT_TYPE_LABELS).map(([value, label]) => (
+              {typeOptions.map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}
                 </option>

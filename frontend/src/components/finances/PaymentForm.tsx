@@ -10,7 +10,9 @@ import {
   sumPaymentsForProject,
 } from "@/lib/project-finance";
 import { glassBtnPrimary, glassBtnSecondary } from "@/lib/glass-styles";
+import PaymentProofUpload from "./PaymentProofUpload";
 import {
+  FinanceEntityPicker,
   PaymentFieldLabel,
   PaymentFormSection,
   paymentFieldClass,
@@ -103,8 +105,11 @@ export default function PaymentForm({
   defaultProjectId,
 }: PaymentFormProps) {
   const [invoiceId, setInvoiceId] = useState(payment?.invoiceId ?? "");
+  const [invoiceName, setInvoiceName] = useState(payment?.invoiceName ?? "");
   const [clientId, setClientId] = useState(payment?.clientId ?? defaultClientId ?? "");
+  const [clientName, setClientName] = useState(payment?.clientName ?? "");
   const [projectId, setProjectId] = useState(payment?.projectId ?? defaultProjectId ?? "");
+  const [projectName, setProjectName] = useState(payment?.projectName ?? "");
   const [amount, setAmount] = useState(payment?.amount ?? 0);
   const [date, setDate] = useState(
     payment?.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10)
@@ -142,35 +147,34 @@ export default function PaymentForm({
     return getProjectRemainingToCollect(selectedProject, projectPaid);
   }, [selectedProject, projectPaid]);
 
-  const invoicesWithClient = useMemo(
-    () => invoices.filter((inv) => inv.clientId || inv.client?.id),
-    [invoices]
-  );
-
   const filteredProjects = useMemo(() => {
     if (!clientId) return projects;
     return projects.filter((p) => !p.clientId || p.clientId === clientId);
   }, [projects, clientId]);
 
-  const onInvoiceChange = (nextInvoiceId: string) => {
+  const onInvoiceIdChange = (nextInvoiceId: string) => {
     setInvoiceId(nextInvoiceId);
+    if (!nextInvoiceId) return;
+    setInvoiceName("");
     const inv = invoices.find((x) => x.id === nextInvoiceId);
-    if (!inv) {
-      setClientId("");
-      setProjectId("");
-      return;
-    }
+    if (!inv) return;
     const nextProjectId = inv.projectId ?? "";
     setProjectId(nextProjectId);
+    setProjectName("");
     setClientId(resolveClientId(inv, nextProjectId, projects));
+    setClientName("");
     setAmount(Math.max(0, inv.totalTTC - inv.paidAmount));
   };
 
-  const onProjectChange = (nextProjectId: string) => {
+  const onProjectIdChange = (nextProjectId: string) => {
     setProjectId(nextProjectId);
     if (!nextProjectId) return;
+    setProjectName("");
     const project = projects.find((p) => p.id === nextProjectId);
-    if (project?.clientId) setClientId(project.clientId);
+    if (project?.clientId) {
+      setClientId(project.clientId);
+      setClientName("");
+    }
   };
 
   useEffect(() => {
@@ -180,8 +184,13 @@ export default function PaymentForm({
     if (resolved) setClientId(resolved);
   }, [invoiceId, clientId, projectId, invoices, projects]);
 
+  const hasLink =
+    !!invoiceId ||
+    !!invoiceName.trim() ||
+    !!clientId ||
+    !!clientName.trim();
   const amountExceeds = remaining !== null && amount > remaining + 0.001;
-  const canSubmit = (clientId || invoiceId) && date && method && amount > 0 && !amountExceeds;
+  const canSubmit = hasLink && date && method && amount > 0 && !amountExceeds;
 
   const projectFinanceSummary = selectedProject ? (
     <div className="rounded-lg border border-studio-border/30 bg-studio-muted/20 px-3 py-3">
@@ -231,9 +240,21 @@ export default function PaymentForm({
     e.preventDefault();
     if (!canSubmit) return;
     onSubmit({
-      invoiceId: invoiceId || undefined,
-      clientId: clientId || undefined,
-      projectId: projectId || undefined,
+      ...(invoiceId
+        ? { invoiceId }
+        : invoiceName.trim()
+          ? { invoiceName: invoiceName.trim() }
+          : {}),
+      ...(clientId
+        ? { clientId }
+        : clientName.trim()
+          ? { clientName: clientName.trim() }
+          : {}),
+      ...(projectId
+        ? { projectId }
+        : projectName.trim()
+          ? { projectName: projectName.trim() }
+          : {}),
       amount,
       date,
       method,
@@ -249,21 +270,17 @@ export default function PaymentForm({
 
       <PaymentFormSection title="Lien">
         <div>
-          <PaymentFieldLabel>Facture liée</PaymentFieldLabel>
-          <select
-            className={cn(paymentSelectClass, !invoiceId && "text-glass-muted")}
-            value={invoiceId}
-            onChange={(e) => onInvoiceChange(e.target.value)}
-          >
-            <option value="">
-              Non lié à une facture
-            </option>
-            {invoicesWithClient.map((inv) => (
-              <option key={inv.id} value={inv.id}>
-                {inv.number}
-              </option>
-            ))}
-          </select>
+          <FinanceEntityPicker
+            label="Facture liée"
+            placeholder="Non lié à une facture"
+            manualLabel="Autre facture — saisir la référence"
+            manualPlaceholder="N° ou nom de facture"
+            options={invoices.map((inv) => ({ id: inv.id, name: inv.number }))}
+            entityId={invoiceId}
+            entityName={invoiceName}
+            onEntityIdChange={onInvoiceIdChange}
+            onEntityNameChange={setInvoiceName}
+          />
           {remaining !== null && (
             <p className="mt-1.5 text-[11px] text-studio-light/65">
               {payment?.invoiceId === invoiceId
@@ -274,41 +291,32 @@ export default function PaymentForm({
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <PaymentFieldLabel required={!!invoiceId}>Client</PaymentFieldLabel>
-            <select
-              className={cn(paymentSelectClass, !clientId && "text-glass-muted")}
-              value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              required={!!invoiceId}
-            >
-              <option value="">
-                Sélectionner…
-              </option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <PaymentFieldLabel>Projet lié</PaymentFieldLabel>
-            <select
-              className={cn(paymentSelectClass, !projectId && "text-glass-muted")}
-              value={projectId}
-              onChange={(e) => onProjectChange(e.target.value)}
-            >
-              <option value="">
-                Aucun
-              </option>
-              {filteredProjects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FinanceEntityPicker
+            label="Client"
+            required={!invoiceId && !invoiceName.trim()}
+            placeholder="Choisir un client…"
+            manualLabel="Autre client — saisir le nom"
+            manualPlaceholder="Nom du client"
+            options={clients.map((c) => ({ id: c.id, name: c.name }))}
+            entityId={clientId}
+            entityName={clientName}
+            onEntityIdChange={(id) => {
+              setClientId(id);
+              if (id) setClientName("");
+            }}
+            onEntityNameChange={setClientName}
+          />
+          <FinanceEntityPicker
+            label="Projet lié"
+            placeholder="Aucun"
+            manualLabel="Autre projet — saisir le nom"
+            manualPlaceholder="Nom du projet"
+            options={filteredProjects.map((p) => ({ id: p.id, name: p.name }))}
+            entityId={projectId}
+            entityName={projectName}
+            onEntityIdChange={onProjectIdChange}
+            onEntityNameChange={setProjectName}
+          />
         </div>
       </PaymentFormSection>
 
@@ -368,14 +376,8 @@ export default function PaymentForm({
 
       <PaymentFormSection title="Compléments">
         <div>
-          <PaymentFieldLabel>Justificatif (URL)</PaymentFieldLabel>
-          <input
-            type="url"
-            className={paymentFieldClass}
-            value={proofUrl}
-            onChange={(e) => setProofUrl(e.target.value)}
-            placeholder="https://…"
-          />
+          <PaymentFieldLabel>Justificatif</PaymentFieldLabel>
+          <PaymentProofUpload proofUrl={proofUrl} onProofUrlChange={setProofUrl} />
         </div>
         <div>
           <PaymentFieldLabel>Note</PaymentFieldLabel>

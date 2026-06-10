@@ -12,7 +12,11 @@ import {
   applyThemeToDocument,
   type ThemeMode,
 } from "@/lib/theme";
-import { loadUserPreferences, saveUserPreferences } from "@/lib/settings-user-prefs";
+import {
+  loadUserPreferences,
+  persistTheme,
+  subscribeUserPreferences,
+} from "@/lib/settings-user-prefs";
 
 interface ThemeContextValue {
   theme: ThemeMode;
@@ -29,21 +33,23 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     const prefs = loadUserPreferences();
     setThemeState(prefs.theme);
     applyThemeToDocument(prefs.theme);
+    return subscribeUserPreferences((next) => {
+      setThemeState(next.theme);
+      applyThemeToDocument(next.theme);
+    });
   }, []);
 
   const setTheme = useCallback((next: ThemeMode) => {
     setThemeState(next);
     applyThemeToDocument(next);
-    const prefs = loadUserPreferences();
-    saveUserPreferences({ ...prefs, theme: next });
+    persistTheme(next);
   }, []);
 
   const toggleTheme = useCallback(() => {
     setThemeState((current) => {
       const next: ThemeMode = current === "dark" ? "light" : "dark";
       applyThemeToDocument(next);
-      const prefs = loadUserPreferences();
-      saveUserPreferences({ ...prefs, theme: next });
+      persistTheme(next);
       return next;
     });
   }, []);

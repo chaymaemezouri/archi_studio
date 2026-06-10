@@ -9,6 +9,11 @@ import {
 } from 'date-fns';
 import { projectRelationWhere } from '../common/utils/project-access.util';
 import { PrismaService } from '../prisma/prisma.service';
+import {
+  isNotificationTypeEnabled,
+  type NotificationPreferences,
+} from './notification-preferences';
+import { NotificationPreferencesService } from './notification-preferences.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
 export type SmartAlertSeverity = 'overdue' | 'today' | 'tomorrow' | 'soon';
@@ -33,7 +38,30 @@ export class SmartAlertsService {
   constructor(
     private prisma: PrismaService,
     private notifications: NotificationsService,
+    private notificationPreferences: NotificationPreferencesService,
   ) {}
+
+  private async notifyIfEnabled(
+    prefs: NotificationPreferences,
+    userId: string,
+    type: NotifType,
+    title: string,
+    message: string,
+    uniqueKey: string,
+    link?: string,
+    options?: { refreshUnread?: boolean },
+  ) {
+    if (!isNotificationTypeEnabled(prefs, type)) return;
+    await this.notifications.notifyUser(
+      userId,
+      type,
+      title,
+      message,
+      uniqueKey,
+      link,
+      options,
+    );
+  }
 
   private taskStudioScope(studioId: string, userId: string, role?: Role) {
     const projectScope = projectRelationWhere({ studioId, userId, role });
@@ -71,11 +99,15 @@ export class SmartAlertsService {
 
   /** Génère notifications intelligentes pour un utilisateur du studio. */
   async syncForUser(userId: string, studioId: string): Promise<void> {
+    const prefs = await this.notificationPreferences.getForUser(userId);
+    if (!prefs.enabled) return;
+
     const now = new Date();
     const today = startOfDay(now);
     const tomorrow = startOfDay(addDays(now, 1));
     const in3 = endOfDay(addDays(now, 3));
-    const in7 = endOfDay(addDays(now, 7));
+    const horizonDays = prefs.deadlineHorizonDays;
+    const inHorizon = endOfDay(addDays(now, horizonDays));
     const projectScope = projectRelationWhere({ studioId, userId });
     const studioScope = this.taskStudioScope(studioId, userId);
     const touchedTaskKeys = new Set<string>();
@@ -112,7 +144,7 @@ export class SmartAlertsService {
         where: {
           done: false,
           project: projectScope,
-          date: { lte: in7 },
+          date: { lte: inHorizon },
         },
         include: { project: { select: { id: true, name: true } } },
       }),
@@ -137,7 +169,8 @@ export class SmartAlertsService {
         const detail = due
           ? `${msg}${subtitle ? ` · ${subtitle}` : ''} · ${format(due, 'dd/MM')}`
           : `${msg}${subtitle ? ` · ${subtitle}` : ''}`;
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.TASK_URGENT,
           'Tâche urgente',
@@ -150,7 +183,8 @@ export class SmartAlertsService {
       } else if (task.priority === Priority.HIGH && !due) {
         const key = `task-high-${task.id}-${userId}`;
         touchedTaskKeys.add(key);
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.TASK_HIGH,
           'Tâche prioritaire',
@@ -166,7 +200,8 @@ export class SmartAlertsService {
       if (due < today && !isSameDay(due, today)) {
         const key = `task-overdue-${task.id}-${userId}`;
         touchedTaskKeys.add(key);
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.TASK_OVERDUE,
           'Tâche en retard',
@@ -177,7 +212,8 @@ export class SmartAlertsService {
       } else if (isSameDay(due, today)) {
         const key = `task-today-${task.id}-${userId}`;
         touchedTaskKeys.add(key);
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.TASK_TODAY,
           'Tâche du jour',
@@ -188,7 +224,8 @@ export class SmartAlertsService {
       } else if (isSameDay(due, tomorrow)) {
         const key = `task-tomorrow-${task.id}-${userId}`;
         touchedTaskKeys.add(key);
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.TASK_TOMORROW,
           'Tâche demain',
@@ -225,7 +262,8 @@ export class SmartAlertsService {
         : meeting.title;
 
       if (isSameDay(meeting.date, today)) {
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.MEETING_TODAY,
           'Réunion aujourd\'hui',
@@ -235,11 +273,12 @@ export class SmartAlertsService {
         );
         const diffHours =
           (meeting.date.getTime() - now.getTime()) / (1000 * 60 * 60);
-        if (diffHours > 0 && diffHours <= 2) {
-          await this.notifications.notifyUser(
+        if (diffHours > 0 && diffHours <= prefs.meetingSoonHours) {
+          await this.notifyIfEnabled(
+            prefs,
             userId,
             NotifType.MEETING_SOON,
-            'Réunion dans moins de 2 h',
+            `Réunion dans moins de ${prefs.meetingSoonHours} h`,
             msg,
             `meeting-soon-${meeting.id}-${userId}`,
             link,
@@ -257,7 +296,8 @@ export class SmartAlertsService {
       const keyBase = `deadline-${deadline.id}-${userId}-${format(date, 'yyyy-MM-dd')}`;
 
       if (date < today && !isSameDay(date, today)) {
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.DEADLINE_OVERDUE,
           'Deadline dépassée',
@@ -266,7 +306,8 @@ export class SmartAlertsService {
           link,
         );
       } else if (isSameDay(date, today)) {
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.DEADLINE_TODAY,
           'Deadline aujourd\'hui',
@@ -275,7 +316,8 @@ export class SmartAlertsService {
           link,
         );
       } else if (date <= in3) {
-        await this.notifications.notifyUser(
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.DEADLINE_3D,
           'Deadline dans 3 jours',
@@ -283,11 +325,12 @@ export class SmartAlertsService {
           `${keyBase}-3d`,
           link,
         );
-      } else if (date <= in7) {
-        await this.notifications.notifyUser(
+      } else if (horizonDays > 3 && date <= inHorizon) {
+        await this.notifyIfEnabled(
+          prefs,
           userId,
           NotifType.DEADLINE_7D,
-          'Deadline cette semaine',
+          horizonDays >= 14 ? 'Deadline à venir' : 'Deadline cette semaine',
           msg,
           `${keyBase}-7d`,
           link,

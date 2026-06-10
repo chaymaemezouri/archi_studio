@@ -48,13 +48,10 @@ import {
   glassSelect,
 } from "@/lib/glass-styles";
 import {
-  getInitialTasksShowDone,
-  getInitialTasksView,
-  VIEW_KEYS,
-} from "@/lib/settings-user-prefs";
+  useTasksShowDonePreference,
+  useTasksViewPreference,
+} from "@/hooks/useUserPreferences";
 import { cn } from "@/lib/utils";
-
-const VIEW_STORAGE_KEY = VIEW_KEYS.tasks;
 
 const MAIN_FILTERS: { id: TaskMainFilter; label: string }[] = [
   { id: "all", label: "Toutes" },
@@ -92,25 +89,12 @@ export default function TasksPage() {
   const [projectFilter, setProjectFilter] = useState<string | "all" | "personal">("all");
   const [clientFilter, setClientFilter] = useState<string | "all">("all");
   const [sort, setSort] = useState<TaskSort>("deadline");
-  const [view, setView] = useState<"list" | "board">("list");
-  const [showDone, setShowDone] = useState(false);
+  const [view, setView] = useTasksViewPreference();
+  const [showDone, setShowDone] = useTasksShowDonePreference();
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    setView(getInitialTasksView());
-    setShowDone(getInitialTasksShowDone());
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(VIEW_STORAGE_KEY, view);
-  }, [view]);
-
-  useEffect(() => {
-    localStorage.setItem(VIEW_KEYS.tasksShowDone, String(showDone));
-  }, [showDone]);
 
   useEffect(() => {
     if (searchParams.get("new") === "1") {

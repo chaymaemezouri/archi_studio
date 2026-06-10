@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Building2, FileText, Lock, Shield, User } from "lucide-react";
 import toast from "react-hot-toast";
@@ -37,10 +37,10 @@ import {
   uploadUserAvatar,
 } from "@/lib/settings-api";
 import { normalizeUser, resolveMediaUrl } from "@/lib/assets";
-import { useTheme } from "@/components/providers/ThemeProvider";
 import {
   loadUserPreferences,
   saveUserPreferences,
+  subscribeUserPreferences,
   type UserAppPreferences,
 } from "@/lib/settings-user-prefs";
 import type { ThemeMode } from "@/lib/theme";
@@ -63,12 +63,12 @@ const ROLE_LABELS: Record<string, string> = {
 
 export default function SettingsPageContent() {
   const { user, setUser } = useAuth();
-  const { setTheme } = useTheme();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState<SettingsTab>("profile");
   const [form, setForm] = useState<StudioSettings>({});
   const [profileName, setProfileName] = useState("");
-  const [prefs, setPrefs] = useState<UserAppPreferences>(loadUserPreferences);
+  const [prefs, setPrefs] = useState<UserAppPreferences>(() => loadUserPreferences());
+  const skipPrefsSave = useRef(true);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -85,6 +85,24 @@ export default function SettingsPageContent() {
   useEffect(() => {
     if (user?.name) setProfileName(user.name);
   }, [user?.name]);
+
+  useEffect(
+    () =>
+      subscribeUserPreferences((next) => {
+        setPrefs((current) =>
+          JSON.stringify(current) === JSON.stringify(next) ? current : next
+        );
+      }),
+    []
+  );
+
+  useEffect(() => {
+    if (skipPrefsSave.current) {
+      skipPrefsSave.current = false;
+      return;
+    }
+    saveUserPreferences(prefs);
+  }, [prefs]);
 
   const invalidateAll = useCallback(() => {
     queryClient.invalidateQueries({ queryKey: ["settings"] });
@@ -222,7 +240,6 @@ export default function SettingsPageContent() {
                 onSubmit={(e) => {
                   e.preventDefault();
                   saveUserPreferences(prefs);
-                  setTheme(prefs.theme);
                   saveProfile.mutate({ name: profileName.trim() });
                 }}
               >
@@ -280,11 +297,9 @@ export default function SettingsPageContent() {
                     <SettingsField label="Thème">
                       <SettingsSelect
                         value={prefs.theme}
-                        onChange={(v) => {
-                          const theme = v as ThemeMode;
-                          setPrefs((p) => ({ ...p, theme }));
-                          setTheme(theme);
-                        }}
+                        onChange={(v) =>
+                          setPrefs((p) => ({ ...p, theme: v as ThemeMode }))
+                        }
                         options={[
                           { value: "dark", label: "Sombre" },
                           { value: "light", label: "Clair" },

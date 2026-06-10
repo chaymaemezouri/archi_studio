@@ -61,6 +61,29 @@ export class UploadsService {
     };
   }
 
+  /** Justificatif de paiement (image) */
+  savePaymentProof(file: Express.Multer.File, studioId: string) {
+    const err = validateImageUpload(file);
+    if (err) throw new BadRequestException(err);
+
+    const type = 'payment-proofs';
+    const uploadRoot = this.getUploadRoot();
+    const dir = join(uploadRoot, type, studioId);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+    const ext = extname(file.originalname).toLowerCase() || '.jpg';
+    const filename = `${Date.now()}${ext}`;
+    const destPath = join(dir, filename);
+    renameSync(file.path, destPath);
+
+    return {
+      filename,
+      mimeType: file.mimetype,
+      size: file.size,
+      url: this.publicUrl(type, studioId, filename),
+    };
+  }
+
   /** Convertit une URL publique d'upload en data URI pour les PDF (Puppeteer). */
   resolveImageDataUri(publicUrl: string | null | undefined): string | null {
     if (!publicUrl?.trim()) return null;
