@@ -3,7 +3,9 @@ WORKDIR /app
 ARG NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 COPY package*.json ./
-RUN npm ci
+# npm ci exige un lock file généré sur la même plateforme (Linux musl).
+# npm install reste reproductible via package-lock.json tout en tolérant les deps optionnelles.
+RUN npm install --no-audit --no-fund
 COPY . .
 RUN npm run build
 
