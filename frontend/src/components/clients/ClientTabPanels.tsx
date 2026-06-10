@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import { useDialog } from "@/components/providers/DialogProvider";
+import { getInvoiceFinanceHref } from "@/lib/payment-utils";
 import { computeProjectOverallProgress } from "@/lib/project-progress";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
 import ProjectTabSectionHeader from "@/components/projects/detail/ProjectTabSectionHeader";
