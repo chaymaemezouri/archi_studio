@@ -104,10 +104,10 @@ export function buildLocationQuery(parts: LocationParts): string {
   return [
     parts.address?.trim(),
     parts.arrondissement?.trim(),
+    city,
     parts.commune?.trim(),
     parts.prefecture?.trim(),
     parts.province?.trim(),
-    city,
     normalizeCountry(parts.country),
   ]
     .filter(Boolean)
@@ -120,6 +120,28 @@ export function buildMapsSearchUrl(parts: LocationParts): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
+/** Lien OpenStreetMap centré sur le point GPS. */
+export function buildOsmMapsUrl(
+  latitude: number,
+  longitude: number,
+  zoom = 17,
+): string {
+  return `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=${zoom}/${latitude}/${longitude}`;
+}
+
+function normalizeForMatch(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '');
+}
+
+function labelContainsPlace(label: string, place?: string): boolean {
+  if (!place?.trim()) return true;
+  return normalizeForMatch(label).includes(normalizeForMatch(place));
+}
+
 /** Requêtes du plus précis au plus large (adresse + ville en priorité). */
 export function buildGeocodeQueries(parts: LocationParts): string[] {
   const country = normalizeCountry(parts.country);
@@ -127,22 +149,58 @@ export function buildGeocodeQueries(parts: LocationParts): string[] {
   const queries: string[] = [];
   const address = parts.address?.trim();
   const commune = parts.commune?.trim();
+  const prefecture = parts.prefecture?.trim();
+  const hasLocality = Boolean(
+    cityVariants.length || commune || prefecture,
+  );
 
   if (address) {
     for (const variant of addressSearchVariants(address)) {
-      for (const city of cityVariants.length ? cityVariants : [normalizeCity(parts.city)].filter(Boolean)) {
+      const cities = cityVariants.length
+        ? cityVariants
+        : [normalizeCity(parts.city)].filter(Boolean);
+
+      for (const city of cities) {
         queries.push(`${variant}, ${city}, ${country}`);
-        queries.push(`${variant}, ${city}`);
+        if (prefecture && normalizeForMatch(prefecture) !== normalizeForMatch(city)) {
+          queries.push(`${variant}, ${city}, ${prefecture}, ${country}`);
+        }
+        if (commune && normalizeForMatch(commune) !== normalizeForMatch(city)) {
+          queries.push(`${variant}, ${commune}, ${city}, ${country}`);
+        }
       }
-      if (commune) queries.push(`${variant}, ${commune}, ${country}`);
-      queries.push(`${variant}, ${country}`);
+
+      if (commune && !cities.length) {
+        queries.push(`${variant}, ${commune}, ${country}`);
+        if (prefecture) {
+          queries.push(`${variant}, ${commune}, ${prefecture}, ${country}`);
+        }
+      }
+
+      // Éviter « Ancienne médina, Morocco » sans ville (match Essaouira, Fès, etc.)
+      if (!hasLocality) {
+        queries.push(`${variant}, ${country}`);
+      }
+    }
+
+    if (/m[eé]dina/i.test(address)) {
+      for (const city of cityVariants.length
+        ? cityVariants
+        : [normalizeCity(parts.city)].filter(Boolean)) {
+        queries.push(`Médina, ${city}, ${country}`);
+        queries.push(`Ancienne médina, ${city}, ${country}`);
+      }
     }
   }
 
   for (const city of cityVariants) {
     queries.push(`${city}, ${country}`);
+    if (prefecture) queries.push(`${city}, ${prefecture}, ${country}`);
   }
-  if (commune) queries.push(`${commune}, ${country}`);
+  if (commune) {
+    queries.push(`${commune}, ${country}`);
+    if (prefecture) queries.push(`${commune}, ${prefecture}, ${country}`);
+  }
 
   const full = buildLocationQuery(parts);
   if (full) queries.push(full);
@@ -206,12 +264,39 @@ export function wgs84ToMerchich(
   };
 }
 
+export function passesLocalityConstraints(
+  label: string,
+  parts: LocationParts,
+): boolean {
+  const city = parts.city?.trim();
+  const prefecture = parts.prefecture?.trim();
+  const commune = parts.commune?.trim();
+
+  if (city && !labelContainsPlace(label, city)) return false;
+
+  if (prefecture && !labelContainsPlace(label, prefecture)) {
+    if (!city || !labelContainsPlace(label, city)) return false;
+  }
+
+  if (
+    commune &&
+    normalizeForMatch(commune) !== normalizeForMatch(city ?? '') &&
+    !labelContainsPlace(label, commune)
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
 function scoreGeocodeHit(
   label: string,
   parts: LocationParts,
   importance = 0,
 ): number {
-  const name = label.toLowerCase();
+  if (!passesLocalityConstraints(label, parts)) return -1000;
+
+  const name = normalizeForMatch(label);
   let score = importance;
 
   const address = parts.address?.trim().toLowerCase() ?? '';
@@ -221,16 +306,25 @@ function scoreGeocodeHit(
     .filter((t) => t.length > 2);
 
   for (const token of tokens) {
-    if (name.includes(token)) score += 3;
+    if (name.includes(normalizeForMatch(token))) score += 3;
   }
 
   if (/spartel/i.test(address) && name.includes('spartel')) score += 8;
   if (/spartel/i.test(address) && name.includes('phare')) score += 4;
 
-  const city = normalizeCity(parts.city).toLowerCase();
-  if (city && name.includes(city)) score += 2;
+  if (parts.city?.trim() && labelContainsPlace(label, parts.city)) score += 15;
+  if (parts.prefecture?.trim() && labelContainsPlace(label, parts.prefecture)) {
+    score += 12;
+  }
+  if (parts.commune?.trim() && labelContainsPlace(label, parts.commune)) {
+    score += 10;
+  }
 
   return score;
+}
+
+function minAcceptableGeocodeScore(parts: LocationParts): number {
+  return parts.city?.trim() || parts.prefecture?.trim() ? 6 : 2;
 }
 
 const nominatimPause = () => new Promise((r) => setTimeout(r, 350));
@@ -347,6 +441,7 @@ async function geocodeWithQueries(
   const queries = buildGeocodeQueries(parts);
   let best: GeocodeHit | null = null;
 
+  const minScore = minAcceptableGeocodeScore(parts);
   const structuredHits = await nominatimStructured(parts);
   for (const hit of structuredHits) {
     const score = scoreGeocodeHit(hit.label, parts, hit.importance + 1);
@@ -357,9 +452,11 @@ async function geocodeWithQueries(
       label: hit.label,
       score,
     };
-    if (!best || candidate.score > best.score) best = candidate;
+    if (candidate.score >= minScore && (!best || candidate.score > best.score)) {
+      best = candidate;
+    }
   }
-  if (best !== null && best.score >= 4) return best;
+  if (best !== null && best.score >= minScore) return best;
 
   for (const query of queries) {
     const hits = await nominatimSearchMany({ q: query, countrycodes: 'ma' }, 8);
@@ -374,27 +471,62 @@ async function geocodeWithQueries(
       };
       if (!best || candidate.score > best.score) best = candidate;
     }
-    if (best !== null && best.score >= 5) break;
+    if (best !== null && best.score >= minScore + 2) break;
     await nominatimPause();
   }
 
-  if (best !== null && best.score >= 2) return best;
+  if (best !== null && best.score >= minScore) return best;
 
   for (const query of queries.slice(0, 6)) {
     const photon = await geocodePhoton(query, parts);
-    if (photon) {
+    if (photon && photon.score >= minScore) {
       if (!best || photon.score > best.score) best = photon;
-      if (photon.score >= 5) return photon;
+      if (photon.score >= minScore + 2) return best;
     }
   }
 
-  return best;
+  return best !== null && best.score >= minScore ? best : null;
 }
 
 export async function geocodeLocationParts(
   parts: LocationParts,
 ): Promise<GeocodeHit | null> {
   return geocodeWithQueries(parts);
+}
+
+export function isInMoroccoBounds(latitude: number, longitude: number): boolean {
+  return (
+    latitude >= 20.5 &&
+    latitude <= 36.5 &&
+    longitude >= -17.5 &&
+    longitude <= -0.5
+  );
+}
+
+export function resolveFromWgs84(
+  latitude: number,
+  longitude: number,
+  parts?: LocationParts,
+): ResolvedLocation {
+  const merchich = wgs84ToMerchich(longitude, latitude);
+  const query = parts ? buildLocationQuery(parts) : `${latitude}, ${longitude}`;
+
+  return {
+    latitude,
+    longitude,
+    coordinateX: merchich.coordinateX,
+    coordinateY: merchich.coordinateY,
+    merchichZone: merchich.merchichZone,
+    merchichZoneLabel: merchich.merchichZoneLabel,
+    mapsUrl: buildOsmMapsUrl(latitude, longitude),
+    topomapUrl: buildTopomapUrl(
+      merchich.coordinateX,
+      merchich.coordinateY,
+      latitude,
+    ),
+    query,
+    matchedLabel: parts?.address?.trim() || undefined,
+  };
 }
 
 export async function resolveMoroccoLocation(
@@ -405,26 +537,8 @@ export async function resolveMoroccoLocation(
   const hit = await geocodeLocationParts(parts);
   if (!hit) return null;
 
-  const merchich = wgs84ToMerchich(hit.longitude, hit.latitude);
-
-  const mapsSearch = buildMapsSearchUrl(parts);
-
-  return {
-    latitude: hit.latitude,
-    longitude: hit.longitude,
-    coordinateX: merchich.coordinateX,
-    coordinateY: merchich.coordinateY,
-    merchichZone: merchich.merchichZone,
-    merchichZoneLabel: merchich.merchichZoneLabel,
-    mapsUrl:
-      mapsSearch ||
-      `https://www.google.com/maps?q=${hit.latitude},${hit.longitude}`,
-    topomapUrl: buildTopomapUrl(
-      merchich.coordinateX,
-      merchich.coordinateY,
-      hit.latitude,
-    ),
-    query: hit.query,
-    matchedLabel: hit.label,
-  };
+  return resolveFromWgs84(hit.latitude, hit.longitude, {
+    ...parts,
+    address: hit.label ?? parts.address,
+  });
 }

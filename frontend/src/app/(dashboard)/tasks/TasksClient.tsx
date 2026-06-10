@@ -13,11 +13,10 @@ import {
 } from "lucide-react";
 import TaskBoardView from "@/components/tasks/TaskBoardView";
 import TaskForm from "@/components/tasks/TaskForm";
-import TaskRow, { TaskListHeader } from "@/components/tasks/TaskRow";
+import TaskProjectSection from "@/components/tasks/TaskProjectSection";
 import {
   tasksListPage,
   tasksListPanel,
-  tasksListTable,
 } from "@/components/tasks/tasks-list-ui";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
@@ -31,6 +30,7 @@ import { useProjects } from "@/hooks/useProjects";
 import { useClients } from "@/hooks/useClients";
 import {
   filterAndSortTasks,
+  groupTasksByProject,
   type TaskMainFilter,
   type TaskSort,
 } from "@/lib/tasks-list";
@@ -175,6 +175,11 @@ export default function TasksPage() {
       sort,
       showDone,
     ]
+  );
+
+  const projectGroups = useMemo(
+    () => groupTasksByProject(filtered, sort),
+    [filtered, sort]
   );
 
   const hasActiveFilters =
@@ -545,10 +550,9 @@ export default function TasksPage() {
       ) : view === "board" ? (
         <TaskBoardView tasks={filtered} onEdit={openEdit} />
       ) : (
-        <div className={tasksListTable}>
-          <TaskListHeader />
-          {filtered.map((task) => (
-            <TaskRow key={task.id} task={task} onEdit={openEdit} />
+        <div className="space-y-3">
+          {projectGroups.map((group) => (
+            <TaskProjectSection key={group.key} group={group} onEdit={openEdit} />
           ))}
         </div>
       )}

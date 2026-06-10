@@ -227,4 +227,60 @@ export function filterAndSortTasks(
   return sortTasks(list, options.sort);
 }
 
+export interface TaskProjectGroup {
+  key: string;
+  projectId: string | null;
+  clientId: string | null;
+  projectName: string;
+  clientName?: string | null;
+  isPersonal: boolean;
+  tasks: Task[];
+}
+
+function taskGroupKey(task: Task): string {
+  if (task.projectId) return `project:${task.projectId}`;
+  return "personal";
+}
+
+function taskGroupTitle(task: Task): string {
+  if (task.projectId) {
+    return task.projectName ?? task.project?.name ?? "Projet";
+  }
+  return "Tâches personnelles";
+}
+
+/** Regroupe les tâches : personnelles (sans projet) puis par projet. */
+export function groupTasksByProject(
+  items: Task[],
+  sort: TaskSort = "deadline"
+): TaskProjectGroup[] {
+  const map = new Map<string, TaskProjectGroup>();
+
+  for (const task of items) {
+    const key = taskGroupKey(task);
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        projectId: task.projectId ?? null,
+        clientId: task.clientId ?? null,
+        projectName: taskGroupTitle(task),
+        clientName: task.clientName ?? task.project?.client?.name ?? undefined,
+        isPersonal: !task.projectId,
+        tasks: [],
+      });
+    }
+    map.get(key)!.tasks.push(task);
+  }
+
+  for (const group of map.values()) {
+    group.tasks = sortTasks(group.tasks, sort);
+  }
+
+  return Array.from(map.values()).sort((a, b) => {
+    if (a.isPersonal && !b.isPersonal) return -1;
+    if (!a.isPersonal && b.isPersonal) return 1;
+    return a.projectName.localeCompare(b.projectName, "fr");
+  });
+}
+
 export { startOfWeek, endOfWeek, startOfDay, addDays, isSameDay };

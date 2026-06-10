@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import DevisForm, { type DevisFormValues } from "@/components/devis/DevisForm";
 import InvoiceForm, { type InvoiceFormValues } from "@/components/invoices/InvoiceForm";
+import FinanceProjectShell from "@/components/finances/FinanceProjectShell";
 import FinanceRowActions, { FinanceMenuItem } from "@/components/finances/FinanceRowActions";
 import {
   DevisMobileCard,
@@ -59,6 +60,7 @@ import {
   useUpdateInvoice,
 } from "@/hooks/useInvoices";
 import { useCreatePayment } from "@/hooks/usePayments";
+import { groupDevisByProject, groupInvoicesByProject } from "@/lib/finance-group";
 import { downloadFinancePdf } from "@/lib/finance-pdf";
 import { normalizeFinanceLineItems } from "@/lib/finance-items";
 import {
@@ -304,6 +306,16 @@ export default function QuotesInvoicesPage() {
   const filteredInvoices = useMemo(
     () => filterInvoices(invoices, filters),
     [invoices, filters]
+  );
+
+  const devisGroups = useMemo(
+    () => groupDevisByProject(filteredDevis),
+    [filteredDevis]
+  );
+
+  const invoiceGroups = useMemo(
+    () => groupInvoicesByProject(filteredInvoices),
+    [filteredInvoices]
   );
 
   const hasActiveFilters =
@@ -929,9 +941,18 @@ export default function QuotesInvoicesPage() {
               onAction={resetFilters}
             />
           ) : (
-            <>
+            <div className="space-y-3">
+            {devisGroups.map((group) => (
+              <FinanceProjectShell
+                key={group.key}
+                projectId={group.projectId}
+                projectName={group.projectName}
+                count={group.items.length}
+                countLabel={group.items.length === 1 ? "devis" : "devis"}
+                totalAmount={group.totalAmount}
+              >
             <div className={financeMobileList}>
-              {filteredDevis.map((d) => (
+              {group.items.map((d) => (
                 <DevisMobileCard
                   key={d.id}
                   devis={d}
@@ -999,7 +1020,7 @@ export default function QuotesInvoicesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredDevis.map((d) => (
+                  {group.items.map((d) => (
                     <tr key={d.id} className={quotesInvoicesTableRow}>
                       <td className="px-4 py-2.5 font-medium text-glass">{d.number}</td>
                       <td className="px-4 py-2.5 text-glass-secondary">{getFinanceClientLabel(d)}</td>
@@ -1069,7 +1090,9 @@ export default function QuotesInvoicesPage() {
                 </tbody>
               </table>
             </div>
-            </>
+              </FinanceProjectShell>
+            ))}
+            </div>
           )}
         </>
       )}
@@ -1093,9 +1116,18 @@ export default function QuotesInvoicesPage() {
               onAction={resetFilters}
             />
           ) : (
-            <>
+            <div className="space-y-3">
+            {invoiceGroups.map((group) => (
+              <FinanceProjectShell
+                key={group.key}
+                projectId={group.projectId}
+                projectName={group.projectName}
+                count={group.items.length}
+                countLabel={group.items.length === 1 ? "facture" : "factures"}
+                totalAmount={group.totalAmount}
+              >
             <div className={financeMobileList}>
-              {filteredInvoices.map((inv) => {
+              {group.items.map((inv) => {
                 const remaining = invoiceRemaining(inv);
                 return (
                   <InvoiceMobileCard
@@ -1163,7 +1195,7 @@ export default function QuotesInvoicesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredInvoices.map((inv) => {
+                  {group.items.map((inv) => {
                     const remaining = invoiceRemaining(inv);
                     return (
                       <tr key={inv.id} className={quotesInvoicesTableRow}>
@@ -1234,7 +1266,9 @@ export default function QuotesInvoicesPage() {
                 </tbody>
               </table>
             </div>
-            </>
+              </FinanceProjectShell>
+            ))}
+            </div>
           )}
         </>
       )}

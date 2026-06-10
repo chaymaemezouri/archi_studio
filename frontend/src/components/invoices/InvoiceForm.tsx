@@ -205,11 +205,11 @@ export default function InvoiceForm({
               value={paymentMethod}
               onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 —
               </option>
               {PAYMENT_METHODS.map((m) => (
-                <option key={m.value} value={m.value} className="bg-[#101014]">
+                <option key={m.value} value={m.value}>
                   {m.label}
                 </option>
               ))}

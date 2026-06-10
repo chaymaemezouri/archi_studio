@@ -1,108 +1,50 @@
 "use client";
 
-import Link from "next/link";
 import { useMemo, useState } from "react";
-import { format, isSameDay } from "date-fns";
-import DashboardActivityPanel from "@/components/dashboard/DashboardActivityPanel";
-import DashboardChartsRow from "@/components/dashboard/DashboardChartsRow";
-import DashboardFinancePanel from "@/components/dashboard/DashboardFinancePanel";
+import { addDays } from "date-fns";
+import DashboardActiveProjects from "@/components/dashboard/DashboardActiveProjects";
+import DashboardDayTasks from "@/components/dashboard/DashboardDayTasks";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
-import DashboardPriorityProjects from "@/components/dashboard/DashboardPriorityProjects";
-import DashboardSmartAlertsStrip from "@/components/dashboard/DashboardSmartAlertsStrip";
-import DashboardTodayPanel from "@/components/dashboard/DashboardTodayPanel";
+import DashboardPrioritySection from "@/components/dashboard/DashboardPrioritySection";
+import DashboardStatsStrip from "@/components/dashboard/DashboardStatsStrip";
+import DashboardTodayMeetings from "@/components/dashboard/DashboardTodayMeetings";
+import DashboardTomorrowTasks from "@/components/dashboard/DashboardTomorrowTasks";
+import DashboardWeekCalendar from "@/components/dashboard/DashboardWeekCalendar";
 import QuickAddModal, { type QuickAddMode } from "@/components/dashboard/QuickAddModal";
-import { buildBriefFromOverview } from "@/components/dashboard/dashboard-executive";
-import {
-  dashboardMobileScrollItem,
-  dashboardMobileScrollRow,
-  dashboardPageStack,
-  dashboardPanel,
-  dashboardStatLabel,
-} from "@/components/dashboard/dashboard-ui";
+import { dashboardPageStack, dashboardPanel } from "@/components/dashboard/dashboard-ui";
 import type { QuickAddAction } from "@/components/dashboard/DashboardAddMenu";
-import {
-  useDashboardOverview,
-  useUpdateDashboardTask,
-  downloadWeeklySummaryPdf,
-} from "@/hooks/useDashboard";
+import { useDashboardOverview } from "@/hooks/useDashboard";
 import { buildDashboardPriorityProjects } from "@/lib/dashboard-urgency";
-import { cn, formatCurrency } from "@/lib/utils";
-import { accentBar } from "@/lib/glass-styles";
+import type { Task } from "@/types";
+import { cn } from "@/lib/utils";
 
-function StatItem({
-  label,
-  value,
-  subValue,
-  href,
-  compact,
-}: {
-  label: string;
-  value: string;
-  subValue?: string;
-  href?: string;
-  compact?: boolean;
-}) {
-  const inner = (
-    <div
-      className={cn(
-        "group/stat transition hover:bg-studio-light/[0.04]",
-        compact ? "px-3 py-2.5" : "px-3 py-2"
-      )}
-    >
-      <div className="flex items-center gap-1.5">
-        <span className={cn(accentBar, "h-1.5 opacity-75")} aria-hidden />
-        <p className={cn(dashboardStatLabel, "group-hover/stat:text-studio-light")}>
-          {label}
-        </p>
-      </div>
-      <p
-        className={cn(
-          "mt-0.5 pl-2 font-semibold tabular-nums leading-none tracking-tight text-app-primary",
-          compact ? "text-xl" : "text-lg"
-        )}
-      >
-        {value}
-      </p>
-      {subValue && (
-        <p className="mt-0.5 pl-2 text-[10px] text-glass-muted">{subValue}</p>
-      )}
-    </div>
-  );
-
-  if (href) {
-    return (
-      <Link href={href} className="block h-full">
-        {inner}
-      </Link>
-    );
+function dedupeTasks(lists: Task[][]): Task[] {
+  const seen = new Set<string>();
+  const out: Task[] = [];
+  for (const list of lists) {
+    for (const t of list) {
+      if (seen.has(t.id)) continue;
+      seen.add(t.id);
+      out.push(t);
+    }
   }
-  return inner;
+  return out;
 }
 
 export default function DashboardPage() {
-  const updateTask = useUpdateDashboardTask();
   const { data, isLoading, isError, refetch } = useDashboardOverview();
   const today = new Date();
-  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
+  const tomorrow = addDays(today, 1);
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
-  const [quickAddMode, setQuickAddMode] = useState<QuickAddMode>("deadline");
-  const [pdfLoading, setPdfLoading] = useState(false);
+  const [quickAddMode, setQuickAddMode] = useState<QuickAddMode>("task");
+  const [quickAddDate, setQuickAddDate] = useState(today);
 
-  const todayBrief = useMemo(
-    () => (data ? buildBriefFromOverview(data) : null),
-    [data]
-  );
-
-  const openQuickAdd = (action: QuickAddAction) => {
+  const openQuickAdd = (action: QuickAddAction, date: Date = today) => {
     setQuickAddMode(action);
+    setQuickAddDate(date);
     setQuickAddOpen(true);
   };
-
-  const priorityProjects = useMemo(
-    () => buildDashboardPriorityProjects(data?.projectsInProgress, 6),
-    [data?.projectsInProgress]
-  );
 
   const priorityAlerts = useMemo(() => {
     const alerts = data?.smartAlerts ?? [];
@@ -112,139 +54,48 @@ export default function DashboardPage() {
     );
   }, [data?.smartAlerts]);
 
-  const tasksPreview = useMemo(() => {
-    return (data?.todayTasks ?? [])
-      .filter((t) => t.status !== "DONE")
-      .sort((a, b) => {
-        const order = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-        return (order[a.priority] ?? 2) - (order[b.priority] ?? 2);
-      });
-  }, [data?.todayTasks]);
+  const activeProjects = useMemo(() => {
+    const list = data?.projectsInProgress ?? [];
+    const priority = buildDashboardPriorityProjects(list, 8);
+    return priority.length > 0 ? priority : list.slice(0, 8);
+  }, [data?.projectsInProgress]);
 
-  const deadlinesPreview = useMemo(() => {
-    return (data?.upcomingDeadlines ?? [])
-      .filter((d) => !d.done)
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [data?.upcomingDeadlines]);
-
-  const todayAgenda = useMemo(() => {
-    const items = [
-      ...(data?.calendarDeadlines ?? [])
-        .filter((d) => isSameDay(new Date(d.date), today))
-        .map((d) => ({
-          id: `d-${d.id}`,
-          title: d.title,
-          meta: format(d.date, "HH:mm"),
-          href: "/calendar",
-          sortTime: new Date(d.date).getTime(),
-        })),
-      ...(data?.meetings ?? [])
-        .filter((m) => isSameDay(new Date(m.date), today))
-        .map((m) => ({
-          id: `m-${m.id}`,
-          title: m.title,
-          meta: m.startTime ?? "Réunion",
-          href: "/calendar",
-          sortTime: m.startTime
-            ? new Date(`${format(m.date, "yyyy-MM-dd")}T${m.startTime}`).getTime()
-            : new Date(m.date).getTime(),
-        })),
-    ];
-    return items
-      .sort((a, b) => a.sortTime - b.sortTime)
-      .map(({ id, title, meta, href }) => ({ id, title, meta, href }));
-  }, [data?.calendarDeadlines, data?.meetings, today]);
-
-  const openTodayTasksCount = useMemo(() => {
-    return (data?.todayTasks ?? []).filter((t) => t.status !== "DONE").length;
-  }, [data?.todayTasks]);
-
-  const headerStats = useMemo(() => {
-    const unpaid = data?.stats?.unpaidInvoicesAmount ?? 0;
-    return [
-      {
-        label: "Projets actifs",
-        value: String(data?.stats?.activeProjects ?? 0),
-        href: "/projects",
-      },
-      {
-        label: "Tâches aujourd'hui",
-        value: String(openTodayTasksCount),
-        href: "/tasks",
-      },
-      {
-        label: "Deadlines proches",
-        value: String(data?.stats?.upcomingDeadlines ?? 0),
-        href: "/calendar",
-      },
-      {
-        label: "Devis en attente",
-        value: String(data?.stats?.pendingDevis ?? 0),
-        href: "/finances/quotes-invoices",
-      },
-      {
-        label: "Factures en attente",
-        value: String(data?.stats?.pendingInvoices ?? 0),
-        href: "/finances/quotes-invoices",
-        subValue: unpaid > 0 ? formatCurrency(unpaid) : undefined,
-      },
-    ];
-  }, [data?.stats, openTodayTasksCount]);
-
-  const handleCompleteTask = (id: string) => {
-    setCompletingTaskId(id);
-    updateTask.mutate(
-      { id, status: "DONE" },
-      { onSettled: () => setCompletingTaskId(null) }
-    );
-  };
-
-  const completingTaskIds = useMemo(
-    () => (completingTaskId ? new Set([completingTaskId]) : new Set<string>()),
-    [completingTaskId]
+  const weekTasks = useMemo(
+    () =>
+      dedupeTasks([
+        data?.todayTasks ?? [],
+        data?.tomorrowTasks ?? [],
+        data?.calendarTasks ?? [],
+      ]),
+    [data?.todayTasks, data?.tomorrowTasks, data?.calendarTasks]
   );
 
-  const handleWeeklyPdf = async () => {
-    setPdfLoading(true);
-    try {
-      await downloadWeeklySummaryPdf();
-    } finally {
-      setPdfLoading(false);
-    }
-  };
+  const allDeadlines = useMemo(() => {
+    const seen = new Set<string>();
+    return [...(data?.upcomingDeadlines ?? []), ...(data?.calendarDeadlines ?? [])].filter(
+      (d) => {
+        if (seen.has(d.id)) return false;
+        seen.add(d.id);
+        return true;
+      }
+    );
+  }, [data?.upcomingDeadlines, data?.calendarDeadlines]);
 
-  const statsSection = (
-    <section className={cn(dashboardPanel, "order-5 lg:order-2")}>
-      <div
-        className={cn(
-          dashboardMobileScrollRow,
-          "md:grid-cols-3 lg:grid-cols-5 md:divide-x md:divide-app"
-        )}
-      >
-        {headerStats.map((stat) => (
-          <div key={stat.label} className={dashboardMobileScrollItem}>
-            <StatItem {...stat} compact />
-          </div>
-        ))}
-      </div>
-    </section>
+  const openTodayTasksCount = useMemo(
+    () => (data?.todayTasks ?? []).filter((t) => t.status !== "DONE").length,
+    [data?.todayTasks]
   );
 
   return (
     <div className={dashboardPageStack}>
-      <div className="order-1">
-        <DashboardPageHeader
-          today={today}
-          brief={todayBrief}
-          isLoading={isLoading}
-          pdfLoading={pdfLoading}
-          onWeeklyPdf={handleWeeklyPdf}
-          onQuickAdd={openQuickAdd}
-        />
-      </div>
+      <DashboardPageHeader
+        today={today}
+        isLoading={isLoading}
+        onQuickAdd={(action) => openQuickAdd(action, today)}
+      />
 
       {isError ? (
-        <section className={cn(dashboardPanel, "order-2 p-8 text-center")}>
+        <section className={cn(dashboardPanel, "p-8 text-center")}>
           <p className="text-sm text-glass-secondary">Impossible de charger le dashboard</p>
           <button
             type="button"
@@ -255,64 +106,59 @@ export default function DashboardPage() {
           </button>
         </section>
       ) : isLoading ? (
-        <div className="order-2 space-y-2.5">
-          <div className={cn(dashboardPanel, "h-36 animate-pulse lg:order-none")} />
-          <div className={cn(dashboardPanel, "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5")}>
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-14 animate-pulse border-r border-app last:border-0" />
-            ))}
-          </div>
-          <div className="grid gap-2.5 lg:grid-cols-5">
-            <div className={cn(dashboardPanel, "h-52 animate-pulse lg:col-span-3")} />
-            <div className={cn(dashboardPanel, "h-52 animate-pulse lg:col-span-2")} />
+        <div className="space-y-2.5">
+          <div className={cn(dashboardPanel, "h-24 animate-pulse")} />
+          <div className="grid gap-2.5 lg:grid-cols-12">
+            <div className={cn(dashboardPanel, "h-[32rem] animate-pulse lg:col-span-4")} />
+            <div className={cn(dashboardPanel, "h-[32rem] animate-pulse lg:col-span-8")} />
           </div>
         </div>
       ) : data ? (
         <>
-          <div className="order-2 lg:order-3">
-            <DashboardChartsRow data={data} />
-          </div>
+          <DashboardStatsStrip
+            stats={data.stats}
+            todayTasksCount={openTodayTasksCount}
+          />
 
-          <div className="order-3 lg:order-4">
-            <DashboardSmartAlertsStrip alerts={priorityAlerts} />
-          </div>
+          <DashboardPrioritySection
+            alerts={priorityAlerts}
+            notifications={data.importantNotifications ?? []}
+            stats={data.stats}
+          />
 
-          <div className="order-4 lg:hidden">
-            <DashboardTodayPanel
-              agenda={todayAgenda}
-              tasks={tasksPreview}
-              deadlines={deadlinesPreview}
-              onCompleteTask={handleCompleteTask}
-              completingTaskIds={completingTaskIds}
+          <div className="grid grid-cols-1 gap-2.5 lg:grid-cols-12 lg:items-start">
+            <div className="flex flex-col gap-2.5 lg:col-span-4">
+              <DashboardDayTasks
+                tasks={data.todayTasks ?? []}
+                projects={data.projectsInProgress}
+                defaultDate={today}
+              />
+              <DashboardTomorrowTasks
+                tasks={data.tomorrowTasks ?? []}
+                onAddTomorrow={() => openQuickAdd("task", tomorrow)}
+              />
+              <DashboardTodayMeetings
+                meetings={data.meetings ?? []}
+                today={today}
+              />
+            </div>
+
+            <DashboardWeekCalendar
+              tasks={weekTasks}
+              deadlines={allDeadlines}
+              meetings={data.meetings ?? []}
+              className="lg:col-span-8"
             />
           </div>
 
-          {statsSection}
-
-          <div className="order-6 grid grid-cols-1 gap-2.5 lg:order-5 lg:grid-cols-5 lg:items-start">
-            <DashboardPriorityProjects projects={priorityProjects} className="lg:col-span-3" />
-            <div className="hidden lg:col-span-2 lg:block">
-              <DashboardTodayPanel
-                agenda={todayAgenda}
-                tasks={tasksPreview}
-                deadlines={deadlinesPreview}
-                onCompleteTask={handleCompleteTask}
-                completingTaskIds={completingTaskIds}
-              />
-            </div>
-          </div>
-
-          <div className="order-7 grid grid-cols-1 gap-2.5 lg:order-6 lg:grid-cols-2">
-            <DashboardFinancePanel stats={data.stats} payments={data.recentPayments ?? []} />
-            <DashboardActivityPanel activities={data.recentActivity ?? []} />
-          </div>
+          <DashboardActiveProjects projects={activeProjects} />
         </>
       ) : null}
 
       <QuickAddModal
         open={quickAddOpen}
         onClose={() => setQuickAddOpen(false)}
-        defaultDate={today}
+        defaultDate={quickAddDate}
         projects={data?.projectsInProgress}
         initialMode={quickAddMode}
       />

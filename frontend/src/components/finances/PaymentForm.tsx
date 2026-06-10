@@ -255,11 +255,11 @@ export default function PaymentForm({
             value={invoiceId}
             onChange={(e) => onInvoiceChange(e.target.value)}
           >
-            <option value="" className="bg-[#101014]">
+            <option value="">
               Non lié à une facture
             </option>
             {invoicesWithClient.map((inv) => (
-              <option key={inv.id} value={inv.id} className="bg-[#101014]">
+              <option key={inv.id} value={inv.id}>
                 {inv.number}
               </option>
             ))}
@@ -282,11 +282,11 @@ export default function PaymentForm({
               onChange={(e) => setClientId(e.target.value)}
               required={!!invoiceId}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 Sélectionner…
               </option>
               {clients.map((c) => (
-                <option key={c.id} value={c.id} className="bg-[#101014]">
+                <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
@@ -299,11 +299,11 @@ export default function PaymentForm({
               value={projectId}
               onChange={(e) => onProjectChange(e.target.value)}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 Aucun
               </option>
               {filteredProjects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#101014]">
+                <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
               ))}
@@ -348,7 +348,7 @@ export default function PaymentForm({
               required
             >
               {METHOD_OPTIONS.map((m) => (
-                <option key={m.value} value={m.value} className="bg-[#101014]">
+                <option key={m.value} value={m.value}>
                   {m.label}
                 </option>
               ))}

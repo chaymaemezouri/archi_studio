@@ -12,13 +12,11 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import DocumentForm, { type DocumentFormValues } from "@/components/documents/DocumentForm";
-import DocumentGridView from "@/components/documents/DocumentGridView";
 import DocumentPreviewModal from "@/components/documents/DocumentPreviewModal";
-import DocumentRow, { DocumentListHeader } from "@/components/documents/DocumentRow";
+import DocumentProjectSection from "@/components/documents/DocumentProjectSection";
 import {
   documentsListPage,
   documentsListPanel,
-  documentsListTable,
 } from "@/components/documents/documents-list-ui";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
@@ -28,8 +26,10 @@ import {
   useUpdateDocument,
   useUploadDocument,
 } from "@/hooks/useDocuments";
+import { useProjects } from "@/hooks/useProjects";
 import {
   filterAndSortDocuments,
+  groupDocumentsByProject,
   type DocumentCategoryFilter,
   type DocumentDateFilter,
   type DocumentLinkFilter,
@@ -97,6 +97,7 @@ const SORT_OPTIONS: { id: DocumentSort; label: string }[] = [
 
 export default function DocumentsPage() {
   const { data: documents = [], isLoading, isError, refetch } = useDocuments();
+  const { data: projects = [] } = useProjects();
   const uploadDocument = useUploadDocument();
   const updateDocument = useUpdateDocument();
   const searchParams = useSearchParams();
@@ -186,6 +187,11 @@ export default function DocumentsPage() {
     ]
   );
 
+  const projectGroups = useMemo(
+    () => groupDocumentsByProject(filtered, sort),
+    [filtered, sort]
+  );
+
   const hasActiveFilters =
     search.trim() !== "" ||
     typeFilter !== "all" ||
@@ -202,6 +208,18 @@ export default function DocumentsPage() {
     setEditingDoc(doc);
     setModalOpen(true);
   };
+
+  const projectOptions = useMemo(
+    () => projects.map((p) => ({ id: p.id, name: p.name })),
+    [projects]
+  );
+
+  const handleLinkProject = useCallback(
+    (doc: Document, projectId: string) => {
+      updateDocument.mutate({ id: doc.id, projectId });
+    },
+    [updateDocument]
+  );
 
   const handleSubmit = (values: DocumentFormValues) => {
     const tags = values.tags
@@ -530,21 +548,17 @@ export default function DocumentsPage() {
           actionLabel="Réinitialiser les filtres"
           onAction={resetFilters}
         />
-      ) : view === "grid" ? (
-        <DocumentGridView
-          documents={filtered}
-          onEdit={openEdit}
-          onPreview={setPreviewDoc}
-        />
       ) : (
-        <div className={documentsListTable}>
-          <DocumentListHeader />
-          {filtered.map((doc) => (
-            <DocumentRow
-              key={doc.id}
-              doc={doc}
+        <div className="space-y-3">
+          {projectGroups.map((group) => (
+            <DocumentProjectSection
+              key={group.key}
+              group={group}
+              view={view}
               onEdit={openEdit}
               onPreview={setPreviewDoc}
+              projects={projectOptions}
+              onLinkProject={handleLinkProject}
             />
           ))}
         </div>

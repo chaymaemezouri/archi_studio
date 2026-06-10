@@ -75,7 +75,7 @@ export function SettingsSelect({
       className={cn(glassSelect, "h-9 w-full py-0 text-[12px]", className)}
     >
       {options.map((o) => (
-        <option key={o.value} value={o.value} className="bg-dark-elevated text-text-primary">
+        <option key={o.value} value={o.value}>
           {o.label}
         </option>
       ))}

@@ -220,7 +220,7 @@ export default function ProjectQuickAddSheet({
                 >
                   <option value="">Sélectionner…</option>
                   {CHANTIER_PHASE_OPTIONS.map((phase) => (
-                    <option key={phase} value={phase} className="bg-[#101014]">
+                    <option key={phase} value={phase}>
                       {phase}
                     </option>
                   ))}

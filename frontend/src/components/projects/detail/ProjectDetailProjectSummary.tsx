@@ -22,7 +22,11 @@ import {
   PROJECT_CATEGORY_SHORT_LABELS,
   PROJECT_SCALE_LABELS,
 } from "@/lib/project-phases";
-import { getProjectMapsUrl } from "@/lib/project-location";
+import {
+  getMerchichZoneLabelFromLatitude,
+  getProjectMapsUrl,
+  TOPOMAP_PORTAL_URL,
+} from "@/lib/project-location";
 import type { Client, Project } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
@@ -149,13 +153,13 @@ export default function ProjectDetailProjectSummary({ project }: { project: Proj
   const mapsUrl = getProjectMapsUrl(project);
   const mapsIcon =
     mapsUrl ? (
-      <Tooltip label="Voir sur Google Maps">
+      <Tooltip label="Voir sur OpenStreetMap">
         <a
           href={mapsUrl}
           target="_blank"
           rel="noopener noreferrer"
           className={detailSummaryMapsIcon}
-          aria-label="Voir sur Google Maps"
+          aria-label="Voir sur OpenStreetMap"
         >
           <MapPin className="h-3.5 w-3.5" aria-hidden />
         </a>
@@ -172,27 +176,17 @@ export default function ProjectDetailProjectSummary({ project }: { project: Proj
       ? `${formatCoord(project.latitude)} / ${formatCoord(project.longitude)}`
       : null;
 
+  const merchichZone =
+    project.latitude != null
+      ? getMerchichZoneLabelFromLatitude(project.latitude)
+      : null;
+
   return (
     <div className={detailSummaryCardGridStack}>
       <div className={detailSummaryCard}>
         <h3 className={detailSummaryCardTitle}>Localisation</h3>
         <div className={detailSummaryFieldGrid}>
           <FieldRow label="Adresse" value={project.address} trailing={mapsIcon} />
-          {mapsUrl ? (
-            <FieldRow
-              label="Carte"
-              value={
-                <a
-                  href={mapsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={detailSummaryFieldLink}
-                >
-                  Voir sur Google Maps
-                </a>
-              }
-            />
-          ) : null}
           <FieldRow label="Ville" value={project.city} />
           <FieldRow label="Pays" value={project.country} />
           {project.province ? <FieldRow label="Province" value={project.province} /> : null}
@@ -204,7 +198,24 @@ export default function ProjectDetailProjectSummary({ project }: { project: Proj
             <FieldRow label="Arrondissement" value={project.arrondissement} />
           ) : null}
           {coordXY ? <FieldRow label="Coord. topo X/Y" value={coordXY} /> : null}
+          {merchichZone ? <FieldRow label="Zone Merchich" value={merchichZone} /> : null}
           {coordLatLng ? <FieldRow label="Lat/Long" value={coordLatLng} /> : null}
+          {project.coordinateX != null && project.coordinateY != null ? (
+            <FieldRow
+              label="topoX"
+              value={
+                <a
+                  href={TOPOMAP_PORTAL_URL}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={detailSummaryFieldLink}
+                >
+                  Vérifier X={formatCoord(project.coordinateX)} Y=
+                  {formatCoord(project.coordinateY)} sur topoX.ma
+                </a>
+              }
+            />
+          ) : null}
           <FieldRow
             label="URL"
             value={

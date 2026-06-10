@@ -18,7 +18,11 @@ import { UpdateProjectDto } from './dto/update-project.dto';
 import { ResolveLocationQueryDto } from './dto/resolve-location.dto';
 import { DEFAULT_CHECKLIST_ITEMS } from './project.constants';
 import { computeOverallProgress } from './project-progress.util';
-import { resolveMoroccoLocation } from '../common/utils/morocco-location.util';
+import {
+  isInMoroccoBounds,
+  resolveFromWgs84,
+  resolveMoroccoLocation,
+} from '../common/utils/morocco-location.util';
 
 @Injectable()
 export class ProjectsService {
@@ -677,6 +681,15 @@ export class ProjectsService {
   }
 
   async resolveLocation(query: ResolveLocationQueryDto) {
+    if (query.latitude != null && query.longitude != null) {
+      if (!isInMoroccoBounds(query.latitude, query.longitude)) {
+        throw new BadRequestException(
+          'Le point est hors du Maroc. Cliquez sur la carte au niveau du projet.',
+        );
+      }
+      return resolveFromWgs84(query.latitude, query.longitude, query);
+    }
+
     const result = await resolveMoroccoLocation(query);
     if (!result) {
       throw new BadRequestException(

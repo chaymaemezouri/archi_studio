@@ -11,6 +11,8 @@ import {
   PlayCircle,
   Trash2,
 } from "lucide-react";
+import IconActionButton from "@/components/projects/detail/IconActionButton";
+import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
 import Badge from "@/components/ui/Badge";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { portalMenuStyle, usePortalRowMenu } from "@/hooks/usePortalRowMenu";
@@ -74,6 +76,11 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
   const projectName = task.projectName ?? task.project?.name;
   const clientName = task.clientName ?? task.project?.client?.name;
 
+  const handleComplete = () => {
+    completeTask.mutate(task.id);
+    closeMenu();
+  };
+
   const handleDelete = async () => {
     if (
       !(await confirm({
@@ -88,6 +95,8 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
     deleteTask.mutate(task.id);
     closeMenu();
   };
+
+  const canComplete = task.status !== "DONE" && task.status !== "CANCELLED";
 
   const menuPanel =
     menuOpen && menuPos ? (
@@ -110,13 +119,8 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
             <PlayCircle className="h-4 w-4" /> En cours
           </MenuBtn>
         )}
-        {task.status !== "DONE" && (
-          <MenuBtn
-            onClick={() => {
-              completeTask.mutate(task.id);
-              closeMenu();
-            }}
-          >
+        {canComplete && (
+          <MenuBtn onClick={handleComplete}>
             <CheckCircle2 className="h-4 w-4" /> Terminer
           </MenuBtn>
         )}
@@ -214,19 +218,40 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         </Badge>
       </span>
 
-      <div ref={ref} className="relative z-10 flex shrink-0 justify-end justify-self-end">
+      <div
+        ref={ref}
+        className={cn(detailIconActionGroup, "relative z-10 justify-self-end")}
+        role="group"
+        aria-label="Actions tâche"
+      >
+        {canComplete && (
+          <IconActionButton
+            label="Terminer"
+            icon={CheckCircle2}
+            tone="success"
+            disabled={completeTask.isPending}
+            onClick={handleComplete}
+          />
+        )}
+        <IconActionButton
+          label="Supprimer"
+          icon={Trash2}
+          tone="danger"
+          disabled={deleteTask.isPending}
+          onClick={() => void handleDelete()}
+        />
         <button
           type="button"
           onClick={toggleMenu}
           className={cn(
             glassBtnIcon,
-            "h-8 w-8 shrink-0 border-glass bg-[color:var(--glass-input-bg)] text-glass-muted",
-            "hover:text-studio-light"
+            "h-7 w-7 shrink-0 border-0 bg-transparent text-glass-muted shadow-none",
+            "hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
           )}
-          aria-label="Actions tâche"
+          aria-label="Plus d'actions"
           aria-expanded={menuOpen}
         >
-          <MoreVertical className="h-4 w-4" strokeWidth={2} />
+          <MoreVertical className="h-3.5 w-3.5" strokeWidth={2} />
         </button>
         {typeof document !== "undefined" && menuPanel ? createPortal(menuPanel, document.body) : null}
       </div>

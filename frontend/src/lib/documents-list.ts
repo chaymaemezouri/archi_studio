@@ -166,3 +166,59 @@ export function formatDocumentSize(bytes: number): string {
 
 export const ACCEPTED_DOCUMENT_EXTENSIONS =
   ".pdf,.doc,.docx,.xls,.xlsx,.dwg,.jpg,.jpeg,.png,.webp,.zip";
+
+export interface DocumentProjectGroup {
+  key: string;
+  projectId: string | null;
+  clientId: string | null;
+  projectName: string;
+  clientName?: string | null;
+  documents: Document[];
+}
+
+function documentGroupKey(doc: Document): string {
+  if (doc.projectId) return `project:${doc.projectId}`;
+  if (doc.clientId) return `client:${doc.clientId}`;
+  return "unclassified";
+}
+
+function documentGroupTitle(doc: Document): string {
+  if (doc.projectName) return doc.projectName;
+  if (doc.clientName) return `Client · ${doc.clientName}`;
+  return "Sans projet";
+}
+
+/** Regroupe les documents par projet (ou client / non classés). */
+export function groupDocumentsByProject(
+  items: Document[],
+  sort: DocumentSort = "recent"
+): DocumentProjectGroup[] {
+  const map = new Map<string, DocumentProjectGroup>();
+
+  for (const doc of items) {
+    const key = documentGroupKey(doc);
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        projectId: doc.projectId ?? null,
+        clientId: doc.clientId ?? null,
+        projectName: documentGroupTitle(doc),
+        clientName: doc.clientName,
+        documents: [],
+      });
+    }
+    map.get(key)!.documents.push(doc);
+  }
+
+  for (const group of map.values()) {
+    group.documents = sortDocuments(group.documents, sort);
+  }
+
+  return Array.from(map.values()).sort((a, b) => {
+    const aUnclassified = a.key === "unclassified";
+    const bUnclassified = b.key === "unclassified";
+    if (aUnclassified && !bUnclassified) return 1;
+    if (!aUnclassified && bUnclassified) return -1;
+    return a.projectName.localeCompare(b.projectName, "fr");
+  });
+}

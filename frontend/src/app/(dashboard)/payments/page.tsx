@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, CreditCard, Plus, Search, SlidersHorizontal } from "lucide-react";
+import FinanceProjectShell from "@/components/finances/FinanceProjectShell";
 import FinanceRowActions, {
   FinanceMenuItem,
   FinanceMenuLink,
@@ -41,6 +42,7 @@ import {
   glassDropdownPlain,
   glassInput,
 } from "@/lib/glass-styles";
+import { groupPaymentsByProject } from "@/lib/finance-group";
 import { downloadPaymentReceiptPdf } from "@/lib/finance-pdf";
 import {
   getInvoiceFinanceHref,
@@ -278,6 +280,11 @@ export default function PaymentsPage() {
     });
     return sorted;
   }, [payments, projects, debounced, period, customFrom, customTo, method, statusFilter, linkFilter, sortBy]);
+
+  const paymentGroups = useMemo(
+    () => groupPaymentsByProject(filtered),
+    [filtered]
+  );
 
   const stats = useMemo(() => {
     const now = new Date();
@@ -655,9 +662,18 @@ export default function PaymentsPage() {
           onAction={resetFilters}
         />
       ) : (
-        <>
+        <div className="space-y-3">
+        {paymentGroups.map((group) => (
+          <FinanceProjectShell
+            key={group.key}
+            projectId={group.projectId}
+            projectName={group.projectName}
+            count={group.items.length}
+            countLabel={group.items.length === 1 ? "paiement" : "paiements"}
+            totalAmount={group.totalAmount}
+          >
         <div className={financeMobileList}>
-          {filtered.map((p) => {
+          {group.items.map((p) => {
             const client = getPaymentClientName(p, projects);
             const project = p.project?.name ?? p.invoice?.project?.name ?? "—";
             const invoice = p.invoice?.number ?? "Non liée";
@@ -750,7 +766,7 @@ export default function PaymentsPage() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => {
+              {group.items.map((p) => {
                 const client = getPaymentClientName(p, projects);
                 const project = p.project?.name ?? p.invoice?.project?.name ?? "—";
                 const invoice = p.invoice?.number ?? "Non liée";
@@ -834,7 +850,9 @@ export default function PaymentsPage() {
             </tbody>
           </table>
         </div>
-        </>
+          </FinanceProjectShell>
+        ))}
+        </div>
       )}
 
       <Modal

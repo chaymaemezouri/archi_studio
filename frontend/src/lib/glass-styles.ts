@@ -23,8 +23,9 @@ export const glassInput = cn(
 
 export const glassSelect = cn(
   "rounded-lg border border-[color:var(--glass-input-border)] bg-[color:var(--glass-input-bg)] px-3 py-2 text-sm",
-  "text-glass-secondary shadow-[var(--glass-input-shadow)]",
-  "focus:border-studio-border focus:outline-none focus:ring-2 focus:ring-studio-border/30"
+  "text-glass shadow-[var(--glass-input-shadow)]",
+  "focus:border-studio-border focus:outline-none focus:ring-2 focus:ring-studio-border/30",
+  "[color-scheme:inherit]"
 );
 
 export const formFieldLabel = "text-[11px] font-medium text-glass-secondary";

@@ -98,7 +98,7 @@ export default function PaymentModal({
             onChange={(e) => setMethod(e.target.value as PaymentMethod)}
           >
             {METHODS.map((m) => (
-              <option key={m.value} value={m.value} className="bg-[#101014]">
+              <option key={m.value} value={m.value}>
                 {m.label}
               </option>
             ))}

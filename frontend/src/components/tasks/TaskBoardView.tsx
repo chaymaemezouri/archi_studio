@@ -1,6 +1,11 @@
 "use client";
 
+import { CheckCircle2, Trash2 } from "lucide-react";
+import IconActionButton from "@/components/projects/detail/IconActionButton";
+import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
 import Badge from "@/components/ui/Badge";
+import { useDialog } from "@/components/providers/DialogProvider";
+import { useCompleteTask, useDeleteTask } from "@/hooks/useTasks";
 import type { Task, TaskStatus } from "@/types";
 import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
 import { getTaskDeadlineBadge, TASK_DEADLINE_BADGE_LABELS } from "@/lib/tasks-list";
@@ -53,22 +58,76 @@ export default function TaskBoardView({ tasks, onEdit }: TaskBoardViewProps) {
 }
 
 function BoardCard({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) {
+  const { confirm } = useDialog();
+  const completeTask = useCompleteTask();
+  const deleteTask = useDeleteTask();
   const deadlineBadge = getTaskDeadlineBadge(task);
+  const canComplete = task.status !== "DONE" && task.status !== "CANCELLED";
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (
+      !(await confirm({
+        title: "Supprimer la tâche",
+        message: `Supprimer la tâche « ${task.title} » ?`,
+        confirmLabel: "Supprimer",
+        variant: "danger",
+      }))
+    ) {
+      return;
+    }
+    deleteTask.mutate(task.id);
+  };
 
   return (
-    <button
-      type="button"
+    <div
+      role="button"
+      tabIndex={0}
       onClick={() => onEdit(task)}
-      className={cn(tasksBoardCard, taskBoardDeadlineAccent(deadlineBadge))}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onEdit(task);
+        }
+      }}
+      className={cn(tasksBoardCard, taskBoardDeadlineAccent(deadlineBadge), "cursor-pointer")}
     >
-      <p
-        className={cn(
-          "text-[13px] font-medium text-glass",
-          task.status === "DONE" && "line-through"
-        )}
-      >
-        {task.title}
-      </p>
+      <div className="flex items-start justify-between gap-2">
+        <p
+          className={cn(
+            "min-w-0 flex-1 text-[13px] font-medium text-glass",
+            task.status === "DONE" && "line-through"
+          )}
+        >
+          {task.title}
+        </p>
+        <div
+          className={detailIconActionGroup}
+          role="group"
+          aria-label="Actions tâche"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {canComplete && (
+            <IconActionButton
+              label="Terminer"
+              icon={CheckCircle2}
+              tone="success"
+              disabled={completeTask.isPending}
+              onClick={(e) => {
+                e.stopPropagation();
+                completeTask.mutate(task.id);
+              }}
+            />
+          )}
+          <IconActionButton
+            label="Supprimer"
+            icon={Trash2}
+            tone="danger"
+            disabled={deleteTask.isPending}
+            onClick={handleDelete}
+          />
+        </div>
+      </div>
       {(task.projectName ?? task.project?.name) && (
         <p className="mt-1 text-[11px] text-glass-muted">
           {task.projectName ?? task.project?.name}
@@ -90,6 +149,6 @@ function BoardCard({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) 
           {TASK_STATUS_LABELS[task.status]}
         </Badge>
       </div>
-    </button>
+    </div>
   );
 }

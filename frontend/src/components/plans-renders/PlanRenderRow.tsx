@@ -11,6 +11,8 @@ import {
   Trash2,
 } from "lucide-react";
 import { FileIcon } from "@/components/projects/detail/FileTypeIcon";
+import IconActionButton from "@/components/projects/detail/IconActionButton";
+import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
 import Badge from "@/components/ui/Badge";
 import { useDialog } from "@/components/providers/DialogProvider";
 import {
@@ -55,7 +57,7 @@ export function PlanRenderListHeader() {
       <span>Ver.</span>
       <span>Taille</span>
       <span>Ajouté</span>
-      <span />
+      <span className="text-right">Actions</span>
     </div>
   );
 }
@@ -188,20 +190,57 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
         {formatDate(asset.uploadedAt ?? asset.createdAt)}
       </span>
 
-      <div ref={ref} className="relative justify-self-end">
+      <div
+        ref={ref}
+        className={cn(detailIconActionGroup, "relative justify-self-end")}
+        role="group"
+        aria-label="Actions plan ou rendu"
+      >
+        {canPreviewPlanRender(asset) ? (
+          <IconActionButton
+            label="Aperçu"
+            icon={Eye}
+            tone="view"
+            onClick={() => onPreview(asset)}
+          />
+        ) : (
+          <IconActionButton
+            label="Ouvrir"
+            icon={Eye}
+            tone="view"
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+          />
+        )}
+        <IconActionButton
+          label="Télécharger"
+          icon={Download}
+          tone="download"
+          href={href}
+          download
+        />
+        <IconActionButton
+          label="Supprimer"
+          icon={Trash2}
+          tone="danger"
+          disabled={deleteAsset.isPending}
+          onClick={() => void handleDelete()}
+        />
         <button
           type="button"
           onClick={toggleMenu}
           className={cn(
             glassBtnIcon,
-            "h-8 w-8 border-0",
-            menuOpen && "bg-studio-soft text-studio-light"
+            "h-7 w-7 shrink-0 border-0 bg-transparent text-glass-muted shadow-none",
+            menuOpen && "bg-studio-soft text-studio-light",
+            "hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
           )}
-          aria-label="Actions"
+          aria-label="Plus d'actions"
           aria-expanded={menuOpen}
           aria-haspopup="menu"
         >
-          <MoreVertical className="h-4 w-4" />
+          <MoreVertical className="h-3.5 w-3.5" />
         </button>
         {typeof document !== "undefined" &&
           menuPanel &&

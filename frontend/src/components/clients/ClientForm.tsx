@@ -249,7 +249,7 @@ export default function ClientForm({
             required
           >
             {Object.entries(CLIENT_TYPE_LABELS).map(([value, label]) => (
-              <option key={value} value={value} className="bg-[#101014]">
+              <option key={value} value={value}>
                 {label}
               </option>
             ))}
@@ -465,11 +465,11 @@ export default function ClientForm({
               value={values.source}
               onChange={(e) => set("source", e.target.value as ClientSource | "")}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 —
               </option>
               {Object.entries(CLIENT_SOURCE_LABELS).map(([value, label]) => (
-                <option key={value} value={value} className="bg-[#101014]">
+                <option key={value} value={value}>
                   {label}
                 </option>
               ))}
@@ -483,7 +483,7 @@ export default function ClientForm({
               onChange={(e) => set("status", e.target.value as ClientStatus)}
             >
               {Object.entries(CLIENT_STATUS_LABELS).map(([value, label]) => (
-                <option key={value} value={value} className="bg-[#101014]">
+                <option key={value} value={value}>
                   {label}
                 </option>
               ))}

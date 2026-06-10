@@ -95,3 +95,25 @@ export const dashboardChartMobileSlide = cn(
 );
 
 export const dashboardActionBtn = appActionBtn;
+
+/** Pastilles événements — couleurs via variables CSS (.light / .dark) */
+export const dashboardEventChipTask = cn(
+  "bg-[color:var(--dash-chip-task-bg)] text-[color:var(--dash-chip-task-text)]",
+  "ring-[color:var(--dash-chip-task-ring)]"
+);
+
+export const dashboardEventChipMeeting = cn(
+  "bg-[color:var(--dash-chip-meeting-bg)] text-[color:var(--dash-chip-meeting-text)]",
+  "ring-[color:var(--dash-chip-meeting-ring)]"
+);
+
+export const dashboardEventChipDeadline = cn(
+  "bg-[color:var(--dash-chip-deadline-bg)] text-[color:var(--dash-chip-deadline-text)]",
+  "ring-[color:var(--dash-chip-deadline-ring)]"
+);
+
+export const dashboardMeetingCard = cn(
+  "border border-[color:var(--dash-meeting-card-border)] border-l-[3px]",
+  "bg-[color:var(--dash-meeting-card-bg)] text-[color:var(--dash-meeting-card-text)]",
+  "transition hover:brightness-95 dark:hover:brightness-110"
+);

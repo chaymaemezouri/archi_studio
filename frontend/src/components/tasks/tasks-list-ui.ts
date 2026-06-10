@@ -59,12 +59,12 @@ export const tasksListFilterChip =
 export const tasksListRow = cn(
   listRowBase,
   "grid grid-cols-1 gap-2 px-4 py-2.5 text-[13px]",
-  "md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_2.75rem] md:items-center md:gap-3"
+  "md:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_minmax(0,6.5rem)] md:items-center md:gap-3"
 );
 
 export const tasksListHeader = cn(
   listHeaderBase,
-  "hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_2.75rem] gap-3 px-4 py-2 md:grid"
+  "hidden grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.6fr)_minmax(0,0.7fr)_minmax(0,6.5rem)] gap-3 px-4 py-2 md:grid"
 );
 
 export const tasksListLink = listLink;

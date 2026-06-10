@@ -1,3 +1,4 @@
+import { glassSelect } from "@/lib/glass-styles";
 import { cn } from "@/lib/utils";
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
@@ -19,9 +20,8 @@ export default function Select({ label, error, options, className, id, ...props 
       <select
         id={selectId}
         className={cn(
-          "w-full rounded-xl border border-dark-border bg-dark-elevated px-4 py-2.5",
-          "text-text-primary focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent",
-          "transition-colors duration-200",
+          glassSelect,
+          "w-full px-4 py-2.5 transition-colors duration-200",
           error && "border-red-500",
           className
         )}

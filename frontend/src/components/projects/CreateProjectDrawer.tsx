@@ -25,9 +25,12 @@ import {
 import { registerProjectFile, syncProjectImages, uploadProjectFile } from "@/lib/project-upload";
 import {
   buildGoogleMapsUrl,
+  canAutoResolveLocation,
+  getResolveLocationErrorMessage,
   parseCoordinate,
   resolveProjectLocation,
 } from "@/lib/project-location";
+import MoroccoLocationFields from "@/components/projects/MoroccoLocationFields";
 import api from "@/lib/api";
 import {
   PROJECT_TYPE_OPTIONS,
@@ -355,9 +358,16 @@ export default function CreateProjectDrawer({
     const [province, prefecture, commune, arrondissement, address, city, country] =
       debouncedLocationKey.split("|");
 
-    const hasMinimum =
-      (address?.trim().length ?? 0) >= 3 && (city?.trim().length ?? 0) >= 2;
-    if (!hasMinimum) {
+    const locationParts = {
+      province,
+      prefecture,
+      commune,
+      arrondissement,
+      address,
+      city,
+      country,
+    };
+    if (!canAutoResolveLocation(locationParts).ok) {
       setAutoLocated(false);
       setAutoLocateFailed(false);
       return;
@@ -367,15 +377,7 @@ export default function CreateProjectDrawer({
     setGeocoding(true);
     setAutoLocateFailed(false);
 
-    void resolveProjectLocation({
-      province,
-      prefecture,
-      commune,
-      arrondissement,
-      address,
-      city,
-      country,
-    })
+    void resolveProjectLocation(locationParts)
       .then((result) => {
         if (cancelled || coordsManualEditRef.current) return;
         if (!result) {
@@ -463,8 +465,13 @@ export default function CreateProjectDrawer({
   };
 
   const handleAutoLocate = async () => {
-    if (form.address.trim().length < 3 || form.city.trim().length < 2) {
-      toast.error("Renseignez l'adresse et la ville (ex. Cap Spartel, Tanger).");
+    const readiness = canAutoResolveLocation(locationInput());
+    if (!readiness.ok) {
+      toast.error(
+        readiness.missing
+          ? `Complétez : ${readiness.missing}.`
+          : "Renseignez la ville et l'adresse."
+      );
       return;
     }
     setGeocoding(true);
@@ -491,8 +498,8 @@ export default function CreateProjectDrawer({
       setAutoLocateFailed(false);
       setMatchedLocationLabel(result.matchedLabel ?? result.query);
       toast.success("Localisation mise à jour.");
-    } catch {
-      toast.error("Géolocalisation indisponible pour le moment.");
+    } catch (error) {
+      toast.error(getResolveLocationErrorMessage(error));
     } finally {
       setGeocoding(false);
     }
@@ -973,46 +980,21 @@ export default function CreateProjectDrawer({
               </FormSection>
 
               <FormSection title="Localisation" className="lg:col-span-2">
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
-                    <div>
-                      <FieldLabel>Province</FieldLabel>
-                      <input
-                        className={fieldClass}
-                        value={form.province}
-                        onChange={(e) => set("province", e.target.value)}
-                        placeholder="Région"
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Préfecture</FieldLabel>
-                      <input
-                        className={fieldClass}
-                        value={form.prefecture}
-                        onChange={(e) => set("prefecture", e.target.value)}
-                        placeholder="Préfecture"
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Commune</FieldLabel>
-                      <input
-                        className={fieldClass}
-                        value={form.commune}
-                        onChange={(e) => set("commune", e.target.value)}
-                        placeholder="Commune"
-                      />
-                    </div>
-                    <div>
-                      <FieldLabel>Arrondissement</FieldLabel>
-                      <input
-                        className={fieldClass}
-                        value={form.arrondissement}
-                        onChange={(e) => set("arrondissement", e.target.value)}
-                        placeholder="Arrondissement"
-                      />
-                    </div>
-                </div>
+                <MoroccoLocationFields
+                  region={form.province}
+                  prefecture={form.prefecture}
+                  commune={form.commune}
+                  arrondissement={form.arrondissement}
+                  city={form.city}
+                  fieldClass={fieldClass}
+                  onRegionChange={(value) => set("province", value)}
+                  onPrefectureChange={(value) => set("prefecture", value)}
+                  onCommuneChange={(value) => set("commune", value)}
+                  onArrondissementChange={(value) => set("arrondissement", value)}
+                  onCityChange={(value) => set("city", value)}
+                />
 
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                <div className="mt-2.5 grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   <div className="sm:col-span-2">
                     <FieldLabel icon={MapPin} required>Adresse</FieldLabel>
                     <input
@@ -1020,15 +1002,6 @@ export default function CreateProjectDrawer({
                       value={form.address}
                       onChange={(e) => set("address", e.target.value)}
                       placeholder="Cap Spartel, Tanger…"
-                    />
-                  </div>
-                  <div>
-                    <FieldLabel required>Ville</FieldLabel>
-                    <input
-                      className={fieldClass}
-                      value={form.city}
-                      onChange={(e) => set("city", e.target.value)}
-                      placeholder="Tanger"
                     />
                   </div>
                   <div>
@@ -1042,21 +1015,28 @@ export default function CreateProjectDrawer({
                   </div>
                 </div>
 
-                <div className="rounded-lg border border-[#8ba4c7]/25 bg-[#8ba4c7]/[0.06] p-3">
-                  {(geocoding || autoLocated || autoLocateFailed) && (
+                <div className="mt-2.5 rounded-lg border border-[#8ba4c7]/25 bg-[#8ba4c7]/[0.06] p-3">
+                  {geocoding ? (
+                    <p className="mb-2 text-[11px] text-glass-secondary">
+                      Calcul en cours…
+                    </p>
+                  ) : null}
+                  {!geocoding && (autoLocated || autoLocateFailed) ? (
                     <p
                       className={cn(
                         "mb-2 text-[10px]",
-                        autoLocateFailed ? "text-amber-300/90" : "text-[#8ba4c7]"
+                        autoLocateFailed
+                          ? "text-amber-800 dark:text-amber-300/90"
+                          : "text-sky-800 dark:text-[#8ba4c7]"
                       )}
                     >
-                      {geocoding
-                        ? "Calcul…"
-                        : autoLocated
-                          ? "OK"
-                          : "Adresse introuvable"}
+                      {autoLocated
+                        ? ["Coordonnées calculées", matchedLocationLabel]
+                            .filter(Boolean)
+                            .join(" · ")
+                        : "Adresse introuvable — ajustez la ville ou l'adresse"}
                     </p>
-                  )}
+                  ) : null}
                   <label className="flex cursor-pointer items-center gap-2 text-[11px] text-glass-muted">
                     <input
                       type="checkbox"

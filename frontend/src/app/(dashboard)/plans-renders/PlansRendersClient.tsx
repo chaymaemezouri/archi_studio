@@ -13,13 +13,11 @@ import {
   SlidersHorizontal,
 } from "lucide-react";
 import PlanRenderForm, { type PlanRenderFormValues } from "@/components/plans-renders/PlanRenderForm";
-import PlanRenderGridCard from "@/components/plans-renders/PlanRenderGridCard";
 import PlanRenderPreviewModal from "@/components/plans-renders/PlanRenderPreviewModal";
-import PlanRenderRow, { PlanRenderListHeader } from "@/components/plans-renders/PlanRenderRow";
+import PlanRenderProjectSection from "@/components/plans-renders/PlanRenderProjectSection";
 import {
   plansRendersListPage,
   plansRendersListPanel,
-  plansRendersListTable,
 } from "@/components/plans-renders/plans-renders-list-ui";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
@@ -31,6 +29,7 @@ import {
 } from "@/hooks/usePlansRenders";
 import {
   filterAndSortPlanRenders,
+  groupPlanRendersByProject,
   type PlanRenderLinkFilter,
   type PlanRenderMainFilter,
   type PlanRenderSort,
@@ -179,6 +178,11 @@ export default function PlansRendersPage() {
     [assets, debouncedSearch, mainFilter, categoryFilter, linkFilter, sort]
   );
 
+  const projectGroups = useMemo(
+    () => groupPlanRendersByProject(filtered, sort),
+    [filtered, sort]
+  );
+
   const hasActiveFilters =
     search.trim() !== "" ||
     mainFilter !== "all" ||
@@ -260,7 +264,7 @@ export default function PlansRendersPage() {
 
         <div
           ref={addRef}
-          className={cn("relative hidden shrink-0 sm:block", addMenuOpen && "z-40")}
+          className={cn("relative hidden shrink-0 sm:block", addMenuOpen && "z-50")}
         >
           <button
             type="button"
@@ -279,23 +283,23 @@ export default function PlansRendersPage() {
           {addMenuOpen && (
             <div
               role="menu"
-              className={cn(glassMenu, "absolute right-0 top-full z-50 mt-1.5 w-48 py-1")}
+              className={cn(glassMenu, "absolute right-0 top-full z-[60] mt-1.5 w-48 py-1")}
             >
               <button
                 type="button"
                 role="menuitem"
                 onClick={() => openCreate("PLAN")}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
               >
-                <Layers className="h-4 w-4" strokeWidth={1.75} /> Ajouter un plan
+                <Layers className="h-4 w-4 shrink-0" strokeWidth={1.75} /> Ajouter un plan
               </button>
               <button
                 type="button"
                 role="menuitem"
                 onClick={() => openCreate("RENDER")}
-                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+                className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
               >
-                <ImageIcon className="h-4 w-4" strokeWidth={1.75} /> Ajouter un rendu
+                <ImageIcon className="h-4 w-4 shrink-0" strokeWidth={1.75} /> Ajouter un rendu
               </button>
             </div>
           )}
@@ -305,13 +309,13 @@ export default function PlansRendersPage() {
       <div
         className={cn(
           plansRendersListPanel,
-          (filterOpen || sortOpen || addMenuOpen) && "relative z-40"
+          (filterOpen || sortOpen) && "relative z-40"
         )}
       >
         <div className="flex items-center gap-1.5 sm:gap-2">
           <div
             ref={addToolbarRef}
-            className={cn("relative shrink-0 sm:hidden", addMenuOpen && "z-40")}
+            className={cn("relative shrink-0 sm:hidden", addMenuOpen && "z-50")}
           >
             <button
               type="button"
@@ -330,23 +334,23 @@ export default function PlansRendersPage() {
             {addMenuOpen && (
               <div
                 role="menu"
-                className={cn(glassMenu, "absolute left-0 top-full z-50 mt-1.5 w-48 py-1")}
+                className={cn(glassMenu, "absolute left-0 top-full z-[60] mt-1.5 w-48 py-1")}
               >
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => openCreate("PLAN")}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 >
-                  <Layers className="h-4 w-4" strokeWidth={1.75} /> Ajouter un plan
+                  <Layers className="h-4 w-4 shrink-0" strokeWidth={1.75} /> Ajouter un plan
                 </button>
                 <button
                   type="button"
                   role="menuitem"
                   onClick={() => openCreate("RENDER")}
-                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+                  className="flex w-full items-center gap-2 px-3 py-2 text-sm text-glass hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
                 >
-                  <ImageIcon className="h-4 w-4" strokeWidth={1.75} /> Ajouter un rendu
+                  <ImageIcon className="h-4 w-4 shrink-0" strokeWidth={1.75} /> Ajouter un rendu
                 </button>
               </div>
             )}
@@ -600,24 +604,13 @@ export default function PlansRendersPage() {
           actionLabel="Réinitialiser les filtres"
           onAction={resetFilters}
         />
-      ) : view === "list" ? (
-        <div className={plansRendersListTable}>
-          <PlanRenderListHeader />
-          {filtered.map((asset) => (
-            <PlanRenderRow
-              key={asset.id}
-              asset={asset}
-              onEdit={openEdit}
-              onPreview={setPreview}
-            />
-          ))}
-        </div>
       ) : (
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-4">
-          {filtered.map((asset) => (
-            <PlanRenderGridCard
-              key={asset.id}
-              asset={asset}
+        <div className="space-y-3">
+          {projectGroups.map((group) => (
+            <PlanRenderProjectSection
+              key={group.key}
+              group={group}
+              view={view}
               onEdit={openEdit}
               onPreview={setPreview}
             />

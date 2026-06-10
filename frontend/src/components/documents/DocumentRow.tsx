@@ -20,12 +20,15 @@ import {
 import { resolveMediaUrl } from "@/lib/assets";
 import type { Document } from "@/types";
 import { DOCUMENT_CATEGORY_LABELS, DOCUMENT_TYPE_LABELS } from "@/types";
+import { glassSelect } from "@/lib/glass-styles";
 import { cn, formatDate } from "@/lib/utils";
 
 interface DocumentRowProps {
   doc: Document;
   onEdit: (doc: Document) => void;
   onPreview: (doc: Document) => void;
+  projects?: { id: string; name: string }[];
+  onLinkProject?: (doc: Document, projectId: string) => void;
 }
 
 export function DocumentListHeader() {
@@ -43,7 +46,13 @@ export function DocumentListHeader() {
   );
 }
 
-export default function DocumentRow({ doc, onEdit, onPreview }: DocumentRowProps) {
+export default function DocumentRow({
+  doc,
+  onEdit,
+  onPreview,
+  projects = [],
+  onLinkProject,
+}: DocumentRowProps) {
   const { confirm } = useDialog();
   const deleteDoc = useDeleteDocument();
   const href = resolveMediaUrl(doc.url) ?? doc.url;
@@ -88,6 +97,22 @@ export default function DocumentRow({ doc, onEdit, onPreview }: DocumentRowProps
           <Link href={`/projects/${doc.projectId}?tab=documents`} className={documentsListLink}>
             {doc.projectName}
           </Link>
+        ) : projects.length > 0 && onLinkProject ? (
+          <select
+            value=""
+            onChange={(e) => {
+              if (e.target.value) onLinkProject(doc, e.target.value);
+            }}
+            className={cn(glassSelect, "h-7 max-w-full py-0 text-[11px]")}
+            aria-label={`Lier ${doc.name} à un projet`}
+          >
+            <option value="">Lier au projet…</option>
+            {projects.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
         ) : (
           "—"
         )}

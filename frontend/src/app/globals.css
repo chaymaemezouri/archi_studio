@@ -242,6 +242,20 @@
   --dash-alert-tomorrow-bg: rgba(234, 179, 8, 0.08);
   --dash-alert-soon-border: rgba(139, 164, 199, 0.35);
   --dash-alert-soon-bg: rgba(139, 164, 199, 0.06);
+  --dash-week-today-bg: rgba(139, 164, 199, 0.1);
+  --dash-week-today-border: rgba(139, 164, 199, 0.38);
+  --dash-chip-task-bg: rgba(16, 185, 129, 0.24);
+  --dash-chip-task-text: #ecfdf5;
+  --dash-chip-task-ring: rgba(52, 211, 153, 0.45);
+  --dash-chip-meeting-bg: rgba(56, 189, 248, 0.24);
+  --dash-chip-meeting-text: #f0f9ff;
+  --dash-chip-meeting-ring: rgba(56, 189, 248, 0.45);
+  --dash-chip-deadline-bg: rgba(251, 146, 60, 0.28);
+  --dash-chip-deadline-text: #fff7ed;
+  --dash-chip-deadline-ring: rgba(251, 146, 60, 0.5);
+  --dash-meeting-card-bg: rgba(56, 189, 248, 0.12);
+  --dash-meeting-card-border: rgba(56, 189, 248, 0.35);
+  --dash-meeting-card-text: #e0f2fe;
 
   /* Cartes projet */
   --pc-title: rgba(255, 255, 255, 0.94);
@@ -506,6 +520,20 @@
   --dash-alert-tomorrow-bg: #fffbeb;
   --dash-alert-soon-border: #2563eb;
   --dash-alert-soon-bg: #eff6ff;
+  --dash-week-today-bg: #eff6ff;
+  --dash-week-today-border: #93c5fd;
+  --dash-chip-task-bg: #6ee7b7;
+  --dash-chip-task-text: #064e3b;
+  --dash-chip-task-ring: #34d399;
+  --dash-chip-meeting-bg: #7dd3fc;
+  --dash-chip-meeting-text: #0c4a6e;
+  --dash-chip-meeting-ring: #38bdf8;
+  --dash-chip-deadline-bg: #fdba74;
+  --dash-chip-deadline-text: #7c2d12;
+  --dash-chip-deadline-ring: #fb923c;
+  --dash-meeting-card-bg: #e0f2fe;
+  --dash-meeting-card-border: #7dd3fc;
+  --dash-meeting-card-text: #0c4a6e;
 
   /* Cartes projet — textes et accents lisibles */
   --pc-title: #0f172a;
@@ -572,6 +600,74 @@ body {
 .light aside {
   border-color: var(--color-border) !important;
   box-shadow: 1px 0 0 var(--color-border);
+}
+
+/* ── Listes natives <select> — lisibles en dark et light ── */
+html.dark,
+.dark {
+  color-scheme: dark;
+}
+
+html.light,
+.light {
+  color-scheme: light;
+}
+
+select {
+  background-color: var(--glass-input-bg);
+  color: var(--glass-text);
+}
+
+html.dark select,
+.dark select {
+  color-scheme: dark;
+  background-color: var(--glass-input-bg);
+  color: var(--glass-text);
+}
+
+html.light select,
+.light select {
+  color-scheme: light;
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Couleurs explicites : les variables CSS ne s'appliquent pas toujours aux <option> natives */
+html.dark select option,
+html.dark select optgroup,
+.dark select option,
+.dark select optgroup {
+  background-color: #1c1c28;
+  color: #f0efe8;
+}
+
+html.light select option,
+html.light select optgroup,
+.light select option,
+.light select optgroup {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+html.dark select option:checked,
+html.dark select option:hover,
+.dark select option:checked,
+.dark select option:hover {
+  background-color: #2a3144;
+  color: #ffffff;
+}
+
+html.light select option:checked,
+html.light select option:hover,
+.light select option:checked,
+.light select option:hover {
+  background-color: #e2e8f0;
+  color: #0f172a;
 }
 
 @layer utilities {

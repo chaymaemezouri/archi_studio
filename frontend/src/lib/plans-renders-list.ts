@@ -170,3 +170,64 @@ export function categoryLabel(asset: PlanRender): string {
   }
   return RENDER_CATEGORY_LABELS[asset.category] ?? asset.category;
 }
+
+export interface PlanRenderProjectGroup {
+  key: string;
+  projectId: string | null;
+  clientId: string | null;
+  projectName: string;
+  clientName?: string | null;
+  renders: PlanRender[];
+  plans: PlanRender[];
+}
+
+function groupKey(asset: PlanRender): string {
+  if (asset.projectId) return `project:${asset.projectId}`;
+  if (asset.clientId) return `client:${asset.clientId}`;
+  return "unclassified";
+}
+
+function groupTitle(asset: PlanRender): string {
+  if (asset.projectName) return asset.projectName;
+  if (asset.clientName) return `Client · ${asset.clientName}`;
+  return "Sans projet";
+}
+
+/** Regroupe les assets par projet, avec plans et rendus séparés. */
+export function groupPlanRendersByProject(
+  items: PlanRender[],
+  sort: PlanRenderSort = "recent"
+): PlanRenderProjectGroup[] {
+  const map = new Map<string, PlanRenderProjectGroup>();
+
+  for (const asset of items) {
+    const key = groupKey(asset);
+    if (!map.has(key)) {
+      map.set(key, {
+        key,
+        projectId: asset.projectId ?? null,
+        clientId: asset.clientId ?? null,
+        projectName: groupTitle(asset),
+        clientName: asset.clientName,
+        renders: [],
+        plans: [],
+      });
+    }
+    const group = map.get(key)!;
+    if (asset.kind === "RENDER") group.renders.push(asset);
+    else group.plans.push(asset);
+  }
+
+  for (const group of map.values()) {
+    group.renders = sortPlanRenders(group.renders, sort);
+    group.plans = sortPlanRenders(group.plans, sort);
+  }
+
+  return Array.from(map.values()).sort((a, b) => {
+    const aUnclassified = a.key === "unclassified";
+    const bUnclassified = b.key === "unclassified";
+    if (aUnclassified && !bUnclassified) return 1;
+    if (!aUnclassified && bUnclassified) return -1;
+    return a.projectName.localeCompare(b.projectName, "fr");
+  });
+}

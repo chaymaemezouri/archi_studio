@@ -181,7 +181,7 @@ export default function DocumentForm({
               className={financeSelectClass}
             >
               {categoryOptions.map(([value, label]) => (
-                <option key={value} value={value} className="bg-[#101014]">
+                <option key={value} value={value}>
                   {label}
                 </option>
               ))}
@@ -208,11 +208,11 @@ export default function DocumentForm({
               onChange={(e) => set("projectId", e.target.value)}
               className={cn(financeSelectClass, !values.projectId && "text-glass-muted")}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 Aucun
               </option>
               {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#101014]">
+                <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
               ))}
@@ -225,11 +225,11 @@ export default function DocumentForm({
               onChange={(e) => set("clientId", e.target.value)}
               className={cn(financeSelectClass, !values.clientId && "text-glass-muted")}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 Aucun
               </option>
               {clients.map((c) => (
-                <option key={c.id} value={c.id} className="bg-[#101014]">
+                <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}

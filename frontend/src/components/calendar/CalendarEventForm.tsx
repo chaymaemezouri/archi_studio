@@ -143,7 +143,7 @@ export default function CalendarEventForm({
               onChange={(e) => set("type", e.target.value as CalendarEventType)}
             >
               {Object.entries(CALENDAR_EVENT_TYPE_LABELS).map(([value, label]) => (
-                <option key={value} value={value} className="bg-[#101014]">
+                <option key={value} value={value}>
                   {label}
                 </option>
               ))}
@@ -194,11 +194,11 @@ export default function CalendarEventForm({
               value={values.projectId}
               onChange={(e) => set("projectId", e.target.value)}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 Aucun
               </option>
               {projects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#101014]">
+                <option key={p.id} value={p.id}>
                   {p.name}
                 </option>
               ))}
@@ -211,11 +211,11 @@ export default function CalendarEventForm({
               value={values.clientId}
               onChange={(e) => set("clientId", e.target.value)}
             >
-              <option value="" className="bg-[#101014]">
+              <option value="">
                 Aucun
               </option>
               {clients.map((c) => (
-                <option key={c.id} value={c.id} className="bg-[#101014]">
+                <option key={c.id} value={c.id}>
                   {c.name}
                 </option>
               ))}
@@ -232,10 +232,10 @@ export default function CalendarEventForm({
             value={values.priority}
             onChange={(e) => set("priority", e.target.value as "NORMAL" | "URGENT")}
           >
-            <option value="NORMAL" className="bg-[#101014]">
+            <option value="NORMAL">
               Normale
             </option>
-            <option value="URGENT" className="bg-[#101014]">
+            <option value="URGENT">
               Urgente
             </option>
           </select>
