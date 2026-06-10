@@ -230,6 +230,7 @@
   /* Dashboard */
   --dash-stat-label: var(--glass-text-muted);
   --dash-section-label: var(--glass-text-muted);
+  --dash-list-divider: rgba(255, 255, 255, 0.04);
   --dash-card-footer-bg: rgba(0, 0, 0, 0.4);
   --dash-agenda-tasks: #8ba4c7;
   --dash-agenda-deadlines: #5d6b7a;
@@ -508,6 +509,7 @@
   /* Dashboard */
   --dash-stat-label: #475569;
   --dash-section-label: #64748b;
+  --dash-list-divider: #e8edf3;
   --dash-card-footer-bg: #ffffff;
   --dash-agenda-tasks: #2563eb;
   --dash-agenda-deadlines: #d97706;
@@ -712,6 +714,10 @@ html.light select option:hover,
   }
 
   .border-app {
+    border-color: var(--color-border);
+  }
+
+  .divide-app > :not([hidden]) ~ :not([hidden]) {
     border-color: var(--color-border);
   }
 

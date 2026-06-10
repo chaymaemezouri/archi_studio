@@ -4,7 +4,11 @@ import DashboardSmartAlertsStrip from "./DashboardSmartAlertsStrip";
 import type { DashboardStats, SmartAlert } from "@/types";
 import { cn } from "@/lib/utils";
 import { accentBar } from "@/lib/glass-styles";
-import { dashboardPanel, dashboardPanelTitle } from "./dashboard-ui";
+import {
+  dashboardListHeaderBorder,
+  dashboardPanel,
+  dashboardPanelTitle,
+} from "./dashboard-ui";
 
 interface DashboardPrioritySectionProps {
   alerts: SmartAlert[];
@@ -24,7 +28,7 @@ export default function DashboardPrioritySection({
 
   return (
     <section className={cn(dashboardPanel, "overflow-hidden", className)}>
-      <div className="flex items-center justify-between gap-3 border-b border-app px-3 py-2">
+      <div className={cn("flex items-center justify-between gap-3 px-3 py-2", dashboardListHeaderBorder)}>
         <h3 className={dashboardPanelTitle}>
           <span className={accentBar} aria-hidden />
           Priorités

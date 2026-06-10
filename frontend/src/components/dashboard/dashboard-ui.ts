@@ -124,10 +124,15 @@ export const dashboardTaskChip = cn(
   "text-[9px] font-medium leading-none"
 );
 
+/** Séparateurs listes dashboard — plus discrets que border-app en dark */
+export const dashboardListDivide = "divide-y divide-[color:var(--dash-list-divider)]";
+
+export const dashboardListHeaderBorder = "border-b border-[color:var(--dash-list-divider)]";
+
 export const dashboardTaskRow = cn(
   "group relative flex items-start gap-2.5 rounded-xl px-2.5 py-2.5",
   "border border-transparent transition duration-200",
-  "hover:border-app hover:bg-[color:var(--glass-bg-hover)]/40"
+  "hover:bg-[color:var(--glass-bg-hover)]/35"
 );
 
 export const dashboardTaskAddZone = cn(

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { ChevronRight } from "lucide-react";
 import type { DashboardStats, SmartAlert } from "@/types";
 import { cn, formatDate } from "@/lib/utils";
-import { dashboardTaskRow } from "./dashboard-ui";
+import { dashboardListDivide, dashboardTaskRow } from "./dashboard-ui";
 
 const SEVERITY_DOT: Record<SmartAlert["severity"], string> = {
   overdue: "bg-rose-500/90",
@@ -78,7 +78,7 @@ export default function DashboardSmartAlertsStrip({
   if (items.length === 0 && !hasDeadline) return null;
 
   return (
-    <ul className="divide-y divide-app">
+    <ul className={dashboardListDivide}>
       {hasDeadline && stats && <NextDeadlineRow stats={stats} />}
       {items.map((alert) => (
         <li key={alert.id}>
