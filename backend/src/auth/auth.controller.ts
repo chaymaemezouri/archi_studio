@@ -5,10 +5,8 @@ import {
   Patch,
   Post,
   UploadedFile,
-  UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { Throttle, ThrottlerGuard } from '@nestjs/throttler';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
@@ -20,8 +18,6 @@ import { RegisterDto } from './dto/register.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 
 @Controller('auth')
-@UseGuards(ThrottlerGuard)
-@Throttle({ auth: { limit: 5, ttl: 900000 } })
 export class AuthController {
   constructor(private authService: AuthService) {}
 
@@ -57,7 +53,6 @@ export class AuthController {
   }
 
   @Post('change-password')
-  @Throttle({ auth: { limit: 10, ttl: 900000 } })
   changePassword(
     @CurrentUser() user: AuthUser,
     @Body() dto: ChangePasswordDto,
