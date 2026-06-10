@@ -34,6 +34,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
   const studio = useStudio();
   const pageTitle = title ?? getPageTitle(pathname);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [searchExpanded, setSearchExpanded] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
     <header className={cn("sticky top-0 z-30 pb-2.5 pt-3", dashboardShellPadding)}>
       <div className={dashboardShellContainer}>
         <div className={headerBar}>
-          <div className="flex min-w-0 flex-1 items-center gap-2">
+          <div className="relative flex min-w-0 flex-1 items-center gap-2">
             {onMenuClick && (
               <button
                 type="button"
@@ -70,16 +71,18 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
                 <Menu className="h-4 w-4" />
               </button>
             )}
-            {pageTitle ? (
+            {pageTitle && !searchExpanded ? (
               <h1 className="min-w-0 max-w-[38vw] shrink truncate text-[13px] font-semibold text-glass sm:max-w-none sm:text-[14px] lg:max-w-[200px]">
                 {pageTitle}
               </h1>
             ) : null}
-            <GlobalSearch />
+            <GlobalSearch onMobileExpandChange={setSearchExpanded} />
           </div>
 
           <div className={headerActions}>
-            <ThemeToggle />
+            <div className="hidden md:block">
+              <ThemeToggle />
+            </div>
             <NotificationBell />
 
             <div ref={dropdownRef} className="relative">
@@ -136,6 +139,11 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
                       <Settings className="h-3.5 w-3.5 opacity-50" strokeWidth={1.75} />
                       Paramètres
                     </Link>
+                    <ThemeToggle
+                      variant="menu"
+                      className="md:hidden"
+                      onToggle={() => setDropdownOpen(false)}
+                    />
                     <button
                       type="button"
                       onClick={() => {

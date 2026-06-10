@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { Priority, TaskStatus } from '@prisma/client';
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
+import { SmartAlertsService } from '../notifications/smart-alerts.service';
+import type { AuthUser } from '../common/types/auth-user';
+import {
+  projectByIdWhere,
+  projectRelationWhere,
+  toProjectAccessContext,
+} from '../common/utils/project-access.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -22,7 +29,16 @@ export class TasksService {
   constructor(
     private prisma: PrismaService,
     private activityLogs: ActivityLogsService,
+    private smartAlerts: SmartAlertsService,
   ) {}
+
+  private async syncTaskNotifications(studioId: string) {
+    try {
+      await this.smartAlerts.syncForStudio(studioId);
+    } catch {
+      /* sync best-effort — cron rattrape si échec */
+    }
+  }
 
   private mapTask(task: {
     id: string;
@@ -58,17 +74,32 @@ export class TasksService {
     };
   }
 
-  private studioScope(studioId: string) {
+  private studioScope(user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {
+    const ctx = toProjectAccessContext(user);
     return {
       OR: [
-        { project: { studioId } },
-        { studioId, projectId: null },
+        { project: projectRelationWhere(ctx) },
+        { studioId: user.studioId, projectId: null },
       ],
     };
   }
 
+  private async assertProjectAccess(
+    projectId: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
+  ) {
+    const project = await this.prisma.project.findFirst({
+      where: projectByIdWhere(toProjectAccessContext(user), projectId),
+      select: { id: true, clientId: true },
+    });
+    if (!project) {
+      throw new BadRequestException('Projet introuvable ou inaccessible.');
+    }
+    return project;
+  }
+
   findAll(
-    studioId: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
     filters?: {
       projectId?: string;
       clientId?: string;
@@ -78,21 +109,29 @@ export class TasksService {
       to?: string;
     },
   ) {
-    const where: Record<string, unknown> = {
-      ...this.studioScope(studioId),
-    };
+    const ctx = toProjectAccessContext(user);
+    const conditions: Record<string, unknown>[] = [this.studioScope(user)];
 
     if (filters?.projectId) {
-      where.projectId = filters.projectId;
-      delete where.OR;
+      conditions.push({ projectId: filters.projectId });
     }
 
     if (filters?.clientId) {
-      where.OR = [
-        { clientId: filters.clientId },
-        { project: { clientId: filters.clientId, studioId } },
-      ];
+      conditions.push({
+        OR: [
+          { clientId: filters.clientId },
+          {
+            project: {
+              clientId: filters.clientId,
+              ...projectRelationWhere(ctx),
+            },
+          },
+        ],
+      });
     }
+
+    const where: Record<string, unknown> =
+      conditions.length === 1 ? conditions[0] : { AND: conditions };
 
     if (filters?.status) where.status = filters.status;
     if (filters?.priority) where.priority = filters.priority;
@@ -113,9 +152,9 @@ export class TasksService {
       .then((tasks) => tasks.map((t) => this.mapTask(t)));
   }
 
-  async findOne(id: string, studioId: string) {
+  async findOne(id: string, user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {
     const task = await this.prisma.task.findFirst({
-      where: { id, ...this.studioScope(studioId) },
+      where: { AND: [{ id }, this.studioScope(user)] },
       include: taskInclude,
     });
     if (!task) throw new NotFoundException('Task not found');
@@ -124,16 +163,14 @@ export class TasksService {
 
   async create(
     dto: CreateTaskDto,
-    studioId: string,
-    userId?: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
     let clientId = dto.clientId;
     if (dto.projectId && !clientId) {
-      const project = await this.prisma.project.findFirst({
-        where: { id: dto.projectId, studioId },
-        select: { clientId: true },
-      });
-      clientId = project?.clientId ?? undefined;
+      const project = await this.assertProjectAccess(dto.projectId, user);
+      clientId = project.clientId ?? undefined;
+    } else if (dto.projectId) {
+      await this.assertProjectAccess(dto.projectId, user);
     }
 
     const task = await this.prisma.task.create({
@@ -147,14 +184,14 @@ export class TasksService {
         projectId: dto.projectId,
         clientId,
         notes: dto.notes,
-        studioId,
+        studioId: user.studioId,
       },
       include: taskInclude,
     });
 
     if (task.projectId) {
       await this.activityLogs.log({
-        userId,
+        userId: user.id,
         projectId: task.projectId,
         action: 'created',
         entity: 'Task',
@@ -163,62 +200,60 @@ export class TasksService {
       });
     }
 
+    await this.syncTaskNotifications(user.studioId);
+
     return this.mapTask(task);
   }
 
   async update(
     id: string,
     dto: UpdateTaskDto,
-    studioId: string,
-    userId?: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
-    const existing = await this.findOne(id, studioId);
+    const existing = await this.findOne(id, user);
 
     let clientId = dto.clientId;
     if (dto.projectId !== undefined && dto.projectId && !clientId) {
-      const project = await this.prisma.project.findFirst({
-        where: { id: dto.projectId, studioId },
-        select: { clientId: true },
-      });
-      clientId = project?.clientId ?? undefined;
+      const project = await this.assertProjectAccess(dto.projectId, user);
+      clientId = project.clientId ?? undefined;
+    } else if (dto.projectId) {
+      await this.assertProjectAccess(dto.projectId, user);
     }
 
     const status = dto.status;
-    let completedAt: Date | null | undefined = undefined;
+    const data: Record<string, unknown> = {};
+
+    if (dto.title !== undefined) data.title = dto.title;
+    if (dto.description !== undefined) data.description = dto.description;
+    if (dto.status !== undefined) data.status = dto.status;
+    if (dto.priority !== undefined) data.priority = dto.priority;
+    if (dto.dueDate !== undefined) {
+      data.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
+    }
+    if (dto.scheduledAt !== undefined) {
+      data.scheduledAt = dto.scheduledAt ? new Date(dto.scheduledAt) : null;
+    }
+    if (dto.projectId !== undefined) data.projectId = dto.projectId;
+    if (dto.clientId !== undefined || clientId !== undefined) {
+      data.clientId = clientId;
+    }
+    if (dto.notes !== undefined) data.notes = dto.notes;
+
     if (status === TaskStatus.DONE) {
-      completedAt = new Date();
+      data.completedAt = new Date();
     } else if (status !== undefined) {
-      completedAt = null;
+      data.completedAt = null;
     }
 
     const task = await this.prisma.task.update({
       where: { id },
-      data: {
-        title: dto.title,
-        description: dto.description,
-        status: dto.status,
-        priority: dto.priority,
-        dueDate: dto.dueDate !== undefined
-          ? dto.dueDate
-            ? new Date(dto.dueDate)
-            : null
-          : undefined,
-        scheduledAt: dto.scheduledAt !== undefined
-          ? dto.scheduledAt
-            ? new Date(dto.scheduledAt)
-            : null
-          : undefined,
-        projectId: dto.projectId,
-        clientId,
-        notes: dto.notes,
-        ...(completedAt !== undefined ? { completedAt } : {}),
-      },
+      data,
       include: taskInclude,
     });
 
     if (task.projectId) {
       await this.activityLogs.log({
-        userId,
+        userId: user.id,
         projectId: task.projectId,
         action: status === TaskStatus.DONE ? 'completed' : 'updated',
         entity: 'Task',
@@ -227,29 +262,30 @@ export class TasksService {
       });
     }
 
+    await this.syncTaskNotifications(user.studioId);
+
     return this.mapTask(task);
   }
 
   async updateStatus(
     id: string,
     status: TaskStatus,
-    studioId: string,
-    userId?: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
-    return this.update(id, { status }, studioId, userId);
+    return this.update(id, { status }, user);
   }
 
-  async complete(id: string, studioId: string, userId?: string) {
-    return this.updateStatus(id, TaskStatus.DONE, studioId, userId);
+  async complete(id: string, user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {
+    return this.updateStatus(id, TaskStatus.DONE, user);
   }
 
-  async remove(id: string, studioId: string, userId?: string) {
-    const task = await this.findOne(id, studioId);
+  async remove(id: string, user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {
+    const task = await this.findOne(id, user);
     await this.prisma.task.delete({ where: { id } });
 
     if (task.projectId) {
       await this.activityLogs.log({
-        userId,
+        userId: user.id,
         projectId: task.projectId,
         action: 'deleted',
         entity: 'Task',
@@ -257,6 +293,8 @@ export class TasksService {
         details: { title: task.title },
       });
     }
+
+    await this.syncTaskNotifications(user.studioId);
 
     return { deleted: true };
   }

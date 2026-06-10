@@ -29,7 +29,7 @@ export class DevisController {
 
   @Post()
   create(@Body() dto: CreateDevisDto, @CurrentUser() user: AuthUser) {
-    return this.devisService.create(dto, user.studioId, user.id);
+    return this.devisService.create(dto, user.studioId, user.id, user.role);
   }
 
   @Post(':id/convert-to-invoice')

@@ -37,6 +37,10 @@ import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
 import Badge from "@/components/ui/Badge";
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
+import {
+  getFinanceClientLabel,
+  getFinanceProjectLabel,
+} from "@/lib/finance-entity-utils";
 import { useClients } from "@/hooks/useClients";
 import { useProjects } from "@/hooks/useProjects";
 import {
@@ -56,6 +60,7 @@ import {
 } from "@/hooks/useInvoices";
 import { useCreatePayment } from "@/hooks/usePayments";
 import { downloadFinancePdf } from "@/lib/finance-pdf";
+import { normalizeFinanceLineItems } from "@/lib/finance-items";
 import {
   filterDevis,
   filterInvoices,
@@ -327,6 +332,15 @@ export default function QuotesInvoicesPage() {
     setModalDefaults({});
   };
 
+  const refreshFinanceLists = async () => {
+    await Promise.all([refetchDevis(), refetchInv()]);
+  };
+
+  const onFinanceMutationSuccess = async () => {
+    await refreshFinanceLists();
+    closeModal();
+  };
+
   const openCreateDevis = () => {
     setModalDefaults({});
     setModalKind("devis");
@@ -360,51 +374,62 @@ export default function QuotesInvoicesPage() {
   };
 
   const handleDevisSubmit = (values: DevisFormValues) => {
+    let items;
+    try {
+      items = normalizeFinanceLineItems(values.items);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Lignes invalides");
+      return;
+    }
     const payload = {
       clientId: values.clientId || undefined,
+      clientName: values.clientName?.trim() || undefined,
       projectId: values.projectId || undefined,
-      object: values.object,
+      projectName: values.projectName?.trim() || undefined,
+      object: values.object.trim(),
       status: values.status,
       tva: values.tva,
       paymentTerms: values.paymentTerms,
       notes: values.notes || undefined,
       validUntil: values.validUntil || undefined,
-      items: values.items.map(({ description, quantity, unitPrice, order }) => ({
-        description: description ?? "",
-        quantity: quantity ?? 1,
-        unitPrice: unitPrice ?? 0,
-        order: order ?? 0,
-      })),
+      items,
     };
     if (editingDevis) {
-      updateDevis.mutate({ id: editingDevis.id, ...payload }, { onSuccess: closeModal });
+      updateDevis.mutate({ id: editingDevis.id, ...payload }, { onSuccess: onFinanceMutationSuccess });
     } else {
-      createDevis.mutate(payload, { onSuccess: closeModal });
+      createDevis.mutate(payload, { onSuccess: onFinanceMutationSuccess });
     }
   };
 
   const handleInvoiceSubmit = (values: InvoiceFormValues) => {
+    if (!values.clientId) {
+      toast.error("Sélectionnez un client dans la liste");
+      return;
+    }
+    let items;
+    try {
+      items = normalizeFinanceLineItems(values.items);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Lignes invalides");
+      return;
+    }
     const payload = {
-      clientId: values.clientId || undefined,
+      clientId: values.clientId,
       projectId: values.projectId || undefined,
-      object: values.object,
+      projectName: values.projectName?.trim() || undefined,
+      object: values.object.trim(),
       status: values.status,
       tva: values.tva,
       issueDate: values.issueDate,
       paymentMethod: values.paymentMethod || undefined,
       bankTransferBy: values.bankTransferBy || undefined,
       notes: values.notes || undefined,
-      items: values.items.map(({ description, quantity, unitPrice, order }) => ({
-        description: description ?? "",
-        quantity: quantity ?? 1,
-        unitPrice: unitPrice ?? 0,
-        order: order ?? 0,
-      })),
+      items,
     };
     if (editingInvoice) {
-      updateInvoice.mutate({ id: editingInvoice.id, ...payload }, { onSuccess: closeModal });
+      updateInvoice.mutate({ id: editingInvoice.id, ...payload }, { onSuccess: onFinanceMutationSuccess });
     } else {
-      createInvoice.mutate(payload, { onSuccess: closeModal });
+      createInvoice.mutate(payload, { onSuccess: onFinanceMutationSuccess });
     }
   };
 
@@ -977,8 +1002,8 @@ export default function QuotesInvoicesPage() {
                   {filteredDevis.map((d) => (
                     <tr key={d.id} className={quotesInvoicesTableRow}>
                       <td className="px-4 py-2.5 font-medium text-glass">{d.number}</td>
-                      <td className="px-4 py-2.5 text-glass-secondary">{d.client?.name ?? "—"}</td>
-                      <td className="px-4 py-2.5 text-glass-secondary">{d.project?.name ?? "—"}</td>
+                      <td className="px-4 py-2.5 text-glass-secondary">{getFinanceClientLabel(d)}</td>
+                      <td className="px-4 py-2.5 text-glass-secondary">{getFinanceProjectLabel(d)}</td>
                       <td className=" truncate px-4 py-2.5 text-glass-secondary">
                         {d.object ?? "—"}
                       </td>
@@ -1143,8 +1168,8 @@ export default function QuotesInvoicesPage() {
                     return (
                       <tr key={inv.id} className={quotesInvoicesTableRow}>
                         <td className="px-4 py-2.5 font-medium text-glass">{inv.number}</td>
-                        <td className="px-4 py-2.5 text-glass-secondary">{inv.client?.name ?? "—"}</td>
-                        <td className="px-4 py-2.5 text-glass-secondary">{inv.project?.name ?? "—"}</td>
+                        <td className="px-4 py-2.5 text-glass-secondary">{getFinanceClientLabel(inv)}</td>
+                        <td className="px-4 py-2.5 text-glass-secondary">{getFinanceProjectLabel(inv)}</td>
                         <td className="max-w-[160px] truncate px-4 py-2.5 text-glass-secondary">
                           {inv.object ?? "—"}
                         </td>

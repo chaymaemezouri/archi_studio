@@ -1,0 +1,3 @@
+-- AlterEnum
+ALTER TYPE "NotifType" ADD VALUE 'TASK_URGENT';
+ALTER TYPE "NotifType" ADD VALUE 'TASK_HIGH';

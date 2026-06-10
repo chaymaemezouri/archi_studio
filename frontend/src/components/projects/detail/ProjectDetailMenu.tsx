@@ -16,6 +16,8 @@ import {
 import toast from "react-hot-toast";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { useCreateProject, useDeleteProject, useUpdateProject } from "@/hooks/useProjects";
+import { useAuthStore } from "@/store/authStore";
+import { canDeleteProject } from "@/lib/permissions";
 import type { Project } from "@/types";
 import { cn } from "@/lib/utils";
 import {
@@ -35,9 +37,11 @@ export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenu
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const user = useAuthStore((s) => s.user);
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
   const createProject = useCreateProject();
+  const canDelete = canDeleteProject(user, project);
 
   useEffect(() => {
     if (!open) return;
@@ -195,10 +199,12 @@ export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenu
             <CopyPlus className="h-4 w-4" />
             Dupliquer le projet
           </button>
-          <button type="button" role="menuitem" onClick={remove} className={detailMenuItemDanger}>
-            <Trash2 className="h-4 w-4" />
-            Supprimer le projet
-          </button>
+          {canDelete && (
+            <button type="button" role="menuitem" onClick={remove} className={detailMenuItemDanger}>
+              <Trash2 className="h-4 w-4" />
+              Supprimer le projet
+            </button>
+          )}
         </div>
       )}
     </div>

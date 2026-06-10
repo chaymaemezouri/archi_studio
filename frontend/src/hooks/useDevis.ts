@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/api-errors";
+import { invalidateFinanceQueries } from "@/lib/finance-query";
 import type { Devis, DevisItem, Invoice } from "@/types";
 
 export type DevisItemInput = Pick<
@@ -44,12 +46,11 @@ export function useCreateDevis() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devis"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      invalidateFinanceQueries(queryClient);
       toast.success("Devis créé");
     },
-    onError: () => toast.error("Erreur lors de la création"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la création")),
   });
 }
 
@@ -62,13 +63,12 @@ export function useUpdateDevis() {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["devis"] });
+      invalidateFinanceQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ["devis", variables.id] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success("Devis mis à jour");
     },
-    onError: () => toast.error("Erreur lors de la mise à jour"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la mise à jour")),
   });
 }
 
@@ -80,9 +80,7 @@ export function useDeleteDevis() {
       await api.delete(`/devis/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devis"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      invalidateFinanceQueries(queryClient);
       toast.success("Devis supprimé");
     },
     onError: () => toast.error("Erreur lors de la suppression"),
@@ -98,10 +96,7 @@ export function useConvertDevisToInvoice() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["devis"] });
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      invalidateFinanceQueries(queryClient);
       toast.success("Facture créée depuis le devis");
     },
     onError: (err: { response?: { data?: { message?: string } } }) => {

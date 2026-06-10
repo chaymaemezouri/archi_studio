@@ -5,6 +5,10 @@ import Badge from "@/components/ui/Badge";
 import { INVOICE_STATUS_COLORS, INVOICE_STATUS_LABELS } from "@/types";
 import type { Invoice } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
+import {
+  getFinanceClientLabel,
+  getFinanceProjectLabel,
+} from "@/lib/finance-entity-utils";
 
 interface InvoicePreviewProps {
   invoice: Invoice;
@@ -26,11 +30,11 @@ export default function InvoicePreview({ invoice }: InvoicePreviewProps) {
       <div className="mb-8 grid grid-cols-2 gap-6">
         <div>
           <p className="text-xs uppercase text-text-muted">Client</p>
-          <p className="mt-1 text-text-primary">{invoice.client?.name || "—"}</p>
+          <p className="mt-1 text-text-primary">{getFinanceClientLabel(invoice)}</p>
         </div>
         <div>
           <p className="text-xs uppercase text-text-muted">Projet</p>
-          <p className="mt-1 text-text-primary">{invoice.project?.name || "—"}</p>
+          <p className="mt-1 text-text-primary">{getFinanceProjectLabel(invoice)}</p>
         </div>
       </div>
 

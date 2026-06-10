@@ -4,6 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import type { Payment, PaymentMethod } from "@/types";
 import type { PaymentInput } from "@/hooks/usePayments";
 import { cn, formatCurrency } from "@/lib/utils";
+import {
+  getProjectGlobalAmount,
+  getProjectRemainingToCollect,
+  sumPaymentsForProject,
+} from "@/lib/project-finance";
 import { glassBtnPrimary, glassBtnSecondary } from "@/lib/glass-styles";
 import {
   PaymentFieldLabel,
@@ -41,6 +46,10 @@ type ProjectOption = {
   name: string;
   clientId?: string | null;
   client?: { id: string; name: string } | null;
+  totalProjectAmount?: number | null;
+  contractArchitectFees?: number | null;
+  actualFeesToCollect?: number | null;
+  budget?: number | null;
 };
 
 function resolveClientId(
@@ -69,9 +78,16 @@ interface PaymentFormProps {
   invoices: InvoiceOption[];
   clients: { id: string; name: string }[];
   projects: ProjectOption[];
+  allPayments?: Array<{
+    amount: number;
+    projectId?: string | null;
+    invoice?: { projectId?: string | null } | null;
+  }>;
   onSubmit: (payload: PaymentInput) => void;
   onCancel: () => void;
   loading: boolean;
+  defaultClientId?: string;
+  defaultProjectId?: string;
 }
 
 export default function PaymentForm({
@@ -79,13 +95,16 @@ export default function PaymentForm({
   invoices,
   clients,
   projects,
+  allPayments = [],
   onSubmit,
   onCancel,
   loading,
+  defaultClientId,
+  defaultProjectId,
 }: PaymentFormProps) {
   const [invoiceId, setInvoiceId] = useState(payment?.invoiceId ?? "");
-  const [clientId, setClientId] = useState(payment?.clientId ?? "");
-  const [projectId, setProjectId] = useState(payment?.projectId ?? "");
+  const [clientId, setClientId] = useState(payment?.clientId ?? defaultClientId ?? "");
+  const [projectId, setProjectId] = useState(payment?.projectId ?? defaultProjectId ?? "");
   const [amount, setAmount] = useState(payment?.amount ?? 0);
   const [date, setDate] = useState(
     payment?.date?.slice(0, 10) ?? new Date().toISOString().slice(0, 10)
@@ -107,6 +126,26 @@ export default function PaymentForm({
     }
     return max;
   }, [selectedInvoice, payment, invoiceId]);
+
+  const selectedProject = useMemo(
+    () => projects.find((p) => p.id === projectId),
+    [projects, projectId]
+  );
+
+  const projectPaid = useMemo(() => {
+    if (!projectId) return 0;
+    return sumPaymentsForProject(projectId, allPayments);
+  }, [projectId, allPayments]);
+
+  const projectRemaining = useMemo(() => {
+    if (!selectedProject) return null;
+    return getProjectRemainingToCollect(selectedProject, projectPaid);
+  }, [selectedProject, projectPaid]);
+
+  const invoicesWithClient = useMemo(
+    () => invoices.filter((inv) => inv.clientId || inv.client?.id),
+    [invoices]
+  );
 
   const filteredProjects = useMemo(() => {
     if (!clientId) return projects;
@@ -144,6 +183,50 @@ export default function PaymentForm({
   const amountExceeds = remaining !== null && amount > remaining + 0.001;
   const canSubmit = (clientId || invoiceId) && date && method && amount > 0 && !amountExceeds;
 
+  const projectFinanceSummary = selectedProject ? (
+    <div className="rounded-lg border border-studio-border/30 bg-studio-muted/20 px-3 py-3">
+      <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-wide text-studio-light/80">
+        Informations projet
+      </p>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+        <div>
+          <p className="text-[10px] text-glass-muted">Montant global du projet</p>
+          <p className="text-[13px] font-semibold tabular-nums text-glass">
+            {(() => {
+              const global = getProjectGlobalAmount(selectedProject);
+              return global != null ? formatCurrency(global) : "—";
+            })()}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-glass-muted">Honoraires déclarés (contrat)</p>
+          <p className="text-[13px] font-semibold tabular-nums text-glass">
+            {selectedProject.contractArchitectFees != null
+              ? formatCurrency(selectedProject.contractArchitectFees)
+              : "—"}
+          </p>
+        </div>
+        <div>
+          <p className="text-[10px] text-glass-muted">Honoraires réels à encaisser</p>
+          <p className="text-[13px] font-semibold tabular-nums text-glass">
+            {selectedProject.actualFeesToCollect != null
+              ? formatCurrency(selectedProject.actualFeesToCollect)
+              : "—"}
+          </p>
+        </div>
+        <div className="rounded-md border border-amber-500/20 bg-amber-500/[0.06] px-2.5 py-2">
+          <p className="text-[10px] text-amber-200/70">Reste à encaisser</p>
+          <p className="text-[14px] font-bold tabular-nums text-amber-100">
+            {projectRemaining != null && selectedProject.actualFeesToCollect != null
+              ? formatCurrency(projectRemaining)
+              : "—"}
+          </p>
+          <p className="mt-0.5 text-[9px] text-glass-muted">Calculé automatiquement</p>
+        </div>
+      </div>
+    </div>
+  ) : null;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!canSubmit) return;
@@ -162,6 +245,8 @@ export default function PaymentForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
+      {projectFinanceSummary}
+
       <PaymentFormSection title="Lien">
         <div>
           <PaymentFieldLabel>Facture liée</PaymentFieldLabel>
@@ -173,7 +258,7 @@ export default function PaymentForm({
             <option value="" className="bg-[#101014]">
               Non lié à une facture
             </option>
-            {invoices.map((inv) => (
+            {invoicesWithClient.map((inv) => (
               <option key={inv.id} value={inv.id} className="bg-[#101014]">
                 {inv.number}
               </option>
@@ -183,19 +268,19 @@ export default function PaymentForm({
             <p className="mt-1.5 text-[11px] text-studio-light/65">
               {payment?.invoiceId === invoiceId
                 ? `Montant modifiable jusqu'à ${formatCurrency(remaining)}`
-                : `Reste à payer : ${formatCurrency(remaining)}`}
+                : `Reste à payer facture : ${formatCurrency(remaining)}`}
             </p>
           )}
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <PaymentFieldLabel required>Client</PaymentFieldLabel>
+            <PaymentFieldLabel required={!!invoiceId}>Client</PaymentFieldLabel>
             <select
               className={cn(paymentSelectClass, !clientId && "text-glass-muted")}
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
-              required={!invoiceId}
+              required={!!invoiceId}
             >
               <option value="" className="bg-[#101014]">
                 Sélectionner…

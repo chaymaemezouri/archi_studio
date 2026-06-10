@@ -22,7 +22,15 @@ export class CreateInvoiceDto {
 
   @IsOptional()
   @IsString()
+  clientName?: string;
+
+  @IsOptional()
+  @IsString()
   projectId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 
   @IsOptional()
   @IsString()
@@ -38,6 +46,7 @@ export class CreateInvoiceDto {
   items!: InvoiceItemDto[];
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   tva?: number;
 

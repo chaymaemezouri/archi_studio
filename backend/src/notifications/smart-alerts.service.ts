@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { NotifType, TaskStatus } from '@prisma/client';
+import { NotifType, Priority, Role, TaskStatus } from '@prisma/client';
 import {
   addDays,
   endOfDay,
@@ -7,6 +7,7 @@ import {
   isSameDay,
   startOfDay,
 } from 'date-fns';
+import { projectRelationWhere } from '../common/utils/project-access.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 
@@ -34,6 +35,40 @@ export class SmartAlertsService {
     private notifications: NotificationsService,
   ) {}
 
+  private taskStudioScope(studioId: string, userId: string, role?: Role) {
+    const projectScope = projectRelationWhere({ studioId, userId, role });
+    return {
+      OR: [
+        { project: projectScope },
+        { studioId, projectId: null },
+      ],
+    };
+  }
+
+  private taskLink(task: { projectId: string | null }) {
+    return task.projectId ? `/projects/${task.projectId}?tab=tasks` : '/tasks';
+  }
+
+  private taskNotificationKeys(taskId: string, userId: string): string[] {
+    return [
+      `task-overdue-${taskId}-${userId}`,
+      `task-today-${taskId}-${userId}`,
+      `task-tomorrow-${taskId}-${userId}`,
+      `task-urgent-${taskId}-${userId}`,
+      `task-high-${taskId}-${userId}`,
+    ];
+  }
+
+  async syncForStudio(studioId: string): Promise<void> {
+    const users = await this.prisma.user.findMany({
+      where: { studioId },
+      select: { id: true },
+    });
+    for (const user of users) {
+      await this.syncForUser(user.id, studioId);
+    }
+  }
+
   /** Génère notifications intelligentes pour un utilisateur du studio. */
   async syncForUser(userId: string, studioId: string): Promise<void> {
     const now = new Date();
@@ -41,19 +76,30 @@ export class SmartAlertsService {
     const tomorrow = startOfDay(addDays(now, 1));
     const in3 = endOfDay(addDays(now, 3));
     const in7 = endOfDay(addDays(now, 7));
-    const projectScope = { studioId };
+    const projectScope = projectRelationWhere({ studioId, userId });
+    const studioScope = this.taskStudioScope(studioId, userId);
+    const touchedTaskKeys = new Set<string>();
 
-    const [tasks, meetings, deadlines] = await Promise.all([
+    const [tasks, doneTasks, meetings, deadlines] = await Promise.all([
       this.prisma.task.findMany({
         where: {
           status: { not: TaskStatus.DONE },
-          project: projectScope,
-          OR: [
-            { dueDate: { not: null } },
-            { scheduledAt: { not: null } },
+          AND: [
+            studioScope,
+            {
+              OR: [
+                { dueDate: { not: null } },
+                { scheduledAt: { not: null } },
+                { priority: { in: [Priority.URGENT, Priority.HIGH] } },
+              ],
+            },
           ],
         },
         include: { project: { select: { id: true, name: true } } },
+      }),
+      this.prisma.task.findMany({
+        where: { status: TaskStatus.DONE, ...studioScope },
+        select: { id: true },
       }),
       this.prisma.meeting.findMany({
         where: {
@@ -72,43 +118,103 @@ export class SmartAlertsService {
       }),
     ]);
 
+    for (const task of doneTasks) {
+      await this.notifications.removeByUniqueKeys(
+        userId,
+        this.taskNotificationKeys(task.id, userId),
+      );
+    }
+
     for (const task of tasks) {
       const due = task.dueDate ?? task.scheduledAt;
-      if (!due) continue;
-      const link = task.projectId
-        ? `/projects/${task.projectId}`
-        : '/dashboard';
+      const link = this.taskLink(task);
       const msg = task.title;
+      const subtitle = task.project?.name ?? undefined;
+
+      if (task.priority === Priority.URGENT) {
+        const key = `task-urgent-${task.id}-${userId}`;
+        touchedTaskKeys.add(key);
+        const detail = due
+          ? `${msg}${subtitle ? ` · ${subtitle}` : ''} · ${format(due, 'dd/MM')}`
+          : `${msg}${subtitle ? ` · ${subtitle}` : ''}`;
+        await this.notifications.notifyUser(
+          userId,
+          NotifType.TASK_URGENT,
+          'Tâche urgente',
+          detail,
+          key,
+          link,
+          { refreshUnread: true },
+        );
+        continue;
+      } else if (task.priority === Priority.HIGH && !due) {
+        const key = `task-high-${task.id}-${userId}`;
+        touchedTaskKeys.add(key);
+        await this.notifications.notifyUser(
+          userId,
+          NotifType.TASK_HIGH,
+          'Tâche prioritaire',
+          subtitle ? `${msg} · ${subtitle}` : msg,
+          key,
+          link,
+          { refreshUnread: true },
+        );
+      }
+
+      if (!due) continue;
 
       if (due < today && !isSameDay(due, today)) {
+        const key = `task-overdue-${task.id}-${userId}`;
+        touchedTaskKeys.add(key);
         await this.notifications.notifyUser(
           userId,
           NotifType.TASK_OVERDUE,
           'Tâche en retard',
           msg,
-          `task-overdue-${task.id}-${userId}`,
+          key,
           link,
         );
       } else if (isSameDay(due, today)) {
+        const key = `task-today-${task.id}-${userId}`;
+        touchedTaskKeys.add(key);
         await this.notifications.notifyUser(
           userId,
           NotifType.TASK_TODAY,
           'Tâche du jour',
           msg,
-          `task-today-${task.id}-${userId}`,
+          key,
           link,
         );
       } else if (isSameDay(due, tomorrow)) {
+        const key = `task-tomorrow-${task.id}-${userId}`;
+        touchedTaskKeys.add(key);
         await this.notifications.notifyUser(
           userId,
           NotifType.TASK_TOMORROW,
           'Tâche demain',
           msg,
-          `task-tomorrow-${task.id}-${userId}`,
+          key,
           link,
         );
       }
     }
+
+    await this.prisma.notification.deleteMany({
+      where: {
+        userId,
+        read: false,
+        type: {
+          in: [
+            NotifType.TASK_OVERDUE,
+            NotifType.TASK_TODAY,
+            NotifType.TASK_TOMORROW,
+            NotifType.TASK_URGENT,
+            NotifType.TASK_HIGH,
+          ],
+        },
+        uniqueKey: { notIn: [...touchedTaskKeys] },
+      },
+    });
 
     for (const meeting of meetings) {
       const link = meeting.projectId
@@ -190,19 +296,34 @@ export class SmartAlertsService {
     }
   }
 
-  async buildSmartAlerts(studioId: string): Promise<SmartAlert[]> {
+  async buildSmartAlerts(
+    studioId: string,
+    userId: string,
+    role?: Role,
+  ): Promise<SmartAlert[]> {
     const now = new Date();
     const today = startOfDay(now);
     const tomorrow = startOfDay(addDays(now, 1));
     const soonEnd = endOfDay(addDays(now, 7));
-    const projectScope = { studioId };
+    const projectScope = projectRelationWhere({ studioId, userId, role });
+    const studioScope = this.taskStudioScope(studioId, userId, role);
     const alerts: SmartAlert[] = [];
 
     const [tasks, meetings, deadlines] = await Promise.all([
       this.prisma.task.findMany({
         where: {
           status: { not: TaskStatus.DONE },
-          project: projectScope,
+          AND: [
+            studioScope,
+            {
+              OR: [
+                { dueDate: { lte: soonEnd } },
+                { scheduledAt: { lte: soonEnd } },
+                { priority: Priority.URGENT },
+                { priority: Priority.HIGH },
+              ],
+            },
+          ],
         },
         include: { project: { select: { id: true, name: true } } },
       }),
@@ -239,6 +360,20 @@ export class SmartAlertsService {
 
     for (const task of tasks) {
       const d = task.dueDate ?? task.scheduledAt;
+      if (task.priority === Priority.URGENT) {
+        alerts.push({
+          id: `task-urgent-${task.id}`,
+          kind: 'task',
+          severity: d ? classify(d) : 'today',
+          title: task.title,
+          subtitle: task.project?.name ?? undefined,
+          date: (d ?? now).toISOString(),
+          projectId: task.projectId,
+          projectName: task.project?.name,
+          entityId: task.id,
+        });
+        continue;
+      }
       if (!d || d > soonEnd) continue;
       const severity = classify(d);
       alerts.push({

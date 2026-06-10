@@ -3,9 +3,10 @@
 import Link from "next/link";
 import { MapPin } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
+import { clientDisplayCompany } from "@/components/clients/ClientQuickContactActions";
 import {
   detailSummaryCard,
-  detailSummaryCardGrid,
+  detailSummaryCardGridStack,
   detailSummaryCardTitle,
   detailSummaryFieldGrid,
   detailSummaryFieldLabel,
@@ -14,6 +15,7 @@ import {
   detailSummaryFieldValue,
   detailSummaryFieldValueMuted,
   detailSummaryFieldValueWrap,
+  detailSummaryGalleryInfo,
   detailSummaryMapsIcon,
 } from "./project-detail-ui";
 import {
@@ -21,7 +23,7 @@ import {
   PROJECT_SCALE_LABELS,
 } from "@/lib/project-phases";
 import { getProjectMapsUrl } from "@/lib/project-location";
-import type { Project } from "@/types";
+import type { Client, Project } from "@/types";
 import { formatCurrency, formatDate } from "@/lib/utils";
 
 function displayValue(value: React.ReactNode, empty = "Non défini") {
@@ -62,24 +64,89 @@ function formatProjectUrlDisplay(url: string): string {
   }
 }
 
+function formatCoord(value: number | null | undefined): string | null {
+  if (value == null) return null;
+  if (Number.isInteger(value)) return String(value);
+  return value.toLocaleString("fr-FR", { maximumFractionDigits: 3 });
+}
+
+function clientDisplayName(client: Client): string {
+  const company = clientDisplayCompany(client);
+  if (company) return company;
+  const full = [client.firstName, client.lastName].filter(Boolean).join(" ").trim();
+  if (full) return full;
+  return client.name;
+}
+
 function clientContactLabel(project: Project): string | null {
   const client = project.client;
   if (!client) return null;
-  if (client.email) return client.email;
   if (client.phone) return client.phone;
+  if (client.email) return client.email;
   return null;
 }
 
-interface ProjectDetailProjectSummaryProps {
-  project: Project;
+/** Bloc sous la galerie : client + identité projet */
+export function ProjectDetailGalleryInfo({ project }: { project: Project }) {
+  const clientLabel = project.client ? clientDisplayName(project.client) : null;
+  const contactLabel = clientContactLabel(project);
+
+  return (
+    <div className={detailSummaryGalleryInfo}>
+      <h3 className={detailSummaryCardTitle}>Client & projet</h3>
+      <div className={detailSummaryFieldGrid}>
+        <FieldRow
+          label="Client"
+          value={
+            project.clientId && clientLabel ? (
+              <Link
+                href={`/clients/${project.clientId}`}
+                className={detailSummaryFieldLink}
+              >
+                {clientLabel}
+              </Link>
+            ) : (
+              clientLabel
+            )
+          }
+        />
+        <FieldRow
+          label="Contact"
+          value={
+            project.clientId ? (
+              <Link
+                href={`/clients/${project.clientId}`}
+                className={detailSummaryFieldLink}
+              >
+                {contactLabel || "Voir la fiche client"}
+              </Link>
+            ) : null
+          }
+        />
+        <FieldRow label="Nature" value={project.projectNature} />
+        <FieldRow
+          label="Catégorie"
+          value={
+            project.projectCategory
+              ? PROJECT_CATEGORY_SHORT_LABELS[project.projectCategory]
+              : "Privé"
+          }
+        />
+        <FieldRow
+          label="Taille"
+          value={
+            project.projectScale ? PROJECT_SCALE_LABELS[project.projectScale] : null
+          }
+        />
+        <FieldRow label="Type" value={project.type} />
+      </div>
+    </div>
+  );
 }
 
-export default function ProjectDetailProjectSummary({ project }: ProjectDetailProjectSummaryProps) {
-  const clientLabel =
-    project.client?.company || project.client?.name || null;
-  const contactLabel = clientContactLabel(project);
-  const mapsUrl = project.address?.trim() ? getProjectMapsUrl(project) : null;
-
+/** Colonne droite : localisation + données techniques */
+export default function ProjectDetailProjectSummary({ project }: { project: Project }) {
+  const mapsUrl = getProjectMapsUrl(project);
   const mapsIcon =
     mapsUrl ? (
       <Tooltip label="Voir sur Google Maps">
@@ -95,53 +162,49 @@ export default function ProjectDetailProjectSummary({ project }: ProjectDetailPr
       </Tooltip>
     ) : null;
 
+  const coordXY =
+    project.coordinateX != null && project.coordinateY != null
+      ? `${formatCoord(project.coordinateX)} / ${formatCoord(project.coordinateY)}`
+      : null;
+
+  const coordLatLng =
+    project.latitude != null && project.longitude != null
+      ? `${formatCoord(project.latitude)} / ${formatCoord(project.longitude)}`
+      : null;
+
   return (
-    <div className={detailSummaryCardGrid}>
+    <div className={detailSummaryCardGridStack}>
       <div className={detailSummaryCard}>
-        <h3 className={detailSummaryCardTitle}>Identité</h3>
+        <h3 className={detailSummaryCardTitle}>Localisation</h3>
         <div className={detailSummaryFieldGrid}>
-          <FieldRow
-            label="Client"
-            value={
-              project.clientId && clientLabel ? (
-                <Link
-                  href={`/clients/${project.clientId}`}
+          <FieldRow label="Adresse" value={project.address} trailing={mapsIcon} />
+          {mapsUrl ? (
+            <FieldRow
+              label="Carte"
+              value={
+                <a
+                  href={mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={detailSummaryFieldLink}
                 >
-                  {clientLabel}
-                </Link>
-              ) : (
-                clientLabel
-              )
-            }
-          />
-          <FieldRow
-            label="Contact"
-            value={
-              project.clientId && contactLabel ? (
-                <Link
-                  href={`/clients/${project.clientId}`}
-                  className={detailSummaryFieldLink}
-                >
-                  {contactLabel}
-                </Link>
-              ) : project.clientId ? (
-                <Link
-                  href={`/clients/${project.clientId}`}
-                  className={detailSummaryFieldLink}
-                >
-                  Voir la fiche client
-                </Link>
-              ) : null
-            }
-          />
-          <FieldRow
-            label="Adresse"
-            value={project.address}
-            trailing={mapsIcon}
-          />
+                  Voir sur Google Maps
+                </a>
+              }
+            />
+          ) : null}
           <FieldRow label="Ville" value={project.city} />
           <FieldRow label="Pays" value={project.country} />
+          {project.province ? <FieldRow label="Province" value={project.province} /> : null}
+          {project.prefecture ? (
+            <FieldRow label="Préfecture" value={project.prefecture} />
+          ) : null}
+          {project.commune ? <FieldRow label="Commune" value={project.commune} /> : null}
+          {project.arrondissement ? (
+            <FieldRow label="Arrondissement" value={project.arrondissement} />
+          ) : null}
+          {coordXY ? <FieldRow label="Coord. topo X/Y" value={coordXY} /> : null}
+          {coordLatLng ? <FieldRow label="Lat/Long" value={coordLatLng} /> : null}
           <FieldRow
             label="URL"
             value={
@@ -157,30 +220,27 @@ export default function ProjectDetailProjectSummary({ project }: ProjectDetailPr
               ) : null
             }
           />
-          <FieldRow label="Nature" value={project.projectNature} />
-          <FieldRow
-            label="Catégorie"
-            value={
-              project.projectCategory
-                ? PROJECT_CATEGORY_SHORT_LABELS[project.projectCategory]
-                : "Privé"
-            }
-          />
-          <FieldRow
-            label="Taille"
-            value={
-              project.projectScale
-                ? PROJECT_SCALE_LABELS[project.projectScale]
-                : null
-            }
-          />
+          {project.driveUrl ? (
+            <FieldRow
+              label="Drive"
+              value={
+                <a
+                  href={project.driveUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={detailSummaryFieldLink}
+                >
+                  Ouvrir Drive
+                </a>
+              }
+            />
+          ) : null}
         </div>
       </div>
 
       <div className={detailSummaryCard}>
         <h3 className={detailSummaryCardTitle}>Données techniques</h3>
         <div className={detailSummaryFieldGrid}>
-          <FieldRow label="Type" value={project.type} />
           <FieldRow
             label="Surface"
             value={project.surface != null ? `${project.surface} m²` : null}
@@ -193,16 +253,18 @@ export default function ProjectDetailProjectSummary({ project }: ProjectDetailPr
           />
           <FieldRow
             label="Budget estimé"
+            value={project.budget != null ? formatCurrency(project.budget) : null}
+          />
+          <FieldRow
+            label="Échéance"
             value={
-              project.budget != null ? formatCurrency(project.budget) : null
+              project.deadline ? formatDate(project.deadline, "d MMM yyyy") : null
             }
           />
           <FieldRow
             label="Prise du projet"
             value={
-              project.intakeDate
-                ? formatDate(project.intakeDate, "d MMM yyyy")
-                : null
+              project.intakeDate ? formatDate(project.intakeDate, "d MMM yyyy") : null
             }
           />
           <FieldRow

@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import EmptyState from "@/components/ui/EmptyState";
 import { useDialog } from "@/components/providers/DialogProvider";
-import { getInvoiceFinanceHref } from "@/lib/payment-utils";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
 import ProjectTabSectionHeader from "@/components/projects/detail/ProjectTabSectionHeader";
 import CreateProjectDrawer from "@/components/projects/CreateProjectDrawer";
@@ -95,7 +95,7 @@ function ProjectRow({ project }: { project: Project }) {
           {project.name}
         </Link>
         <p className={detailChecklistDate}>
-          {[project.city, PHASE_LABELS[project.phase], `${project.progress}%`]
+          {[project.city, PHASE_LABELS[project.phase], `${computeProjectOverallProgress(project)}%`]
             .filter(Boolean)
             .join(" · ")}
         </p>

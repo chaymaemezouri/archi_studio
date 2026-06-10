@@ -4,6 +4,10 @@ import Badge from "@/components/ui/Badge";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import type { Devis, Invoice, Payment } from "@/types";
 import {
+  getFinanceClientLabel,
+  getFinanceProjectLabel,
+} from "@/lib/finance-entity-utils";
+import {
   DEVIS_STATUS_COLORS,
   DEVIS_STATUS_LABELS,
   INVOICE_STATUS_COLORS,
@@ -49,8 +53,8 @@ export function DevisMobileCard({
         <div className="min-w-0">
           <p className="font-medium text-glass">{devis.number}</p>
           <p className="mt-0.5 truncate text-[11px] text-glass-muted">
-            {devis.client?.name ?? "—"}
-            {devis.project?.name ? ` · ${devis.project.name}` : ""}
+            {getFinanceClientLabel(devis)}
+            {getFinanceProjectLabel(devis) !== "—" ? ` · ${getFinanceProjectLabel(devis)}` : ""}
           </p>
         </div>
         <Badge className={DEVIS_STATUS_COLORS[devis.status]}>
@@ -90,8 +94,8 @@ export function InvoiceMobileCard({
         <div className="min-w-0">
           <p className="font-medium text-glass">{invoice.number}</p>
           <p className="mt-0.5 truncate text-[11px] text-glass-muted">
-            {invoice.client?.name ?? "—"}
-            {invoice.project?.name ? ` · ${invoice.project.name}` : ""}
+            {getFinanceClientLabel(invoice)}
+            {getFinanceProjectLabel(invoice) !== "—" ? ` · ${getFinanceProjectLabel(invoice)}` : ""}
           </p>
         </div>
         <Badge className={INVOICE_STATUS_COLORS[invoice.status]}>

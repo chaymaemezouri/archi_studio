@@ -20,6 +20,8 @@ export interface NotificationMeta {
 
 const META: Record<string, NotificationMeta> = {
   TASK_OVERDUE: { icon: CheckSquare, label: "Tâche en retard", tone: "urgent" },
+  TASK_URGENT: { icon: CheckSquare, label: "Tâche urgente", tone: "urgent" },
+  TASK_HIGH: { icon: CheckSquare, label: "Tâche prioritaire", tone: "soon" },
   TASK_TODAY: { icon: CheckSquare, label: "Tâche du jour", tone: "today" },
   TASK_TOMORROW: { icon: CheckSquare, label: "Tâche demain", tone: "soon" },
   MEETING_TODAY: { icon: Users, label: "Réunion", tone: "today" },

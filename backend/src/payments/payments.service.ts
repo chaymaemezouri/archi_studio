@@ -35,7 +35,16 @@ export class PaymentsService {
 
     if (filters?.invoiceId) where.invoiceId = filters.invoiceId;
     if (filters?.clientId) where.clientId = filters.clientId;
-    if (filters?.projectId) where.projectId = filters.projectId;
+    if (filters?.projectId) {
+      where.AND = [
+        {
+          OR: [
+            { projectId: filters.projectId },
+            { invoice: { projectId: filters.projectId } },
+          ],
+        },
+      ];
+    }
     if (filters?.method) where.method = filters.method;
     if (filters?.from || filters?.to) {
       where.date = {

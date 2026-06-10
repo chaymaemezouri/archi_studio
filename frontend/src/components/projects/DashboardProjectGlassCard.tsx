@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import { PHASE_LABELS } from "@/types";
 import type { Project } from "@/types";
 import { cn } from "@/lib/utils";
@@ -20,7 +21,7 @@ export default function DashboardProjectGlassCard({
   className,
 }: DashboardProjectGlassCardProps) {
   const href = `/projects/${project.id}`;
-  const progress = project.progress ?? 0;
+  const progress = computeProjectOverallProgress(project);
   const clientLabel = project.client?.company || project.client?.name;
   const metaLine = [project.city, PHASE_LABELS[project.phase]].filter(Boolean).join(" · ");
 

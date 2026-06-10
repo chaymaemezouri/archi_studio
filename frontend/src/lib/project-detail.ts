@@ -30,7 +30,7 @@ export function getPhaseIndex(phase: ProjectPhase, phases: ProjectPhase[] = ALL_
 export function getPhaseProgressPercent(
   phase: ProjectPhase,
   currentPhase: ProjectPhase,
-  globalProgress: number,
+  _globalProgress: number,
   phaseProgress: { phase: ProjectPhase; progress: number }[] = [],
   phases: ProjectPhase[] = ALL_PHASES
 ): number {
@@ -38,12 +38,9 @@ export function getPhaseProgressPercent(
   if (entry != null) return entry;
   const current = getPhaseIndex(currentPhase, phases);
   const idx = getPhaseIndex(phase, phases);
-  if (current < 0 || idx < 0) {
-    if (phase === currentPhase) return globalProgress;
-    return 0;
-  }
+  if (current < 0 || idx < 0) return 0;
   if (idx < current) return 100;
-  if (idx === current) return globalProgress;
+  if (idx === current) return 0;
   return 0;
 }
 

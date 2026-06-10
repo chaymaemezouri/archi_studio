@@ -15,6 +15,14 @@ export class UpdateChantierLogDto {
 
   @IsOptional()
   @IsString()
+  siteVisit?: string;
+
+  @IsOptional()
+  @IsString()
+  chantierPhase?: string;
+
+  @IsOptional()
+  @IsString()
   description?: string;
 
   @IsOptional()
@@ -35,4 +43,12 @@ export class UpdateChantierLogDto {
   @IsArray()
   @IsString({ each: true })
   photos?: string[];
+
+  @IsOptional()
+  @IsString()
+  reportUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  reportName?: string;
 }

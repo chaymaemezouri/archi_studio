@@ -32,6 +32,8 @@ export function invalidateProjectQueries(
   queryClient.invalidateQueries({ queryKey: ["plans-renders"] });
   queryClient.invalidateQueries({ queryKey: ["documents"] });
   queryClient.invalidateQueries({ queryKey: ["documents", "project", projectId] });
+  queryClient.invalidateQueries({ queryKey: ["notifications"] });
+  queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
 }
 
 export function useProjectDetailMutations(projectId: string) {
@@ -170,10 +172,15 @@ export function useProjectDetailMutations(projectId: string) {
   const createChantierLog = useMutation({
     mutationFn: async (payload: {
       date: string;
+      siteVisit?: string;
+      chantierPhase?: string;
       description: string;
       progress?: number;
       issues?: string;
       nextSteps?: string;
+      photos?: string[];
+      reportUrl?: string;
+      reportName?: string;
     }) => {
       const { data } = await api.post<ChantierLog>("/chantier", { ...payload, projectId });
       return data;

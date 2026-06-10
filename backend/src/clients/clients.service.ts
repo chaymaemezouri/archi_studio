@@ -14,6 +14,7 @@ import {
 } from './dto/client-note.dto';
 import { CreateClientDto } from './dto/create-client.dto';
 import { UpdateClientDto } from './dto/update-client.dto';
+import { buildClientWriteData } from './client-write.util';
 
 const listInclude = {
   _count: { select: { projects: true, devis: true, invoices: true } },
@@ -95,7 +96,9 @@ export class ClientsService {
 
   async create(dto: CreateClientDto, studioId: string, userId?: string) {
     const client = await this.prisma.client.create({
-      data: { ...dto, studioId },
+      data: { ...buildClientWriteData(dto), studioId } as Parameters<
+        typeof this.prisma.client.create
+      >[0]['data'],
       include: listInclude,
     });
     await this.activityLogs.log({
@@ -118,7 +121,9 @@ export class ClientsService {
     await this.findOne(id, studioId);
     const client = await this.prisma.client.update({
       where: { id },
-      data: dto,
+      data: buildClientWriteData(dto) as Parameters<
+        typeof this.prisma.client.update
+      >[0]['data'],
       include: listInclude,
     });
     await this.activityLogs.log({

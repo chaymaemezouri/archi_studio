@@ -117,6 +117,10 @@ const MAIN_FILTERS: { id: ProjectsMainFilter; label: string }[] = [
 
   { id: "all", label: "Tous" },
 
+  { id: "shared", label: "Communs" },
+
+  { id: "personal", label: "Personnels" },
+
   { id: "favorites", label: "Favoris" },
 
   { id: "urgent", label: "Urgents" },

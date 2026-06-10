@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { addDays } from "date-fns";
-import { Calendar, FileText, Link2, MapPin, User, X } from "lucide-react";
+import { Calendar, ExternalLink, FileText, Link2, MapPin, Plus, User, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import QuickClientModal from "@/components/clients/QuickClientModal";
+import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import ProjectFormImages, {
   revokePendingImages,
   type PendingProjectImage,
@@ -21,6 +23,11 @@ import {
   PROJECT_SCALE_LABELS,
 } from "@/lib/project-phases";
 import { registerProjectFile, syncProjectImages, uploadProjectFile } from "@/lib/project-upload";
+import {
+  buildGoogleMapsUrl,
+  parseCoordinate,
+  resolveProjectLocation,
+} from "@/lib/project-location";
 import api from "@/lib/api";
 import {
   PROJECT_TYPE_OPTIONS,
@@ -28,7 +35,9 @@ import {
   type ProjectCategory,
   type ProjectPhase,
   type ProjectScale,
+  type ProjectVisibility,
 } from "@/types";
+import { PROJECT_VISIBILITY_LABELS } from "@/lib/project-visibility";
 import {
   glassBtnPrimary,
   glassBtnSecondary,
@@ -69,9 +78,32 @@ function validateProjectForm(form: typeof initialForm): string | null {
       return "URL du projet invalide.";
     }
   }
-  if (form.budget.trim()) {
-    const b = parsePositiveNumber(form.budget);
-    if (b === undefined) return "Le budget doit être un nombre positif.";
+  for (const [value, label] of [
+    [form.mapsUrl, "Le lien Maps"],
+    [form.driveUrl, "Le lien Drive"],
+  ] as const) {
+    if (value.trim()) {
+      try {
+        const u = new URL(value.trim());
+        if (!["http:", "https:"].includes(u.protocol)) {
+          return `${label} doit commencer par http:// ou https://`;
+        }
+      } catch {
+        return `${label} est invalide.`;
+      }
+    }
+  }
+  if (form.totalProjectAmount.trim()) {
+    const v = parsePositiveNumber(form.totalProjectAmount);
+    if (v === undefined) return "Le montant global doit être un nombre positif.";
+  }
+  if (form.contractArchitectFees.trim()) {
+    const v = parsePositiveNumber(form.contractArchitectFees);
+    if (v === undefined) return "Les honoraires contrat doivent être un nombre positif.";
+  }
+  if (form.actualFeesToCollect.trim()) {
+    const v = parsePositiveNumber(form.actualFeesToCollect);
+    if (v === undefined) return "Les honoraires réels doivent être un nombre positif.";
   }
   if (form.surface.trim()) {
     const s = parsePositiveNumber(form.surface);
@@ -97,6 +129,16 @@ const initialForm = {
   address: "",
   city: "",
   country: "Maroc",
+  province: "",
+  prefecture: "",
+  commune: "",
+  arrondissement: "",
+  coordinateX: "",
+  coordinateY: "",
+  latitude: "",
+  longitude: "",
+  mapsUrl: "",
+  driveUrl: "",
   url: "",
   type: "",
   projectNature: "",
@@ -106,7 +148,9 @@ const initialForm = {
   intakeDate: "",
   deadline: "",
   clientId: "",
-  budget: "",
+  totalProjectAmount: "",
+  contractArchitectFees: "",
+  actualFeesToCollect: "",
   surface: "",
   titleSurface: "",
   description: "",
@@ -162,6 +206,16 @@ function projectToForm(project: Project) {
     address: project.address ?? "",
     city: project.city ?? "",
     country: project.country ?? "Maroc",
+    province: project.province ?? "",
+    prefecture: project.prefecture ?? "",
+    commune: project.commune ?? "",
+    arrondissement: project.arrondissement ?? "",
+    coordinateX: project.coordinateX != null ? String(project.coordinateX) : "",
+    coordinateY: project.coordinateY != null ? String(project.coordinateY) : "",
+    latitude: project.latitude != null ? String(project.latitude) : "",
+    longitude: project.longitude != null ? String(project.longitude) : "",
+    mapsUrl: project.mapsUrl ?? "",
+    driveUrl: project.driveUrl ?? "",
     url: project.url ?? "",
     type: project.type ?? "",
     projectNature: project.projectNature ?? "",
@@ -175,7 +229,20 @@ function projectToForm(project: Project) {
       ? toLocalDateInput(new Date(project.deadline))
       : "",
     clientId: project.clientId ?? "",
-    budget: project.budget != null ? String(project.budget) : "",
+    totalProjectAmount:
+      project.totalProjectAmount != null
+        ? String(project.totalProjectAmount)
+        : project.budget != null
+          ? String(project.budget)
+          : "",
+    contractArchitectFees:
+      project.contractArchitectFees != null
+        ? String(project.contractArchitectFees)
+        : "",
+    actualFeesToCollect:
+      project.actualFeesToCollect != null
+        ? String(project.actualFeesToCollect)
+        : "",
     surface: project.surface != null ? String(project.surface) : "",
     titleSurface: project.titleSurface != null ? String(project.titleSurface) : "",
     description: project.description ?? "",
@@ -201,6 +268,16 @@ export default function CreateProjectDrawer({
   const [clearExistingCover, setClearExistingCover] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [priority, setPriority] = useState<ProjectPriority>("NORMAL");
+  const [visibility, setVisibility] = useState<ProjectVisibility>("STUDIO");
+  const [collaboratorEmails, setCollaboratorEmails] = useState("");
+  const [useTopoCoordinates, setUseTopoCoordinates] = useState(false);
+  const [clientModalOpen, setClientModalOpen] = useState(false);
+  const [geocoding, setGeocoding] = useState(false);
+  const [autoLocated, setAutoLocated] = useState(false);
+  const [autoLocateFailed, setAutoLocateFailed] = useState(false);
+  const [matchedLocationLabel, setMatchedLocationLabel] = useState<string | null>(null);
+  const coordsManualEditRef = useRef(false);
+  const skipAutoResolveRef = useRef(true);
   const [formError, setFormError] = useState<string | null>(null);
   const isPending = createProject.isPending || updateProject.isPending || uploadingImages;
 
@@ -208,6 +285,29 @@ export default function CreateProjectDrawer({
     () => getPhaseOptionsForCategory(form.projectCategory, form.phase),
     [form.projectCategory, form.phase]
   );
+
+  const locationResolveKey = useMemo(
+    () =>
+      [
+        form.province,
+        form.prefecture,
+        form.commune,
+        form.arrondissement,
+        form.address,
+        form.city,
+        form.country,
+      ].join("|"),
+    [
+      form.province,
+      form.prefecture,
+      form.commune,
+      form.arrondissement,
+      form.address,
+      form.city,
+      form.country,
+    ]
+  );
+  const debouncedLocationKey = useDebouncedValue(locationResolveKey, 900);
 
   const setCategory = (value: ProjectCategory) => {
     setForm((f) => {
@@ -221,8 +321,15 @@ export default function CreateProjectDrawer({
 
   useEffect(() => {
     if (!isOpen) return;
-    if (editProject) setForm(projectToForm(editProject));
-    else setForm({ ...initialForm, clientId: defaultClientId ?? "" });
+    if (editProject) {
+      setForm(projectToForm(editProject));
+      setVisibility(editProject.visibility ?? "STUDIO");
+      setUseTopoCoordinates(Boolean(editProject.useTopoCoordinates));
+    } else {
+      setForm({ ...initialForm, clientId: defaultClientId ?? "" });
+      setVisibility("STUDIO");
+      setUseTopoCoordinates(false);
+    }
     setPendingImages((prev) => {
       revokePendingImages(prev);
       return [];
@@ -231,7 +338,73 @@ export default function CreateProjectDrawer({
     setClearExistingCover(false);
     setPriority("NORMAL");
     setFormError(null);
+    setAutoLocated(false);
+    setAutoLocateFailed(false);
+    setMatchedLocationLabel(null);
+    coordsManualEditRef.current = false;
+    skipAutoResolveRef.current = true;
   }, [isOpen, editProject?.id, defaultClientId]);
+
+  useEffect(() => {
+    if (!isOpen || coordsManualEditRef.current) return;
+    if (skipAutoResolveRef.current) {
+      skipAutoResolveRef.current = false;
+      return;
+    }
+
+    const [province, prefecture, commune, arrondissement, address, city, country] =
+      debouncedLocationKey.split("|");
+
+    const hasMinimum =
+      (address?.trim().length ?? 0) >= 3 && (city?.trim().length ?? 0) >= 2;
+    if (!hasMinimum) {
+      setAutoLocated(false);
+      setAutoLocateFailed(false);
+      return;
+    }
+
+    let cancelled = false;
+    setGeocoding(true);
+    setAutoLocateFailed(false);
+
+    void resolveProjectLocation({
+      province,
+      prefecture,
+      commune,
+      arrondissement,
+      address,
+      city,
+      country,
+    })
+      .then((result) => {
+        if (cancelled || coordsManualEditRef.current) return;
+        if (!result) {
+          setAutoLocated(false);
+          setAutoLocateFailed(true);
+          setMatchedLocationLabel(null);
+          return;
+        }
+        setForm((f) => ({
+          ...f,
+          coordinateX: String(result.coordinateX),
+          coordinateY: String(result.coordinateY),
+          latitude: String(result.latitude),
+          longitude: String(result.longitude),
+          mapsUrl: result.mapsUrl,
+        }));
+        setUseTopoCoordinates(true);
+        setAutoLocated(true);
+        setAutoLocateFailed(false);
+        setMatchedLocationLabel(result.matchedLabel ?? result.query);
+      })
+      .finally(() => {
+        if (!cancelled) setGeocoding(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedLocationKey, isOpen]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -258,6 +431,77 @@ export default function CreateProjectDrawer({
     });
     setCoverIndex(0);
     setClearExistingCover(false);
+    setVisibility("STUDIO");
+    setCollaboratorEmails("");
+    setUseTopoCoordinates(false);
+  };
+
+  const locationInput = () => ({
+    address: form.address,
+    arrondissement: form.arrondissement,
+    commune: form.commune,
+    prefecture: form.prefecture,
+    province: form.province,
+    city: form.city,
+    country: form.country,
+    coordinateX: parseCoordinate(form.coordinateX),
+    coordinateY: parseCoordinate(form.coordinateY),
+    latitude: parseCoordinate(form.latitude),
+    longitude: parseCoordinate(form.longitude),
+    useTopoCoordinates,
+    mapsUrl: form.mapsUrl,
+  });
+
+  const openGoogleMaps = () => {
+    const url = buildGoogleMapsUrl(locationInput());
+    if (!url) {
+      toast.error("Renseignez l'adresse ou les coordonnées GPS.");
+      return;
+    }
+    setForm((f) => ({ ...f, mapsUrl: url }));
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleAutoLocate = async () => {
+    if (form.address.trim().length < 3 || form.city.trim().length < 2) {
+      toast.error("Renseignez l'adresse et la ville (ex. Cap Spartel, Tanger).");
+      return;
+    }
+    setGeocoding(true);
+    try {
+      const result = await resolveProjectLocation(locationInput());
+      if (!result) {
+        toast.error(
+          "Localisation introuvable. Vérifiez l'adresse et la ville (ex. Route de Cap Spartel, Tanger)."
+        );
+        setAutoLocateFailed(true);
+        return;
+      }
+      coordsManualEditRef.current = false;
+      setForm((f) => ({
+        ...f,
+        coordinateX: String(result.coordinateX),
+        coordinateY: String(result.coordinateY),
+        latitude: String(result.latitude),
+        longitude: String(result.longitude),
+        mapsUrl: result.mapsUrl,
+      }));
+      setUseTopoCoordinates(true);
+      setAutoLocated(true);
+      setAutoLocateFailed(false);
+      setMatchedLocationLabel(result.matchedLabel ?? result.query);
+      toast.success("Localisation mise à jour.");
+    } catch {
+      toast.error("Géolocalisation indisponible pour le moment.");
+    } finally {
+      setGeocoding(false);
+    }
+  };
+
+  const markCoordsManual = () => {
+    coordsManualEditRef.current = true;
+    setAutoLocated(false);
+    setAutoLocateFailed(false);
   };
 
   const invalidateProjectQueries = (projectId?: string) => {
@@ -313,6 +557,23 @@ export default function CreateProjectDrawer({
       address: form.address.trim() || undefined,
       city: form.city.trim() || undefined,
       country: form.country.trim() || undefined,
+      province: form.province.trim() || undefined,
+      prefecture: form.prefecture.trim() || undefined,
+      commune: form.commune.trim() || undefined,
+      arrondissement: form.arrondissement.trim() || undefined,
+      coordinateX: form.coordinateX.trim()
+        ? parseCoordinate(form.coordinateX)
+        : undefined,
+      coordinateY: form.coordinateY.trim()
+        ? parseCoordinate(form.coordinateY)
+        : undefined,
+      latitude: form.latitude.trim() ? parseCoordinate(form.latitude) : undefined,
+      longitude: form.longitude.trim()
+        ? parseCoordinate(form.longitude)
+        : undefined,
+      useTopoCoordinates,
+      mapsUrl: form.mapsUrl.trim() || undefined,
+      driveUrl: form.driveUrl.trim() || undefined,
       url: form.url.trim() || undefined,
       type: form.type,
       projectNature: form.projectNature.trim() || undefined,
@@ -322,12 +583,24 @@ export default function CreateProjectDrawer({
       intakeDate: form.intakeDate || undefined,
       deadline,
       clientId: form.clientId || undefined,
-      budget: form.budget.trim() ? parsePositiveNumber(form.budget) : undefined,
+      totalProjectAmount: form.totalProjectAmount.trim()
+        ? parsePositiveNumber(form.totalProjectAmount)
+        : undefined,
+      contractArchitectFees: form.contractArchitectFees.trim()
+        ? parsePositiveNumber(form.contractArchitectFees)
+        : undefined,
+      actualFeesToCollect: form.actualFeesToCollect.trim()
+        ? parsePositiveNumber(form.actualFeesToCollect)
+        : undefined,
       surface: form.surface.trim() ? parsePositiveNumber(form.surface) : undefined,
       titleSurface: form.titleSurface.trim()
         ? parsePositiveNumber(form.titleSurface)
         : undefined,
       description: form.description.trim() || undefined,
+      visibility,
+      ...(visibility === "STUDIO" && collaboratorEmails.trim()
+        ? { collaboratorEmails: collaboratorEmails.split(/[,;]/).map((e) => e.trim()) }
+        : {}),
     };
 
     try {
@@ -442,6 +715,93 @@ export default function CreateProjectDrawer({
                   />
                 </div>
 
+                <div className="rounded-lg border border-app bg-studio-muted/15 p-2.5">
+                  <p className="mb-2 text-[10px] font-semibold uppercase tracking-wide text-glass-muted">
+                    Montants & honoraires
+                  </p>
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
+                    <div>
+                      <FieldLabel>Montant global du projet (MAD)</FieldLabel>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className={fieldClass}
+                        value={form.totalProjectAmount}
+                        onChange={(e) => set("totalProjectAmount", e.target.value)}
+                        placeholder="5 000 000"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Honoraires déclarés (contrat architecte)</FieldLabel>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className={fieldClass}
+                        value={form.contractArchitectFees}
+                        onChange={(e) => set("contractArchitectFees", e.target.value)}
+                        placeholder="450 000"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Honoraires réels à encaisser</FieldLabel>
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        className={fieldClass}
+                        value={form.actualFeesToCollect}
+                        onChange={(e) => set("actualFeesToCollect", e.target.value)}
+                        placeholder="380 000"
+                      />
+                    </div>
+                  </div>
+                  <p className="mt-2 text-[10px] text-glass-muted">
+                    Le reste à encaisser est calculé automatiquement (honoraires réels − paiements).
+                  </p>
+                </div>
+
+                <div>
+                  <FieldLabel>Visibilité</FieldLabel>
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                    {(["STUDIO", "PERSONAL"] as ProjectVisibility[]).map((value) => (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => setVisibility(value)}
+                        className={cn(
+                          "rounded-lg border px-3 py-2.5 text-left transition",
+                          visibility === value
+                            ? "border-studio-border/40 bg-[color:var(--glass-bg-hover)] text-glass"
+                            : "border-app text-glass-muted hover:border-studio-border/25 hover:text-glass-secondary"
+                        )}
+                      >
+                        <span className="text-[12px] font-medium">
+                          {PROJECT_VISIBILITY_LABELS[value]}
+                        </span>
+                        <span className="mt-0.5 block text-[10px] text-glass-muted">
+                          {value === "STUDIO"
+                            ? "Visible par tout votre cabinet. Invitez un autre cabinet ci-dessous si besoin."
+                            : "Projet privé — visible uniquement par vous."}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {visibility === "STUDIO" && !isEdit && (
+                  <div>
+                    <FieldLabel>Collaborateurs externes (optionnel)</FieldLabel>
+                    <input
+                      className={fieldClass}
+                      value={collaboratorEmails}
+                      onChange={(e) => setCollaboratorEmails(e.target.value)}
+                      placeholder="admin@maouni.architecture"
+                    />
+                    <p className="mt-1 text-[10px] text-glass-muted">
+                      Email d&apos;un compte d&apos;un autre cabinet pour collaborer sur ce projet.
+                    </p>
+                  </div>
+                )}
+
                 <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
                   <div>
                     <FieldLabel required>Type de projet</FieldLabel>
@@ -535,22 +895,35 @@ export default function CreateProjectDrawer({
                       ))}
                     </select>
                   </div>
-                  <div>
+                  <div className="sm:col-span-2">
                     <FieldLabel icon={User}>Client</FieldLabel>
-                    <select
-                      className={cn(selectClass, !form.clientId && "text-glass-muted")}
-                      value={form.clientId}
-                      onChange={(e) => set("clientId", e.target.value)}
-                    >
-                      <option value="" className="bg-[#101014]">
-                        Aucun
-                      </option>
-                      {clients.map((c) => (
-                        <option key={c.id} value={c.id} className="bg-[#101014]">
-                          {c.company ? `${c.name} — ${c.company}` : c.name}
+                    <div className="flex gap-2">
+                      <select
+                        className={cn(selectClass, "min-w-0 flex-1", !form.clientId && "text-glass-muted")}
+                        value={form.clientId}
+                        onChange={(e) => set("clientId", e.target.value)}
+                      >
+                        <option value="" className="bg-[#101014]">
+                          Aucun
                         </option>
-                      ))}
-                    </select>
+                        {clients.map((c) => (
+                          <option key={c.id} value={c.id} className="bg-[#101014]">
+                            {c.company ? `${c.name} — ${c.company}` : c.name}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setClientModalOpen(true)}
+                        className={cn(
+                          glassBtnSecondary,
+                          "inline-flex shrink-0 items-center gap-1 px-3 py-2.5 text-[12px]"
+                        )}
+                      >
+                        <Plus className="h-3.5 w-3.5" />
+                        Client
+                      </button>
+                    </div>
                   </div>
                   {!isEdit && (
                     <div>
@@ -599,38 +972,214 @@ export default function CreateProjectDrawer({
                 )}
               </FormSection>
 
-              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
-                <FormSection title="Localisation">
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                    <div className="sm:col-span-2">
-                      <FieldLabel icon={MapPin}>Site / Adresse</FieldLabel>
+              <FormSection title="Localisation" className="lg:col-span-2">
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-4">
+                    <div>
+                      <FieldLabel>Province</FieldLabel>
                       <input
                         className={fieldClass}
-                        value={form.address}
-                        onChange={(e) => set("address", e.target.value)}
-                        placeholder="Ex: Avenue Mohammed V"
+                        value={form.province}
+                        onChange={(e) => set("province", e.target.value)}
+                        placeholder="Région"
                       />
                     </div>
                     <div>
-                      <FieldLabel>Ville</FieldLabel>
+                      <FieldLabel>Préfecture</FieldLabel>
                       <input
                         className={fieldClass}
-                        value={form.city}
-                        onChange={(e) => set("city", e.target.value)}
-                        placeholder="Ex: Tanger"
+                        value={form.prefecture}
+                        onChange={(e) => set("prefecture", e.target.value)}
+                        placeholder="Préfecture"
                       />
                     </div>
                     <div>
-                      <FieldLabel>Pays</FieldLabel>
+                      <FieldLabel>Commune</FieldLabel>
                       <input
                         className={fieldClass}
-                        value={form.country}
-                        onChange={(e) => set("country", e.target.value)}
-                        placeholder="Maroc"
+                        value={form.commune}
+                        onChange={(e) => set("commune", e.target.value)}
+                        placeholder="Commune"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Arrondissement</FieldLabel>
+                      <input
+                        className={fieldClass}
+                        value={form.arrondissement}
+                        onChange={(e) => set("arrondissement", e.target.value)}
+                        placeholder="Arrondissement"
+                      />
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                  <div className="sm:col-span-2">
+                    <FieldLabel icon={MapPin} required>Adresse</FieldLabel>
+                    <input
+                      className={fieldClass}
+                      value={form.address}
+                      onChange={(e) => set("address", e.target.value)}
+                      placeholder="Cap Spartel, Tanger…"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel required>Ville</FieldLabel>
+                    <input
+                      className={fieldClass}
+                      value={form.city}
+                      onChange={(e) => set("city", e.target.value)}
+                      placeholder="Tanger"
+                    />
+                  </div>
+                  <div>
+                    <FieldLabel>Pays</FieldLabel>
+                    <input
+                      className={fieldClass}
+                      value={form.country}
+                      onChange={(e) => set("country", e.target.value)}
+                      placeholder="Maroc"
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-[#8ba4c7]/25 bg-[#8ba4c7]/[0.06] p-3">
+                  {(geocoding || autoLocated || autoLocateFailed) && (
+                    <p
+                      className={cn(
+                        "mb-2 text-[10px]",
+                        autoLocateFailed ? "text-amber-300/90" : "text-[#8ba4c7]"
+                      )}
+                    >
+                      {geocoding
+                        ? "Calcul…"
+                        : autoLocated
+                          ? "OK"
+                          : "Adresse introuvable"}
+                    </p>
+                  )}
+                  <label className="flex cursor-pointer items-center gap-2 text-[11px] text-glass-muted">
+                    <input
+                      type="checkbox"
+                      checked={useTopoCoordinates}
+                      onChange={(e) => setUseTopoCoordinates(e.target.checked)}
+                      className="rounded border-glass"
+                    />
+                    X/Y sur la carte
+                  </label>
+                  <div className="mt-2 grid grid-cols-2 gap-2.5 lg:grid-cols-4">
+                    <div>
+                      <FieldLabel>X</FieldLabel>
+                      <input
+                        className={fieldClass}
+                        value={form.coordinateX}
+                        onChange={(e) => {
+                          markCoordsManual();
+                          set("coordinateX", e.target.value);
+                        }}
+                        placeholder="452304"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Y</FieldLabel>
+                      <input
+                        className={fieldClass}
+                        value={form.coordinateY}
+                        onChange={(e) => {
+                          markCoordsManual();
+                          set("coordinateY", e.target.value);
+                        }}
+                        placeholder="576787"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Lat.</FieldLabel>
+                      <input
+                        className={fieldClass}
+                        value={form.latitude}
+                        onChange={(e) => {
+                          markCoordsManual();
+                          set("latitude", e.target.value);
+                        }}
+                        placeholder="35.7595"
+                      />
+                    </div>
+                    <div>
+                      <FieldLabel>Long.</FieldLabel>
+                      <input
+                        className={fieldClass}
+                        value={form.longitude}
+                        onChange={(e) => {
+                          markCoordsManual();
+                          set("longitude", e.target.value);
+                        }}
+                        placeholder="-5.8340"
                       />
                     </div>
                   </div>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      disabled={geocoding}
+                      onClick={() => void handleAutoLocate()}
+                      className={cn(
+                        glassBtnSecondary,
+                        "border-[#8ba4c7]/30 px-3 py-2 text-[11px] text-[#8ba4c7]"
+                      )}
+                    >
+                      {geocoding ? "…" : "Localiser"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={openGoogleMaps}
+                      className={cn(
+                        glassBtnSecondary,
+                        "inline-flex items-center gap-1 px-3 py-2 text-[11px]"
+                      )}
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Google Maps
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                   <div>
+                    <FieldLabel icon={Link2}>Lien Google Maps</FieldLabel>
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        className={cn(fieldClass, "min-w-0 flex-1")}
+                        value={form.mapsUrl}
+                        onChange={(e) => set("mapsUrl", e.target.value)}
+                        placeholder="Généré après localisation…"
+                      />
+                      {(form.mapsUrl.trim() || buildGoogleMapsUrl(locationInput())) && (
+                        <a
+                          href={form.mapsUrl.trim() || buildGoogleMapsUrl(locationInput())}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={cn(
+                            glassBtnSecondary,
+                            "inline-flex shrink-0 items-center gap-1 px-3 py-2 text-[11px]"
+                          )}
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          Ouvrir
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <FieldLabel icon={Link2}>Lien Google Drive</FieldLabel>
+                    <input
+                      type="url"
+                      className={fieldClass}
+                      value={form.driveUrl}
+                      onChange={(e) => set("driveUrl", e.target.value)}
+                      placeholder="https://drive.google.com/…"
+                    />
+                  </div>
+                  <div className="sm:col-span-2">
                     <FieldLabel icon={Link2}>URL du projet</FieldLabel>
                     <input
                       type="url"
@@ -640,21 +1189,12 @@ export default function CreateProjectDrawer({
                       placeholder="https://…"
                     />
                   </div>
-                </FormSection>
+                </div>
+              </FormSection>
 
-                <FormSection title="Chiffres & description">
-                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
-                    <div>
-                      <FieldLabel>Budget (MAD)</FieldLabel>
-                      <input
-                        type="text"
-                        inputMode="numeric"
-                        className={fieldClass}
-                        value={form.budget}
-                        onChange={(e) => set("budget", e.target.value)}
-                        placeholder="5 000 000"
-                      />
-                    </div>
+              <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+                <FormSection title="Chiffres & description" className="lg:col-span-2">
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                     <div>
                       <FieldLabel>Surface (m²)</FieldLabel>
                       <input
@@ -743,6 +1283,15 @@ export default function CreateProjectDrawer({
           </footer>
         </form>
       </aside>
+
+      <QuickClientModal
+        isOpen={clientModalOpen}
+        onClose={() => setClientModalOpen(false)}
+        onCreated={(client) => {
+          setForm((f) => ({ ...f, clientId: client.id }));
+          toast.success(`Client « ${client.name} » sélectionné.`);
+        }}
+      />
     </div>
   );
 }

@@ -1,5 +1,6 @@
 import {
   Injectable,
+  BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
 import { InvoiceStatus, Prisma } from '@prisma/client';
@@ -7,6 +8,11 @@ import { ActivityLogsService } from '../activity-logs/activity-logs.service';
 import { computeInvoiceStatus } from '../common/utils/invoice-status.util';
 import { nextDocumentNumber } from '../common/utils/document-number.util';
 import { computeTotals, lineTotal } from '../common/utils/totals.util';
+import { emptyToUndefined } from '../common/utils/dto.util';
+import {
+  projectByIdWhere,
+  toProjectAccessContext,
+} from '../common/utils/project-access.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -36,7 +42,11 @@ export class InvoicesService {
   findAll(studioId: string) {
     return this.prisma.invoice.findMany({
       where: {
-        OR: [{ client: { studioId } }, { project: { studioId } }],
+        OR: [
+          { studioId },
+          { client: { studioId } },
+          { project: { studioId } },
+        ],
       },
       include: listInclude,
       orderBy: { createdAt: 'desc' },
@@ -59,13 +69,19 @@ export class InvoicesService {
   }
 
   private buildItems(items: InvoiceItemDto[]) {
-    return items.map((item, index) => ({
-      description: item.description,
-      quantity: item.quantity ?? 1,
-      unitPrice: item.unitPrice,
-      total: lineTotal(item),
-      order: item.order ?? index,
-    }));
+    const rows = items
+      .map((item, index) => ({
+        description: item.description?.trim() || 'Prestation',
+        quantity: item.quantity ?? 1,
+        unitPrice: item.unitPrice ?? 0,
+        total: lineTotal(item),
+        order: item.order ?? index,
+      }))
+      .filter((item) => item.description || item.unitPrice > 0);
+    if (rows.length === 0) {
+      throw new BadRequestException('Ajoutez au moins une ligne de prestation.');
+    }
+    return rows;
   }
 
   private async generateNumber(studioId: string): Promise<string> {
@@ -120,10 +136,47 @@ export class InvoicesService {
     });
   }
 
-  async create(dto: CreateInvoiceDto, studioId: string, userId?: string) {
+  async create(
+    dto: CreateInvoiceDto,
+    studioId: string,
+    userId?: string,
+    userRole?: string,
+  ) {
+    const clientId = emptyToUndefined(dto.clientId);
+    const clientName = emptyToUndefined(dto.clientName);
+    const projectId = emptyToUndefined(dto.projectId);
+    const projectName = emptyToUndefined(dto.projectName);
+
+    if (!clientId) {
+      throw new BadRequestException(
+        'Le client doit être sélectionné dans la liste des clients.',
+      );
+    }
+
+    if (!dto.object?.trim()) {
+      throw new BadRequestException('Objet de la facture requis.');
+    }
+
+    if (!dto.issueDate) {
+      throw new BadRequestException('Date de facture requise.');
+    }
+
+    if (projectId && userId) {
+      const project = await this.prisma.project.findFirst({
+        where: projectByIdWhere(
+          toProjectAccessContext({ studioId, id: userId, role: userRole }),
+          projectId,
+        ),
+        select: { id: true },
+      });
+      if (!project) {
+        throw new BadRequestException('Projet introuvable ou inaccessible.');
+      }
+    }
+
     const settings = await this.settingsService.get(studioId);
     const tva = dto.tva ?? settings.tvaDefault;
-    const itemRows = this.buildItems(dto.items);
+    const itemRows = this.buildItems(dto.items ?? []);
     const { totalHT, totalTTC } = computeTotals(itemRows, tva);
     const number = await this.generateNumber(studioId);
     const status = dto.status ?? InvoiceStatus.DRAFT;
@@ -132,9 +185,12 @@ export class InvoicesService {
       data: {
         number,
         status,
-        clientId: dto.clientId,
-        projectId: dto.projectId,
-        devisId: dto.devisId,
+        studioId,
+        clientId,
+        clientName: null,
+        projectId: projectId ?? null,
+        projectName: projectId ? null : projectName ?? null,
+        devisId: emptyToUndefined(dto.devisId),
         object: dto.object,
         phase: dto.phase,
         tva,
@@ -177,14 +233,22 @@ export class InvoicesService {
     };
 
     if (dto.clientId !== undefined) {
-      data.client = dto.clientId
-        ? { connect: { id: dto.clientId } }
-        : { disconnect: true };
+      if (!dto.clientId) {
+        throw new BadRequestException(
+          'Le client doit être sélectionné dans la liste des clients.',
+        );
+      }
+      data.client = { connect: { id: dto.clientId } };
+      data.clientName = null;
     }
     if (dto.projectId !== undefined) {
       data.project = dto.projectId
         ? { connect: { id: dto.projectId } }
         : { disconnect: true };
+      if (dto.projectId) data.projectName = null;
+    }
+    if (dto.projectName !== undefined && !dto.projectId) {
+      data.projectName = dto.projectName.trim() || null;
     }
 
     if (itemRows) {

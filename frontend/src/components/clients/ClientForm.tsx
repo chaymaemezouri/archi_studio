@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { Upload } from "lucide-react";
 import {
   financeFieldClass,
   financeSelectClass,
   FinanceFieldLabel,
   FinanceFormSection,
 } from "@/components/finances/finance-form-ui";
-import { glassBtnPrimary } from "@/lib/glass-styles";
+import type { ClientCinUploads } from "@/lib/client-cin";
+import { resolveMediaUrl } from "@/lib/assets";
+import { glassBtnPrimary, glassBtnSecondary } from "@/lib/glass-styles";
 import type { Client, ClientSource, ClientStatus, ClientType } from "@/types";
 import {
   CLIENT_SOURCE_LABELS,
@@ -19,6 +22,10 @@ import { cn } from "@/lib/utils";
 export type ClientFormValues = {
   type: ClientType;
   name: string;
+  firstName: string;
+  lastName: string;
+  cinNumber: string;
+  cinValidUntil: string;
   company: string;
   email: string;
   phone: string;
@@ -38,6 +45,10 @@ export type ClientFormValues = {
 export const emptyClientForm = (): ClientFormValues => ({
   type: "INDIVIDUAL",
   name: "",
+  firstName: "",
+  lastName: "",
+  cinNumber: "",
+  cinValidUntil: "",
   company: "",
   email: "",
   phone: "",
@@ -56,9 +67,16 @@ export const emptyClientForm = (): ClientFormValues => ({
 
 export function clientToFormValues(client?: Client | null): ClientFormValues {
   if (!client) return emptyClientForm();
+  const cinValidUntil = client.cinValidUntil
+    ? client.cinValidUntil.slice(0, 10)
+    : "";
   return {
     type: (client.type as ClientType) || "INDIVIDUAL",
     name: client.name ?? "",
+    firstName: client.firstName ?? "",
+    lastName: client.lastName ?? "",
+    cinNumber: client.cinNumber ?? "",
+    cinValidUntil,
     company: client.company ?? "",
     email: client.email ?? "",
     phone: client.phone ?? "",
@@ -77,7 +95,12 @@ export function clientToFormValues(client?: Client | null): ClientFormValues {
 }
 
 export function validateClientForm(values: ClientFormValues): string | null {
-  if (!values.name.trim()) return "Le nom est obligatoire.";
+  const composedName = [values.firstName.trim(), values.lastName.trim()]
+    .filter(Boolean)
+    .join(" ");
+  if (!values.name.trim() && !composedName) {
+    return "Le nom ou prénom/nom est obligatoire.";
+  }
   if (!values.phone.trim()) return "Le téléphone est obligatoire.";
   if (!values.type) return "Le type de client est obligatoire.";
   if (values.type === "COMPANY" && !values.company.trim()) {
@@ -91,9 +114,17 @@ export function validateClientForm(values: ClientFormValues): string | null {
 }
 
 export function formValuesToPayload(values: ClientFormValues): Partial<Client> {
+  const firstName = values.firstName.trim();
+  const lastName = values.lastName.trim();
+  const composedName = [firstName, lastName].filter(Boolean).join(" ");
+  const name = values.name.trim() || composedName;
   return {
     type: values.type,
-    name: values.name.trim(),
+    name,
+    firstName: firstName || undefined,
+    lastName: lastName || undefined,
+    cinNumber: values.cinNumber.trim() || undefined,
+    cinValidUntil: values.cinValidUntil.trim() || undefined,
     company: values.company.trim() || undefined,
     email: values.email.trim() || undefined,
     phone: values.phone.trim(),
@@ -113,10 +144,14 @@ export function formValuesToPayload(values: ClientFormValues): Partial<Client> {
 
 interface ClientFormProps {
   initial?: Client | null;
-  onSubmit: (payload: Partial<Client>) => void;
+  onSubmit: (payload: Partial<Client>, cinUploads?: ClientCinUploads) => void | Promise<void>;
   loading?: boolean;
   submitLabel?: string;
 }
+
+type CinFace = "front" | "back";
+
+const EMPTY_CIN_UPLOADS: ClientCinUploads = { front: null, back: null };
 
 export default function ClientForm({
   initial,
@@ -126,16 +161,42 @@ export default function ClientForm({
 }: ClientFormProps) {
   const [values, setValues] = useState<ClientFormValues>(() => clientToFormValues(initial));
   const [error, setError] = useState<string | null>(null);
+  const [cinUploads, setCinUploads] = useState<ClientCinUploads>(EMPTY_CIN_UPLOADS);
+  const [cinPreviews, setCinPreviews] = useState<{ front: string | null; back: string | null }>({
+    front: null,
+    back: null,
+  });
+  const frontInputRef = useRef<HTMLInputElement>(null);
+  const backInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setValues(clientToFormValues(initial));
+    setCinUploads(EMPTY_CIN_UPLOADS);
+    setCinPreviews({ front: null, back: null });
   }, [initial]);
 
   const set = <K extends keyof ClientFormValues>(key: K, val: ClientFormValues[K]) => {
-    setValues((prev) => ({ ...prev, [key]: val }));
+    setValues((prev) => {
+      const next = { ...prev, [key]: val };
+      if (key === "firstName" || key === "lastName") {
+        const composed = [next.firstName.trim(), next.lastName.trim()]
+          .filter(Boolean)
+          .join(" ");
+        if (composed) next.name = composed;
+      }
+      return next;
+    });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleCinFile = (face: CinFace, file: File | null) => {
+    setCinUploads((prev) => ({ ...prev, [face]: file }));
+    setCinPreviews((prev) => ({
+      ...prev,
+      [face]: file ? URL.createObjectURL(file) : null,
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const err = validateClientForm(values);
     if (err) {
@@ -143,8 +204,32 @@ export default function ClientForm({
       return;
     }
     setError(null);
-    onSubmit(formValuesToPayload(values));
+    const hasUploads = cinUploads.front || cinUploads.back;
+    await onSubmit(formValuesToPayload(values), hasUploads ? cinUploads : undefined);
   };
+
+  const cinFaces: {
+    face: CinFace;
+    label: string;
+    inputRef: React.RefObject<HTMLInputElement>;
+    existingUrl?: string | null;
+    existingName?: string | null;
+  }[] = [
+    {
+      face: "front",
+      label: "Recto",
+      inputRef: frontInputRef,
+      existingUrl: initial?.cinDocumentUrl,
+      existingName: initial?.cinDocumentName,
+    },
+    {
+      face: "back",
+      label: "Verso",
+      inputRef: backInputRef,
+      existingUrl: initial?.cinDocumentBackUrl,
+      existingName: initial?.cinDocumentBackName,
+    },
+  ];
 
   return (
     <form onSubmit={handleSubmit} className="space-y-3.5">
@@ -190,6 +275,100 @@ export default function ClientForm({
           </div>
         )}
       </FinanceFormSection>
+
+      {values.type === "INDIVIDUAL" && (
+        <FinanceFormSection title="Carte d'identité (CIN)">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <FinanceFieldLabel>Prénom</FinanceFieldLabel>
+              <input
+                className={financeFieldClass}
+                value={values.firstName}
+                onChange={(e) => set("firstName", e.target.value)}
+              />
+            </div>
+            <div>
+              <FinanceFieldLabel>Nom</FinanceFieldLabel>
+              <input
+                className={financeFieldClass}
+                value={values.lastName}
+                onChange={(e) => set("lastName", e.target.value)}
+              />
+            </div>
+            <div>
+              <FinanceFieldLabel>N° CIN</FinanceFieldLabel>
+              <input
+                className={financeFieldClass}
+                value={values.cinNumber}
+                onChange={(e) => set("cinNumber", e.target.value.toUpperCase())}
+              />
+            </div>
+            <div>
+              <FinanceFieldLabel>Validité CIN</FinanceFieldLabel>
+              <input
+                type="date"
+                className={financeFieldClass}
+                value={values.cinValidUntil}
+                onChange={(e) => set("cinValidUntil", e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-app bg-[color:var(--glass-bg)] p-3">
+            <FinanceFieldLabel>CIN recto / verso</FinanceFieldLabel>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {cinFaces.map(({ face, label, inputRef, existingUrl, existingName }) => {
+                const preview = cinPreviews[face];
+                const savedPreview = existingUrl ? resolveMediaUrl(existingUrl) : null;
+                const file = cinUploads[face];
+                return (
+                  <div
+                    key={face}
+                    className="rounded-lg border border-app/80 bg-[color:var(--glass-bg)] p-3"
+                  >
+                    <p className="text-[12px] font-medium text-glass-secondary">{label}</p>
+                    <input
+                      ref={inputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const picked = e.target.files?.[0] ?? null;
+                        handleCinFile(face, picked);
+                        e.target.value = "";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className={cn(
+                        glassBtnSecondary,
+                        "mt-2 inline-flex w-full items-center justify-center gap-1.5 px-3 py-2 text-[12px]"
+                      )}
+                      onClick={() => inputRef.current?.click()}
+                    >
+                      <Upload className="h-3.5 w-3.5" />
+                      {file || existingName ? "Changer l'image" : "Importer"}
+                    </button>
+                    {(file?.name || existingName) && (
+                      <p className="mt-2 truncate text-[11px] text-glass-muted">
+                        {file?.name ?? existingName}
+                      </p>
+                    )}
+                    {(preview || savedPreview) && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={preview ?? savedPreview ?? ""}
+                        alt={`CIN ${label.toLowerCase()}`}
+                        className="mt-2 max-h-28 w-full rounded-md border border-app object-contain"
+                      />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </FinanceFormSection>
+      )}
 
       <FinanceFormSection title="Contact">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -325,7 +504,13 @@ export default function ClientForm({
       <div className="flex justify-end border-t border-app pt-4">
         <button
           type="submit"
-          disabled={loading || !values.name.trim() || !values.phone.trim()}
+          disabled={
+            loading ||
+            (!values.name.trim() &&
+              !values.firstName.trim() &&
+              !values.lastName.trim()) ||
+            !values.phone.trim()
+          }
           className={cn(glassBtnPrimary, "w-full sm:w-auto")}
         >
           {loading ? "Enregistrement…" : submitLabel}

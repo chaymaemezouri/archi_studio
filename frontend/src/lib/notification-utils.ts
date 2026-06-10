@@ -5,6 +5,7 @@ export type NotifFilter = "all" | "unread" | "urgent";
 /** Types considérés urgents (retard, aujourd'hui critique, facture). */
 export const URGENT_NOTIF_TYPES = new Set([
   "TASK_OVERDUE",
+  "TASK_URGENT",
   "DEADLINE_OVERDUE",
   "INVOICE_OVERDUE",
   "MEETING_SOON",
@@ -15,19 +16,21 @@ export const URGENT_NOTIF_TYPES = new Set([
 
 const PRIORITY: Record<string, number> = {
   TASK_OVERDUE: 0,
-  DEADLINE_OVERDUE: 1,
-  INVOICE_OVERDUE: 2,
-  MEETING_SOON: 3,
-  DEADLINE_TODAY: 4,
-  TASK_TODAY: 5,
-  MEETING_TODAY: 6,
-  DEADLINE_3D: 7,
-  TASK_TOMORROW: 8,
-  DEADLINE_7D: 9,
-  INVOICE_DUE: 10,
-  PAYMENT_RECEIVED: 11,
-  DOCUMENT_ADDED: 12,
-  PROJECT_UPDATED: 13,
+  TASK_URGENT: 1,
+  DEADLINE_OVERDUE: 2,
+  INVOICE_OVERDUE: 3,
+  MEETING_SOON: 4,
+  DEADLINE_TODAY: 5,
+  TASK_TODAY: 6,
+  MEETING_TODAY: 7,
+  TASK_HIGH: 8,
+  DEADLINE_3D: 9,
+  TASK_TOMORROW: 10,
+  DEADLINE_7D: 11,
+  INVOICE_DUE: 12,
+  PAYMENT_RECEIVED: 13,
+  DOCUMENT_ADDED: 14,
+  PROJECT_UPDATED: 15,
 };
 
 export function isUrgentNotification(n: Pick<Notification, "type">): boolean {

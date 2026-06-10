@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { useCreateDeadline } from "@/hooks/useDashboard";
 import { useUpdateProject } from "@/hooks/useProjects";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import {
   getProjectDisplayStatus,
   getProjectNextDeadline,
@@ -16,6 +17,7 @@ import {
   getProjectMapsUrl,
 } from "@/lib/project-location";
 import { toLocalDateInput } from "@/lib/dates";
+import { PROJECT_VISIBILITY_LABELS, isPersonalProject } from "@/lib/project-visibility";
 import { PHASE_LABELS } from "@/types";
 import type { Project, Task } from "@/types";
 import { cn, formatDate } from "@/lib/utils";
@@ -71,7 +73,7 @@ export function ProjectCardFull({
   const nextDeadline = getProjectNextDeadline(project);
   const deadlineDate = nextDeadline?.date ?? project.deadline ?? null;
   const overdue = isProjectOverdue(project);
-  const progress = project.progress ?? 0;
+  const progress = computeProjectOverallProgress(project);
   const displayStatus = getProjectDisplayStatus(project);
   const href = `/projects/${project.id}`;
   const metaLine = getMetaLine(project);
@@ -122,6 +124,11 @@ export function ProjectCardFull({
             </h3>
             <p className="mt-0.5 truncate text-[10px] leading-tight text-[color:var(--pc-subtitle)]">
               {getClientLabel(project)}
+              {isPersonalProject(project) ? (
+                <span className="ml-1.5 text-glass-muted">· {PROJECT_VISIBILITY_LABELS.PERSONAL}</span>
+              ) : (
+                <span className="ml-1.5 text-studio-light/55">· {PROJECT_VISIBILITY_LABELS.STUDIO}</span>
+              )}
             </p>
           </Link>
           <div className="flex shrink-0 flex-col items-end gap-1 pt-px">

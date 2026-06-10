@@ -33,6 +33,7 @@ import {
   detailChecklistStatusMissing,
   detailChecklistStatusValidated,
   detailIconActionGroup,
+  detailLink,
   detailMediaThumb,
   detailRowTitle,
   detailRowTitleDone,
@@ -817,15 +818,53 @@ export default function ProjectTabPanels({
                     <p className={detailChecklistDate}>
                       {formatDate(log.date, "d MMMM yyyy")}
                     </p>
+                    {log.chantierPhase && (
+                      <span className="rounded-md border border-app px-1.5 py-0.5 text-[10px] text-glass-secondary">
+                        {log.chantierPhase}
+                      </span>
+                    )}
                     {log.progress != null && (
                       <span className="text-[10px] font-medium tabular-nums text-[#8ba4c7]/75">
                         {log.progress}%
                       </span>
                     )}
                   </div>
-                  <p className={cn(detailRowTitle, "mt-1 leading-snug")}>
+                  {log.siteVisit && (
+                    <p className={cn(detailRowTitle, "mt-1 leading-snug")}>{log.siteVisit}</p>
+                  )}
+                  <p className={cn(detailRowTitle, "mt-1 leading-snug text-glass-secondary")}>
                     {log.description}
                   </p>
+                  {log.photos && log.photos.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1.5">
+                      {log.photos.map((url) => (
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block h-14 w-14 overflow-hidden rounded-md border border-app"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={url}
+                            alt=""
+                            className="h-full w-full object-cover"
+                          />
+                        </a>
+                      ))}
+                    </div>
+                  )}
+                  {log.reportUrl && (
+                    <a
+                      href={log.reportUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={cn(detailLink, "mt-2 inline-block text-[11px]")}
+                    >
+                      PV : {log.reportName ?? "Procès-verbal"}
+                    </a>
+                  )}
                   {log.issues && (
                     <p className="mt-1 text-[11px] text-red-400/65">{log.issues}</p>
                   )}

@@ -22,7 +22,15 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsString()
+  clientName?: string;
+
+  @IsOptional()
+  @IsString()
   projectId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 
   @IsOptional()
   @IsString()

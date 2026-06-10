@@ -14,7 +14,9 @@ import {
 import Tooltip from "@/components/ui/Tooltip";
 import ProjectDetailMenu from "./ProjectDetailMenu";
 import ProjectDetailPilotageStrip from "./ProjectDetailPilotageStrip";
-import ProjectDetailProjectSummary from "./ProjectDetailProjectSummary";
+import ProjectDetailProjectSummary, {
+  ProjectDetailGalleryInfo,
+} from "./ProjectDetailProjectSummary";
 import ProjectDetailQuickAddMenu from "./ProjectDetailQuickAddMenu";
 import {
   detailBackLink,
@@ -22,9 +24,9 @@ import {
   detailHeroBody,
   detailHeroDescription,
   detailHeroGalleryCol,
-  detailHeroGalleryHead,
   detailHeroGalleryCount,
   detailHeroGalleryFooter,
+  detailHeroGalleryHead,
   detailHeroGalleryLink,
   detailHeroGalleryStack,
   detailHeroGalleryThumbRow,
@@ -189,7 +191,6 @@ export default function ProjectDetailHero({
 
       <section className={detailHeroShell}>
         <div className={detailHeroBody}>
-          {/* Galerie */}
           <div className={detailHeroGalleryCol}>
             <div className={detailHeroGalleryHead}>
               <h1 className={detailHeroTitle}>{project.name}</h1>
@@ -281,6 +282,8 @@ export default function ProjectDetailHero({
                 </button>
               </div>
             )}
+
+            <ProjectDetailGalleryInfo project={project} />
           </div>
 
           <div className={detailHeroMainCol}>

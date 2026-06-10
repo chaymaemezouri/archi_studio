@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Calendar } from "lucide-react";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import {
   getProjectEffectiveDeadlineDate,
   isProjectOverdue,
@@ -29,7 +30,7 @@ function getDeadlineText(project: Project): string {
 export default function ProjectCardCompact({ project, className }: ProjectCardCompactProps) {
   const href = `/projects/${project.id}`;
   const overdue = isProjectOverdue(project);
-  const progress = project.progress ?? 0;
+  const progress = computeProjectOverallProgress(project);
   const phaseLabel = PHASE_LABELS[project.phase];
 
   const clientLabel = project.client?.company || project.client?.name;

@@ -5,9 +5,9 @@ import { Plus, Trash2 } from "lucide-react";
 import {
   financeChipBtn,
   financeFieldClass,
-  financeSelectClass,
   FinanceFieldLabel,
   FinanceFormSection,
+  FinanceEntityPicker,
 } from "@/components/finances/finance-form-ui";
 import { amountToFrenchWords } from "@/lib/amount-words";
 import { glassBtnPrimary, glassBtnSecondary } from "@/lib/glass-styles";
@@ -15,15 +15,17 @@ import type { Client, Devis, DevisItem, DevisStatus, Project } from "@/types";
 import { cn, formatCurrency } from "@/lib/utils";
 
 export interface DevisFormValues {
-  clientId: string;
-  projectId: string;
+  clientId?: string;
+  clientName?: string;
+  projectId?: string;
+  projectName?: string;
   object: string;
   status: DevisStatus;
   tva: number;
   validUntil: string;
   paymentTerms: string;
   notes: string;
-  items: Partial<DevisItem>[];
+  items: Pick<DevisItem, "description" | "quantity" | "unitPrice" | "order">[];
 }
 
 interface DevisFormProps {
@@ -70,9 +72,11 @@ export default function DevisForm({
   const [clientId, setClientId] = useState(
     initialData?.clientId ?? defaultClientId ?? ""
   );
+  const [clientName, setClientName] = useState(initialData?.clientName ?? "");
   const [projectId, setProjectId] = useState(
     initialData?.projectId ?? defaultProjectId ?? ""
   );
+  const [projectName, setProjectName] = useState(initialData?.projectName ?? "");
   const [object, setObject] = useState(initialData?.object ?? "");
   const [status, setStatus] = useState<DevisStatus>(initialData?.status ?? "DRAFT");
   const [tva, setTva] = useState(initialData?.tva ?? 20);
@@ -133,27 +137,25 @@ export default function DevisForm({
     setItems((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const canSubmit = !!object.trim();
+
   const handleSubmit = (e: React.FormEvent, nextStatus?: DevisStatus) => {
     e.preventDefault();
     onSubmit({
-      clientId,
-      projectId,
+      ...(clientId ? { clientId } : clientName.trim() ? { clientName: clientName.trim() } : {}),
+      ...(projectId ? { projectId } : projectName.trim() ? { projectName: projectName.trim() } : {}),
       object,
       status: nextStatus ?? status,
       tva,
       validUntil,
       paymentTerms,
       notes,
-      items: items.map((item, order) => {
-        const amount = lineAmount(item);
-        return {
-          description: item.description ?? "",
-          quantity: item.quantity ?? 1,
-          unitPrice: amount / (Number(item.quantity) || 1),
-          total: amount,
-          order,
-        };
-      }),
+      items: items.map((item, order) => ({
+        description: item.description ?? "",
+        quantity: item.quantity ?? 1,
+        unitPrice: lineAmount(item) / (Number(item.quantity) || 1),
+        order,
+      })),
     });
   };
 
@@ -161,41 +163,28 @@ export default function DevisForm({
     <form className="space-y-3.5">
       <FinanceFormSection title="Informations">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <FinanceFieldLabel required>Client</FinanceFieldLabel>
-            <select
-              className={cn(financeSelectClass, !clientId && "text-glass-muted")}
-              value={clientId}
-              onChange={(e) => setClientId(e.target.value)}
-              required
-            >
-              <option value="" className="bg-[#101014]">
-                Sélectionner…
-              </option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id} className="bg-[#101014]">
-                  {c.name}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <FinanceFieldLabel>Projet lié</FinanceFieldLabel>
-            <select
-              className={cn(financeSelectClass, !projectId && "text-glass-muted")}
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-            >
-              <option value="" className="bg-[#101014]">
-                Aucun
-              </option>
-              {filteredProjects.map((p) => (
-                <option key={p.id} value={p.id} className="bg-[#101014]">
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <FinanceEntityPicker
+            label="Client"
+            placeholder="Aucun client (optionnel)"
+            manualLabel="Autre client — saisir le nom"
+            manualPlaceholder="Nom du client"
+            options={clients.map((c) => ({ id: c.id, name: c.name }))}
+            entityId={clientId}
+            entityName={clientName}
+            onEntityIdChange={setClientId}
+            onEntityNameChange={setClientName}
+          />
+          <FinanceEntityPicker
+            label="Projet lié"
+            placeholder="Aucun projet enregistré"
+            manualLabel="Autre projet — saisir le nom"
+            manualPlaceholder="Nom du projet"
+            options={filteredProjects.map((p) => ({ id: p.id, name: p.name }))}
+            entityId={projectId}
+            entityName={projectName}
+            onEntityIdChange={setProjectId}
+            onEntityNameChange={setProjectName}
+          />
           <div>
             <FinanceFieldLabel required>Objet</FinanceFieldLabel>
             <input
@@ -340,7 +329,7 @@ export default function DevisForm({
         </button>
         <button
           type="button"
-          disabled={loading || !clientId || !object.trim()}
+          disabled={loading || !canSubmit}
           onClick={(e) => handleSubmit(e, "DRAFT")}
           className={cn(glassBtnPrimary, "w-full sm:w-auto")}
         >

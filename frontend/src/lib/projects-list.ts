@@ -6,12 +6,16 @@ import {
   isProjectUrgent,
   type ProjectFilter,
 } from "@/lib/project-status";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import type { Project, ProjectPhase } from "@/types";
+import { isPersonalProject, isStudioProject } from "@/lib/project-visibility";
 
 export type ProjectsMainFilter =
   | ProjectFilter
   | "favorites"
   | "archived"
+  | "shared"
+  | "personal"
   | "all";
 
 export type ProjectsSort =
@@ -37,6 +41,8 @@ export function applyProjectsMainFilter(
 
   if (filter === "all") return list;
   if (filter === "favorites") return list.filter((p) => p.isFavorite);
+  if (filter === "shared") return list.filter((p) => isStudioProject(p));
+  if (filter === "personal") return list.filter((p) => isPersonalProject(p));
 
   const dashboardFilters: ProjectFilter[] = ["urgent", "overdue", "recent"];
   if (dashboardFilters.includes(filter as ProjectFilter)) {
@@ -141,9 +147,13 @@ export function sortProjects(projects: Project[], sort: ProjectsSort): Project[]
     case "name_desc":
       return copy.sort((a, b) => b.name.localeCompare(a.name, "fr"));
     case "progress":
-      return copy.sort((a, b) => b.progress - a.progress);
+      return copy.sort(
+        (a, b) => computeProjectOverallProgress(b) - computeProjectOverallProgress(a)
+      );
     case "progress_asc":
-      return copy.sort((a, b) => a.progress - b.progress);
+      return copy.sort(
+        (a, b) => computeProjectOverallProgress(a) - computeProjectOverallProgress(b)
+      );
     case "deadline":
       return copy.sort((a, b) => {
         const da = a.deadline ? new Date(a.deadline).getTime() : Infinity;

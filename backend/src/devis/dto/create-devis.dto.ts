@@ -22,7 +22,15 @@ export class CreateDevisDto {
 
   @IsOptional()
   @IsString()
+  clientName?: string;
+
+  @IsOptional()
+  @IsString()
   projectId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -30,6 +38,7 @@ export class CreateDevisDto {
   items!: DevisItemDto[];
 
   @IsOptional()
+  @Type(() => Number)
   @IsNumber()
   tva?: number;
 

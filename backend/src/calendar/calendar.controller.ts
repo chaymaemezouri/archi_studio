@@ -37,7 +37,7 @@ export class CalendarController {
       .slice(0, 10);
 
     return this.calendarService.findEvents(
-      user.studioId,
+      user,
       from || defaultFrom,
       to || defaultTo,
       type,
@@ -46,7 +46,7 @@ export class CalendarController {
 
   @Post()
   create(@Body() dto: CreateCalendarEventDto, @CurrentUser() user: AuthUser) {
-    return this.calendarService.create(dto, user.studioId, user.id);
+    return this.calendarService.create(dto, user);
   }
 
   @Patch(':id')
@@ -55,11 +55,11 @@ export class CalendarController {
     @Body() dto: UpdateCalendarEventDto,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.calendarService.update(id, dto, user.studioId, user.id);
+    return this.calendarService.update(id, dto, user);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.calendarService.remove(id, user.studioId);
+    return this.calendarService.remove(id, user);
   }
 }

@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/api-errors";
 import type {
   DashboardOverview,
   Deadline,
@@ -67,11 +68,41 @@ export function useUpdateDashboardTask() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async ({ id, status }: { id: string; status: TaskStatus }) => {
-      const { data } = await api.patch<Task>(`/tasks/${id}`, { status });
+      if (status === "DONE") {
+        const { data } = await api.patch<Task>(`/tasks/${id}/complete`);
+        return data;
+      }
+      const { data } = await api.patch<Task>(`/tasks/${id}/status`, { status });
       return data;
     },
-    onSuccess: () => invalidateDashboard(queryClient),
-    onError: () => toast.error("Impossible de mettre à jour la tâche"),
+    onMutate: async ({ id, status }) => {
+      if (status !== "DONE") return {};
+      await queryClient.cancelQueries({ queryKey: dashboardKey });
+      const previous = queryClient.getQueryData<DashboardOverview>(dashboardKey);
+      if (previous) {
+        queryClient.setQueryData<DashboardOverview>(dashboardKey, {
+          ...previous,
+          todayTasks: previous.todayTasks.filter((t) => t.id !== id),
+          tomorrowTasks: previous.tomorrowTasks.filter((t) => t.id !== id),
+          calendarTasks: previous.calendarTasks.filter((t) => t.id !== id),
+        });
+      }
+      return { previous };
+    },
+    onSuccess: (_data, { status }) => {
+      invalidateDashboard(queryClient);
+      if (status === "DONE") {
+        toast.success("Tâche terminée");
+      }
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previous) {
+        queryClient.setQueryData(dashboardKey, context.previous);
+      }
+      toast.error(
+        getApiErrorMessage(err, "Impossible de mettre à jour la tâche")
+      );
+    },
   });
 }
 

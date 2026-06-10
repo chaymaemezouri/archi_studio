@@ -19,7 +19,7 @@ export class DashboardController {
 
   @Get('overview')
   getOverview(@CurrentUser() user: AuthUser) {
-    return this.dashboardService.getOverview(user.studioId, user.id);
+    return this.dashboardService.getOverview(user.studioId, user.id, user.role);
   }
 
   @Get('weekly-summary/pdf')
@@ -30,6 +30,7 @@ export class DashboardController {
     const overview = await this.dashboardService.getOverview(
       user.studioId,
       user.id,
+      user.role,
     );
     const settings = await this.settingsService.get(user.studioId);
     const branding = settingsToPdfBranding(settings, this.uploadsService);

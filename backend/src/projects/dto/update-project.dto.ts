@@ -9,7 +9,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import { ProjectCategory, ProjectPhase, ProjectScale, ProjectStatus } from '@prisma/client';
+import { ProjectCategory, ProjectPhase, ProjectScale, ProjectStatus, ProjectVisibility } from '@prisma/client';
 
 export class UpdateProjectDto {
   @IsOptional()
@@ -27,6 +27,50 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   country?: string;
+
+  @IsOptional()
+  @IsString()
+  province?: string;
+
+  @IsOptional()
+  @IsString()
+  prefecture?: string;
+
+  @IsOptional()
+  @IsString()
+  commune?: string;
+
+  @IsOptional()
+  @IsString()
+  arrondissement?: string;
+
+  @IsOptional()
+  @IsNumber()
+  coordinateX?: number;
+
+  @IsOptional()
+  @IsNumber()
+  coordinateY?: number;
+
+  @IsOptional()
+  @IsNumber()
+  latitude?: number;
+
+  @IsOptional()
+  @IsNumber()
+  longitude?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  useTopoCoordinates?: boolean;
+
+  @IsOptional()
+  @IsString()
+  mapsUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  driveUrl?: string;
 
   @IsOptional()
   @IsString()
@@ -70,6 +114,18 @@ export class UpdateProjectDto {
 
   @IsOptional()
   @IsNumber()
+  totalProjectAmount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  contractArchitectFees?: number;
+
+  @IsOptional()
+  @IsNumber()
+  actualFeesToCollect?: number;
+
+  @IsOptional()
+  @IsNumber()
   surface?: number;
 
   @IsOptional()
@@ -105,4 +161,8 @@ export class UpdateProjectDto {
   @IsOptional()
   @IsString()
   managerId?: string;
+
+  @IsOptional()
+  @IsEnum(ProjectVisibility)
+  visibility?: ProjectVisibility;
 }

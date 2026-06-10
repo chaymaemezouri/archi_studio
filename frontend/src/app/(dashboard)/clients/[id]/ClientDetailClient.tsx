@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import toast from "react-hot-toast";
 import Link from "next/link";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import {
   ArrowLeft,
+  FileText,
   FolderKanban,
   Mail,
   MapPin,
@@ -37,6 +39,7 @@ import Badge from "@/components/ui/Badge";
 import EmptyState from "@/components/ui/EmptyState";
 import Modal from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
+import { attachClientCinDocuments, downloadArchitectContractPdf, type ClientCinUploads } from "@/lib/client-cin";
 import { useClient, useUpdateClient } from "@/hooks/useClients";
 import {
   CLIENT_STATUS_LABELS,
@@ -66,6 +69,7 @@ export default function ClientDetailPage() {
 
   const [editOpen, setEditOpen] = useState(false);
   const [projectDrawerOpen, setProjectDrawerOpen] = useState(false);
+  const [contractLoading, setContractLoading] = useState(false);
 
   const setTab = useCallback(
     (tab: ClientTabId) => {
@@ -74,8 +78,31 @@ export default function ClientDetailPage() {
     [id, router]
   );
 
-  const handleUpdate = (payload: Partial<Client>) => {
-    updateClient.mutate({ id, ...payload }, { onSuccess: () => setEditOpen(false) });
+  const handleUpdate = async (payload: Partial<Client>, cinUploads?: ClientCinUploads) => {
+    try {
+      await updateClient.mutateAsync({ id, ...payload });
+      if (cinUploads?.front || cinUploads?.back) {
+        await attachClientCinDocuments(id, cinUploads);
+        void refetch();
+      }
+      setEditOpen(false);
+    } catch {
+      /* toast handled by mutation */
+    }
+  };
+
+  const handleDownloadContract = async () => {
+    setContractLoading(true);
+    try {
+      await downloadArchitectContractPdf(
+        id,
+        `contrat-architecte-${client?.name?.replace(/\s+/g, "-") ?? id.slice(0, 8)}.pdf`
+      );
+    } catch {
+      toast.error("Impossible de générer le contrat.");
+    } finally {
+      setContractLoading(false);
+    }
   };
 
   if (isLoading) {
@@ -167,6 +194,13 @@ export default function ClientDetailPage() {
               icon={FolderKanban}
               tone="upload"
               onClick={() => setProjectDrawerOpen(true)}
+            />
+            <IconActionButton
+              label="Générer contrat d'architecte"
+              icon={FileText}
+              tone="download"
+              disabled={contractLoading}
+              onClick={() => void handleDownloadContract()}
             />
             <IconActionButton
               label="Créer une facture"

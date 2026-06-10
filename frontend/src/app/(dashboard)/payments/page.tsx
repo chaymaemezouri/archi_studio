@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDown, CreditCard, Plus, Search, SlidersHorizontal } from "lucide-react";
 import FinanceRowActions, {
   FinanceMenuItem,
@@ -46,6 +47,7 @@ import {
   getPaymentClientId,
   getPaymentClientName,
 } from "@/lib/payment-utils";
+import { sumRemainingToCollectAcrossProjects } from "@/lib/project-finance";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
 import { INVOICE_STATUS_LABELS } from "@/types";
 import toast from "react-hot-toast";
@@ -136,6 +138,8 @@ function isWithinPeriod(date: string, period: PeriodFilter, from?: string, to?: 
 }
 
 export default function PaymentsPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: invoices = [] } = useInvoices();
   const { data: clients = [] } = useClients();
   const { data: projects = [] } = useProjects();
@@ -155,11 +159,31 @@ export default function PaymentsPage() {
   const [customTo, setCustomTo] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editing, setEditing] = useState<Payment | null>(null);
+  const [createDefaults, setCreateDefaults] = useState<{
+    clientId?: string;
+    projectId?: string;
+  }>({});
   const [receiptPdfLoadingId, setReceiptPdfLoadingId] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
   const sortRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const newKind = searchParams.get("new");
+    const clientIdParam = searchParams.get("clientId");
+    const projectIdParam = searchParams.get("projectId");
+
+    if (newKind !== "payment" && !clientIdParam && !projectIdParam) return;
+
+    setCreateDefaults({
+      clientId: clientIdParam ?? undefined,
+      projectId: projectIdParam ?? undefined,
+    });
+    setEditing(null);
+    setIsModalOpen(true);
+    router.replace("/payments", { scroll: false });
+  }, [searchParams, router]);
 
   useEffect(() => {
     if (!filterOpen) return;
@@ -187,7 +211,9 @@ export default function PaymentsPage() {
 
   const enrichedInvoices = useMemo(
     () =>
-      invoices.map((inv) => ({
+      invoices
+        .filter((inv) => inv.clientId || inv.client?.id)
+        .map((inv) => ({
         id: inv.id,
         number: inv.number,
         totalTTC: inv.totalTTC,
@@ -262,12 +288,14 @@ export default function PaymentsPage() {
     const year = payments.filter((p) => new Date(p.date).getFullYear() === now.getFullYear());
     const totalMonth = month.reduce((sum, p) => sum + p.amount, 0);
     const totalYear = year.reduce((sum, p) => sum + p.amount, 0);
-    const rest = invoices
+    const restFromProjects = sumRemainingToCollectAcrossProjects(projects, payments);
+    const restFromInvoices = invoices
       .filter((i) => i.status !== "PAID" && i.status !== "CANCELLED")
       .reduce((sum, i) => sum + Math.max(0, i.totalTTC - (i.paidAmount ?? 0)), 0);
+    const rest = restFromProjects > 0 ? restFromProjects : restFromInvoices;
     const unpaidInvoices = invoices.filter((i) => ["UNPAID", "OVERDUE", "PARTIAL", "SENT"].includes(i.status)).length;
     return { totalMonth, totalYear, rest, unpaidInvoices };
-  }, [payments, invoices]);
+  }, [payments, invoices, projects]);
 
   const hasActiveFilters =
     query.trim() !== "" ||
@@ -289,6 +317,7 @@ export default function PaymentsPage() {
 
   const openCreate = () => {
     setEditing(null);
+    setCreateDefaults({});
     setIsModalOpen(true);
   };
 
@@ -315,7 +344,16 @@ export default function PaymentsPage() {
       updatePayment.mutate({ id: editing.id, ...payload }, { onSuccess: () => setIsModalOpen(false) });
       return;
     }
-    createPayment.mutate(payload, { onSuccess: () => setIsModalOpen(false) });
+    const returnProjectId = createDefaults.projectId;
+    createPayment.mutate(payload, {
+      onSuccess: () => {
+        setIsModalOpen(false);
+        setCreateDefaults({});
+        if (returnProjectId) {
+          router.push(`/projects/${returnProjectId}?tab=finances`);
+        }
+      },
+    });
   };
 
   const loadingMutation = createPayment.isPending || updatePayment.isPending;
@@ -807,8 +845,10 @@ export default function PaymentsPage() {
         variant="glass"
       >
         <PaymentForm
-          key={editing?.id ?? "new"}
+          key={`${editing?.id ?? "new"}-${createDefaults.clientId ?? ""}-${createDefaults.projectId ?? ""}`}
           payment={editing}
+          defaultClientId={createDefaults.clientId}
+          defaultProjectId={createDefaults.projectId}
           invoices={enrichedInvoices}
           clients={clients.map((c) => ({ id: c.id, name: c.name }))}
           projects={projects.map((p) => ({
@@ -816,7 +856,12 @@ export default function PaymentsPage() {
             name: p.name,
             clientId: p.clientId ?? p.client?.id,
             client: p.client ? { id: p.client.id, name: p.client.name } : null,
+            totalProjectAmount: p.totalProjectAmount,
+            contractArchitectFees: p.contractArchitectFees,
+            actualFeesToCollect: p.actualFeesToCollect,
+            budget: p.budget,
           }))}
+          allPayments={payments}
           onCancel={() => setIsModalOpen(false)}
           onSubmit={submitForm}
           loading={loadingMutation}

@@ -1,0 +1,12 @@
+-- AlterTable
+ALTER TABLE "Project" ADD COLUMN "province" TEXT;
+ALTER TABLE "Project" ADD COLUMN "prefecture" TEXT;
+ALTER TABLE "Project" ADD COLUMN "commune" TEXT;
+ALTER TABLE "Project" ADD COLUMN "arrondissement" TEXT;
+ALTER TABLE "Project" ADD COLUMN "coordinateX" DOUBLE PRECISION;
+ALTER TABLE "Project" ADD COLUMN "coordinateY" DOUBLE PRECISION;
+ALTER TABLE "Project" ADD COLUMN "latitude" DOUBLE PRECISION;
+ALTER TABLE "Project" ADD COLUMN "longitude" DOUBLE PRECISION;
+ALTER TABLE "Project" ADD COLUMN "useTopoCoordinates" BOOLEAN NOT NULL DEFAULT false;
+ALTER TABLE "Project" ADD COLUMN "mapsUrl" TEXT;
+ALTER TABLE "Project" ADD COLUMN "driveUrl" TEXT;

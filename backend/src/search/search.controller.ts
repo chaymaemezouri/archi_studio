@@ -9,6 +9,6 @@ export class SearchController {
 
   @Get()
   search(@CurrentUser() user: AuthUser, @Query('q') q = '') {
-    return this.searchService.search(user.studioId, q);
+    return this.searchService.search(user, q);
   }
 }

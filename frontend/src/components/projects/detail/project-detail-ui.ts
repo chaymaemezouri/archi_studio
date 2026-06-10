@@ -424,10 +424,8 @@ export const detailHeroShell = cn(
 );
 
 export const detailHeroBody = cn(
-  "relative z-[1] grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,42%)_minmax(0,58%)] lg:items-stretch lg:gap-5"
+  "relative z-[1] grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,38%)_minmax(0,62%)] lg:items-start lg:gap-5"
 );
-
-export const detailHeroIntro = "space-y-1";
 
 export const detailHeroIntroTop =
   "flex flex-wrap items-center justify-between gap-3";
@@ -471,6 +469,9 @@ export const detailHeroActions =
 
 export const detailSummaryCardGrid =
   "grid h-full min-h-0 flex-1 grid-cols-1 gap-2.5 sm:grid-cols-2 sm:items-stretch sm:gap-3";
+
+export const detailSummaryCardGridStack =
+  "flex min-h-0 flex-1 flex-col gap-2.5";
 
 /** Bandeau pilotage — résumé opérationnel premium */
 export const detailPilotageStrip = cn(
@@ -524,6 +525,11 @@ export const detailSummaryCard = cn(
 export const detailSummaryCardTitle =
   "shrink-0 pb-2.5 text-[13px] font-semibold tracking-tight text-[color:var(--pd-text-studio)]";
 
+export const detailSummaryGalleryInfo = cn(
+  detailSummaryCard,
+  "mt-1 w-full"
+);
+
 export const detailSummaryFieldGrid = "flex flex-1 flex-col gap-1 pt-2.5";
 
 export const detailSummaryFieldRow =
@@ -538,13 +544,13 @@ export const detailSummaryFieldValueWrap =
 export const detailSummaryFieldValue =
   "min-w-0 flex-1 text-[13px] font-medium leading-[1.4] text-[color:var(--pd-text-body)]";
 
-export const detailSummaryFieldValueMuted =
-  "text-[13px] font-normal leading-[1.4] text-[color:var(--pd-text-faint)]";
-
 export const detailSummaryFieldLink = cn(
   detailLink,
   "inline-block max-w-full truncate text-[13px] font-medium leading-[1.4] text-[color:var(--pd-text-link)] underline-offset-2 hover:text-[color:var(--pd-text-primary)] hover:underline"
 );
+
+export const detailSummaryFieldValueMuted =
+  "text-[13px] font-normal leading-[1.4] text-[color:var(--pd-text-faint)]";
 
 export const detailSummaryMapsIcon = cn(
   "inline-flex shrink-0 items-center justify-center rounded-md p-1",
@@ -584,11 +590,11 @@ export const detailHeroThumbStackScroll =
 
 export const detailHeroMainImage = cn(
   "group/preview relative w-full shrink-0 overflow-hidden rounded-xl border-0",
-  "h-[180px]",
+  "h-[150px]",
   "shadow-[0_6px_24px_rgba(0,0,0,0.35)]",
   "transition",
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--pd-accent-ring)]",
-  "sm:h-[220px] lg:h-[240px]"
+  "sm:h-[165px] lg:h-[175px]"
 );
 
 export const detailHeroMainImageImg =

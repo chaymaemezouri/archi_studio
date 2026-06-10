@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
 import { isAxiosError } from "axios";
-import type { Project } from "@/types";
+import { getApiErrorMessage } from "@/lib/api-errors";
+import type { Project, ProjectCollaborator } from "@/types";
 
 export function useProjects() {
   return useQuery({
@@ -81,6 +82,47 @@ export function useDeleteProject() {
       queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
       toast.success("Projet supprimé");
     },
-    onError: () => toast.error("Erreur lors de la suppression"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la suppression")),
+  });
+}
+
+export function useAddProjectCollaborator(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (email: string) => {
+      const { data } = await api.post<ProjectCollaborator[]>(
+        `/projects/${projectId}/collaborators`,
+        { email },
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
+    },
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Impossible d'inviter ce collaborateur")),
+  });
+}
+
+export function useRemoveProjectCollaborator(projectId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { data } = await api.delete<ProjectCollaborator[]>(
+        `/projects/${projectId}/collaborators/${userId}`,
+      );
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      queryClient.invalidateQueries({ queryKey: ["projects", projectId] });
+      toast.success("Collaborateur retiré");
+    },
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Impossible de retirer ce collaborateur")),
   });
 }

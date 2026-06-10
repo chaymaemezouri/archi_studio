@@ -2,9 +2,15 @@ import { Injectable } from '@nestjs/common';
 import {
   DevisStatus,
   InvoiceStatus,
+  Priority,
   ProjectStatus,
+  Role,
   TaskStatus,
 } from '@prisma/client';
+import {
+  projectListWhere,
+  projectRelationWhere,
+} from '../common/utils/project-access.util';
 import {
   addDays,
   addMonths,
@@ -26,9 +32,14 @@ export class DashboardService {
     private smartAlerts: SmartAlertsService,
   ) {}
 
-  async getOverview(studioId: string, userId: string) {
+  async getOverview(studioId: string, userId: string, userRole?: string) {
     await this.smartAlerts.syncForUser(userId, studioId);
-    const smartAlerts = await this.smartAlerts.buildSmartAlerts(studioId);
+    const smartAlerts = await this.smartAlerts.buildSmartAlerts(studioId, userId, userRole as Role);
+    const access = {
+      studioId,
+      userId,
+      role: userRole as Role,
+    };
     const now = new Date();
     const todayStart = startOfDay(now);
     const todayEnd = endOfDay(now);
@@ -40,7 +51,13 @@ export class DashboardService {
     const activityChartStart = startOfDay(addDays(now, -13));
     const paymentsChartStart = startOfMonth(addMonths(now, -5));
 
-    const projectScope = { studioId };
+    const projectScope = projectRelationWhere(access);
+    const studioScope = {
+      OR: [
+        { project: projectScope },
+        { studioId, projectId: null },
+      ],
+    };
     const studioInvoiceScope = {
       OR: [{ client: { studioId } }, { project: projectScope }],
     };
@@ -52,12 +69,33 @@ export class DashboardService {
     ];
 
     const taskDayFilter = (start: Date, end: Date) => ({
-      project: projectScope,
-      OR: [
-        { scheduledAt: { gte: start, lte: end } },
-        { dueDate: { gte: start, lte: end } },
+      AND: [
+        studioScope,
+        {
+          OR: [
+            { scheduledAt: { gte: start, lte: end } },
+            { dueDate: { gte: start, lte: end } },
+          ],
+        },
       ],
     });
+
+    const todayTaskFilter = {
+      AND: [
+        studioScope,
+        {
+          OR: [
+            {
+              OR: [
+                { scheduledAt: { gte: todayStart, lte: todayEnd } },
+                { dueDate: { gte: todayStart, lte: todayEnd } },
+              ],
+            },
+            { priority: Priority.URGENT },
+          ],
+        },
+      ],
+    };
 
     const [
       activeProjectsCount,
@@ -134,7 +172,7 @@ export class DashboardService {
       }),
       this.prisma.task.findMany({
         where: {
-          ...taskDayFilter(todayStart, todayEnd),
+          ...todayTaskFilter,
           status: { not: TaskStatus.DONE },
         },
         orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
@@ -219,7 +257,10 @@ export class DashboardService {
         take: 10,
       }),
       this.prisma.project.findMany({
-        where: { studioId, status: ProjectStatus.ACTIVE },
+        where: {
+          ...projectListWhere(access),
+          status: ProjectStatus.ACTIVE,
+        },
         orderBy: { updatedAt: 'desc' },
         take: 12,
         include: {

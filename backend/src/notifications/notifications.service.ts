@@ -4,6 +4,7 @@ import { PrismaService } from '../prisma/prisma.service';
 
 const URGENT_NOTIF_TYPES: NotifType[] = [
   NotifType.TASK_OVERDUE,
+  NotifType.TASK_URGENT,
   NotifType.DEADLINE_OVERDUE,
   NotifType.INVOICE_OVERDUE,
   NotifType.MEETING_SOON,
@@ -41,7 +42,10 @@ export class NotificationsService {
     return this.prisma.notification.create({ data: dto });
   }
 
-  async upsertByKey(dto: CreateNotificationDto) {
+  async upsertByKey(
+    dto: CreateNotificationDto,
+    options?: { refreshUnread?: boolean },
+  ) {
     return this.prisma.notification.upsert({
       where: { uniqueKey: dto.uniqueKey },
       update: {
@@ -49,6 +53,7 @@ export class NotificationsService {
         message: dto.message,
         link: dto.link,
         type: dto.type,
+        ...(options?.refreshUnread ? { read: false } : {}),
       },
       create: dto,
     });
@@ -107,14 +112,25 @@ export class NotificationsService {
     message: string,
     uniqueKey: string,
     link?: string,
+    options?: { refreshUnread?: boolean },
   ) {
-    return this.upsertByKey({
-      userId,
-      type,
-      title,
-      message,
-      uniqueKey,
-      link,
+    return this.upsertByKey(
+      {
+        userId,
+        type,
+        title,
+        message,
+        uniqueKey,
+        link,
+      },
+      options,
+    );
+  }
+
+  async removeByUniqueKeys(userId: string, keys: string[]) {
+    if (keys.length === 0) return;
+    await this.prisma.notification.deleteMany({
+      where: { userId, uniqueKey: { in: keys } },
     });
   }
 }

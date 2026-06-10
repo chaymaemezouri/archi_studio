@@ -22,7 +22,15 @@ export class UpdateDevisDto {
 
   @IsOptional()
   @IsString()
+  clientName?: string;
+
+  @IsOptional()
+  @IsString()
   projectId?: string;
+
+  @IsOptional()
+  @IsString()
+  projectName?: string;
 
   @IsOptional()
   @IsArray()

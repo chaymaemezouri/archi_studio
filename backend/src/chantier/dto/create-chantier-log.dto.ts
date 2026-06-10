@@ -12,6 +12,14 @@ export class CreateChantierLogDto {
   @IsDateString()
   date!: string;
 
+  @IsOptional()
+  @IsString()
+  siteVisit?: string;
+
+  @IsOptional()
+  @IsString()
+  chantierPhase?: string;
+
   @IsString()
   description!: string;
 
@@ -33,6 +41,14 @@ export class CreateChantierLogDto {
   @IsArray()
   @IsString({ each: true })
   photos?: string[];
+
+  @IsOptional()
+  @IsString()
+  reportUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  reportName?: string;
 
   @IsString()
   projectId!: string;

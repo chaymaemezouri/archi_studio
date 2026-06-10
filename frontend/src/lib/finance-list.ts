@@ -1,4 +1,8 @@
 import type { Devis, DevisStatus, Invoice, InvoiceStatus } from "@/types";
+import {
+  getFinanceClientLabel,
+  getFinanceProjectLabel,
+} from "@/lib/finance-entity-utils";
 
 export type FinanceTab = "devis" | "invoices";
 export type FinanceTypeFilter = "all" | "devis" | "invoices";
@@ -78,7 +82,7 @@ function sortDevis(list: Devis[], sort: FinanceSort): Devis[] {
       return copy.sort((a, b) => a.totalTTC - b.totalTTC);
     case "client_asc":
       return copy.sort((a, b) =>
-        (a.client?.name ?? "").localeCompare(b.client?.name ?? "", "fr")
+        getFinanceClientLabel(a).localeCompare(getFinanceClientLabel(b), "fr")
       );
     case "status":
       return copy.sort((a, b) => a.status.localeCompare(b.status));
@@ -102,7 +106,7 @@ function sortInvoices(list: Invoice[], sort: FinanceSort): Invoice[] {
       return copy.sort((a, b) => a.totalTTC - b.totalTTC);
     case "client_asc":
       return copy.sort((a, b) =>
-        (a.client?.name ?? "").localeCompare(b.client?.name ?? "", "fr")
+        getFinanceClientLabel(a).localeCompare(getFinanceClientLabel(b), "fr")
       );
     case "status":
       return copy.sort((a, b) => a.status.localeCompare(b.status));
@@ -125,8 +129,10 @@ export function filterDevis(devis: Devis[], filters: FinanceListFilters): Devis[
       return false;
     return matchesQuery(filters.query, [
       d.number,
-      d.client?.name,
-      d.project?.name,
+      getFinanceClientLabel(d),
+      getFinanceProjectLabel(d),
+      d.clientName,
+      d.projectName,
       d.object,
       d.status,
       d.totalHT,
@@ -157,8 +163,10 @@ export function filterInvoices(
     const remaining = inv.totalTTC - (inv.paidAmount ?? 0);
     return matchesQuery(filters.query, [
       inv.number,
-      inv.client?.name,
-      inv.project?.name,
+      getFinanceClientLabel(inv),
+      getFinanceProjectLabel(inv),
+      inv.clientName,
+      inv.projectName,
       inv.object,
       inv.status,
       inv.totalHT,

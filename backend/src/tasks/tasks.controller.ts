@@ -29,7 +29,7 @@ export class TasksController {
     @Query('from') from?: string,
     @Query('to') to?: string,
   ) {
-    return this.tasksService.findAll(user.studioId, {
+    return this.tasksService.findAll(user, {
       projectId,
       clientId,
       status,
@@ -41,17 +41,17 @@ export class TasksController {
 
   @Get(':id')
   findOne(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.tasksService.findOne(id, user.studioId);
+    return this.tasksService.findOne(id, user);
   }
 
   @Post()
   create(@Body() dto: CreateTaskDto, @CurrentUser() user: AuthUser) {
-    return this.tasksService.create(dto, user.studioId, user.id);
+    return this.tasksService.create(dto, user);
   }
 
   @Patch(':id/complete')
   complete(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.tasksService.complete(id, user.studioId, user.id);
+    return this.tasksService.complete(id, user);
   }
 
   @Patch(':id/status')
@@ -60,7 +60,7 @@ export class TasksController {
     @Body('status') status: TaskStatus,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.tasksService.updateStatus(id, status, user.studioId, user.id);
+    return this.tasksService.updateStatus(id, status, user);
   }
 
   @Patch(':id')
@@ -69,11 +69,11 @@ export class TasksController {
     @Body() dto: UpdateTaskDto,
     @CurrentUser() user: AuthUser,
   ) {
-    return this.tasksService.update(id, dto, user.studioId, user.id);
+    return this.tasksService.update(id, dto, user);
   }
 
   @Delete(':id')
   remove(@Param('id') id: string, @CurrentUser() user: AuthUser) {
-    return this.tasksService.remove(id, user.studioId, user.id);
+    return this.tasksService.remove(id, user);
   }
 }

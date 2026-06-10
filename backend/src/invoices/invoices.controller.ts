@@ -29,7 +29,7 @@ export class InvoicesController {
 
   @Post()
   create(@Body() dto: CreateInvoiceDto, @CurrentUser() user: AuthUser) {
-    return this.invoicesService.create(dto, user.studioId, user.id);
+    return this.invoicesService.create(dto, user.studioId, user.id, user.role);
   }
 
   @Patch(':id')

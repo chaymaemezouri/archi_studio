@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   CalendarEventType,
   InvoiceStatus,
@@ -6,6 +6,13 @@ import {
   TaskStatus,
 } from '@prisma/client';
 import { ActivityLogsService } from '../activity-logs/activity-logs.service';
+import type { AuthUser } from '../common/types/auth-user';
+import {
+  projectByIdWhere,
+  projectListWhere,
+  projectRelationWhere,
+  toProjectAccessContext,
+} from '../common/utils/project-access.util';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CalendarEventDto,
@@ -32,16 +39,19 @@ export class CalendarService {
   ) {}
 
   async findEvents(
-    studioId: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
     from: string,
     to: string,
     type?: CalendarEventType,
   ): Promise<CalendarEventDto[]> {
+    const ctx = toProjectAccessContext(user);
+    const studioId = user.studioId;
     const fromDate = new Date(from);
     const toDate = new Date(to);
     toDate.setHours(23, 59, 59, 999);
 
-    const projectScope = { studioId };
+    const projectScope = projectRelationWhere(ctx);
+    const projectList = projectListWhere(ctx);
     const dateRange = { gte: fromDate, lte: toDate };
 
     const [
@@ -56,7 +66,7 @@ export class CalendarService {
     ] = await Promise.all([
       this.prisma.project.findMany({
         where: {
-          studioId,
+          ...projectList,
           status: ProjectStatus.ACTIVE,
           deadline: { not: null, ...dateRange },
         },
@@ -355,12 +365,21 @@ export class CalendarService {
 
   async create(
     dto: CreateCalendarEventDto,
-    studioId: string,
-    userId?: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
+    if (dto.projectId) {
+      const project = await this.prisma.project.findFirst({
+        where: projectByIdWhere(toProjectAccessContext(user), dto.projectId),
+        select: { id: true },
+      });
+      if (!project) {
+        throw new BadRequestException('Projet introuvable ou inaccessible.');
+      }
+    }
+
     const event = await this.prisma.calendarEvent.create({
       data: {
-        studioId,
+        studioId: user.studioId,
         title: dto.title,
         type: dto.type,
         date: new Date(dto.date),
@@ -380,7 +399,7 @@ export class CalendarService {
 
     if (dto.projectId || dto.clientId) {
       await this.activityLogs.log({
-        userId,
+        userId: user.id,
         projectId: dto.projectId,
         clientId: dto.clientId,
         action: 'calendar_event_created',
@@ -396,13 +415,22 @@ export class CalendarService {
   async update(
     id: string,
     dto: UpdateCalendarEventDto,
-    studioId: string,
-    userId?: string,
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
     const existing = await this.prisma.calendarEvent.findFirst({
-      where: { id, studioId },
+      where: { id, studioId: user.studioId },
     });
     if (!existing) throw new NotFoundException('Calendar event not found');
+
+    if (dto.projectId) {
+      const project = await this.prisma.project.findFirst({
+        where: projectByIdWhere(toProjectAccessContext(user), dto.projectId),
+        select: { id: true },
+      });
+      if (!project) {
+        throw new BadRequestException('Projet introuvable ou inaccessible.');
+      }
+    }
 
     const event = await this.prisma.calendarEvent.update({
       where: { id },
@@ -418,7 +446,7 @@ export class CalendarService {
 
     if (event.projectId || event.clientId) {
       await this.activityLogs.log({
-        userId,
+        userId: user.id,
         projectId: event.projectId ?? undefined,
         clientId: event.clientId ?? undefined,
         action: 'calendar_event_updated',
@@ -430,9 +458,9 @@ export class CalendarService {
     return this.mapCustomEvent(event);
   }
 
-  async remove(id: string, studioId: string) {
+  async remove(id: string, user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {
     const existing = await this.prisma.calendarEvent.findFirst({
-      where: { id, studioId },
+      where: { id, studioId: user.studioId },
     });
     if (!existing) throw new NotFoundException('Calendar event not found');
     await this.prisma.calendarEvent.delete({ where: { id } });

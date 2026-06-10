@@ -31,6 +31,8 @@ function invalidateTasks(queryClient: ReturnType<typeof useQueryClient>) {
   queryClient.invalidateQueries({ queryKey: ["projects"] });
   queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
   queryClient.invalidateQueries({ queryKey: ["calendar"] });
+  queryClient.invalidateQueries({ queryKey: ["notifications"] });
+  queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
 }
 
 export function useCreateTask() {

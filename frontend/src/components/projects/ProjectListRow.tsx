@@ -24,6 +24,7 @@ import {
 import { ProjectListDeadlineCell } from "./list/ProjectListParts";
 import { getListRowAccentBorder, projectListRowBorder } from "./list/project-list-utils";
 import type { ProjectMenuQuickAdd } from "./ProjectCardMenu";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import {
   getProjectDisplayStatus,
   getProjectNextDeadline,
@@ -181,7 +182,7 @@ export default function ProjectListRow({ project, onEdit, onQuickAdd }: ProjectL
   const overdue = isProjectOverdue(project);
   const delivered = isProjectDelivered(project);
   const displayStatus = getProjectDisplayStatus(project);
-  const progress = project.progress ?? 0;
+  const progress = computeProjectOverallProgress(project);
   const href = `/projects/${project.id}`;
   const deadlineLabel = getDeadlineDateLabel(deadlineDate);
 

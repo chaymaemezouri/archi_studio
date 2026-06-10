@@ -32,6 +32,7 @@ import {
   type ClientsStatusFilter,
   type ClientsTypeFilter,
 } from "@/lib/clients-list";
+import { attachClientCinDocuments, type ClientCinUploads } from "@/lib/client-cin";
 import type { Client } from "@/types";
 import {
   clientsListGrid,
@@ -195,35 +196,40 @@ export default function ClientsPage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = (payload: Partial<Client>) => {
-    if (editingClient) {
-      updateClient.mutate(
-        { id: editingClient.id, ...payload },
-        { onSuccess: () => setModalOpen(false) }
-      );
-      return;
-    }
-
-    createClient.mutate(payload, {
-      onSuccess: (created) => {
+  const handleSubmit = async (payload: Partial<Client>, cinUploads?: ClientCinUploads) => {
+    try {
+      if (editingClient) {
+        await updateClient.mutateAsync({ id: editingClient.id, ...payload });
+        if (cinUploads?.front || cinUploads?.back) {
+          await attachClientCinDocuments(editingClient.id, cinUploads);
+        }
         setModalOpen(false);
-        toast.success(
-          (t) => (
-            <span className="flex items-center gap-3">
-              Client créé
-              <Link
-                href={`/clients/${created.id}`}
-                className="font-medium text-accent underline"
-                onClick={() => toast.dismiss(t.id)}
-              >
-                Ouvrir le client
-              </Link>
-            </span>
-          ),
-          { duration: 5000 }
-        );
-      },
-    });
+        return;
+      }
+
+      const created = await createClient.mutateAsync(payload);
+      if (cinUploads?.front || cinUploads?.back) {
+        await attachClientCinDocuments(created.id, cinUploads);
+      }
+      setModalOpen(false);
+      toast.success(
+        (t) => (
+          <span className="flex items-center gap-3">
+            Client créé
+            <Link
+              href={`/clients/${created.id}`}
+              className="font-medium text-accent underline"
+              onClick={() => toast.dismiss(t.id)}
+            >
+              Ouvrir le client
+            </Link>
+          </span>
+        ),
+        { duration: 5000 }
+      );
+    } catch {
+      /* mutation toasts */
+    }
   };
 
   return (

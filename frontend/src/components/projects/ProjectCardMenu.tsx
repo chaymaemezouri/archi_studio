@@ -105,7 +105,7 @@ export default function ProjectCardMenu({
 
   const canEdit = canEditProject(user, project);
   const canArchive = canArchiveProject(user);
-  const canDelete = canDeleteProject(user);
+  const canDelete = canDeleteProject(user, project);
   const canAdd = canAddProjectContent(user);
   const isList = variant === "list";
   const usePortal = true;

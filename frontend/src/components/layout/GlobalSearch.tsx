@@ -21,6 +21,7 @@ import {
 } from "@/lib/glass-styles";
 import {
   headerSearchInput,
+  headerSearchInputMobile,
   headerSearchKbd,
   headerSearchWrap,
 } from "./header-ui";
@@ -40,42 +41,54 @@ function SearchGroup({
   );
 }
 
-export default function GlobalSearch() {
+export default function GlobalSearch({
+  onMobileExpandChange,
+}: {
+  onMobileExpandChange?: (expanded: boolean) => void;
+}) {
   const [query, setQuery] = useState("");
   const [panelOpen, setPanelOpen] = useState(false);
   const [mobileExpanded, setMobileExpanded] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   const { data, isFetching } = useGlobalSearch(query);
 
   const trimmed = query.trim();
   const showPanel = panelOpen && trimmed.length >= 2;
 
+  const setExpanded = (expanded: boolean) => {
+    setMobileExpanded(expanded);
+    onMobileExpandChange?.(expanded);
+  };
+
+  useEffect(() => {
+    return () => onMobileExpandChange?.(false);
+  }, [onMobileExpandChange]);
+
   useEffect(() => {
     const onClick = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setPanelOpen(false);
-        setMobileExpanded(false);
+        setExpanded(false);
       }
     };
     const onKeydown = (e: KeyboardEvent) => {
-      const isK = e.key.toLowerCase() === "k";
+      const key = e.key?.toLowerCase();
+      const isK = key === "k";
       const meta = e.metaKey || e.ctrlKey;
       if (meta && isK) {
         e.preventDefault();
-        setMobileExpanded(true);
+        setExpanded(true);
         setPanelOpen(trimmed.length >= 2);
         requestAnimationFrame(() => {
-          const input = ref.current?.querySelector(
-            "input[type='search']"
-          ) as HTMLInputElement | null;
-          input?.focus();
-          input?.select();
+          inputRef.current?.focus();
+          inputRef.current?.select();
         });
       }
-      if (e.key === "Escape") {
+      if (key === "escape") {
         setPanelOpen(false);
-        setMobileExpanded(false);
+        setExpanded(false);
       }
     };
     document.addEventListener("mousedown", onClick);
@@ -88,7 +101,7 @@ export default function GlobalSearch() {
 
   const go = (href: string) => {
     setPanelOpen(false);
-    setMobileExpanded(false);
+    setExpanded(false);
     setQuery("");
     router.push(href);
   };
@@ -217,15 +230,19 @@ export default function GlobalSearch() {
         strokeWidth={1.75}
       />
       <input
+        ref={inputRef}
         type="search"
-        placeholder="Rechercher projets, clients, tâches…"
+        placeholder={mobileExpanded ? "Rechercher…" : "Rechercher projets, clients, tâches…"}
         value={query}
         onChange={(e) => {
           setQuery(e.target.value);
           setPanelOpen(e.target.value.trim().length >= 2);
         }}
         onFocus={() => trimmed.length >= 2 && setPanelOpen(true)}
-        className={headerSearchInput}
+        className={cn(
+          headerSearchInput,
+          mobileExpanded && headerSearchInputMobile
+        )}
         aria-label="Recherche globale"
       />
       <kbd className={headerSearchKbd} aria-hidden>
@@ -238,13 +255,20 @@ export default function GlobalSearch() {
   return (
     <div
       ref={ref}
-      className={cn(headerSearchWrap, mobileExpanded && "flex min-w-0 flex-1 items-center")}
+      className={cn(
+        headerSearchWrap,
+        mobileExpanded &&
+          "absolute inset-y-0 left-11 right-0 z-20 flex min-w-0 flex-1 items-center md:relative md:inset-auto md:left-auto md:right-auto md:z-auto"
+      )}
     >
       {!mobileExpanded && (
         <button
           type="button"
-          onClick={() => setMobileExpanded(true)}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-glass-muted transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light md:hidden"
+          onClick={() => {
+            setExpanded(true);
+            requestAnimationFrame(() => inputRef.current?.focus());
+          }}
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-[color:var(--glass-input-border)] bg-[color:var(--glass-input-bg)] text-glass-secondary shadow-[var(--glass-input-shadow)] transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light md:hidden"
           aria-label="Rechercher"
         >
           <Search className="h-4 w-4" strokeWidth={1.75} />
@@ -253,19 +277,22 @@ export default function GlobalSearch() {
 
       <div
         className={cn(
-          "relative w-full",
-          mobileExpanded ? "flex min-w-0 flex-1 items-center gap-1" : "hidden md:block"
+          "relative w-full min-w-0",
+          mobileExpanded
+            ? "flex min-w-0 flex-1 items-center gap-1"
+            : "hidden md:block"
         )}
       >
-        {mobileExpanded && (
+        {mobileExpanded ? (
           <div className="relative min-w-0 flex-1">{searchInput}</div>
+        ) : (
+          searchInput
         )}
-        {!mobileExpanded && searchInput}
         {mobileExpanded && (
           <button
             type="button"
             onClick={() => {
-              setMobileExpanded(false);
+              setExpanded(false);
               setPanelOpen(false);
               setQuery("");
             }}

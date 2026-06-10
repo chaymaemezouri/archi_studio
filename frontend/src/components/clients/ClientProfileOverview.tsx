@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Building2, Hash, User } from "lucide-react";
 import ClientContactField from "./ClientContactField";
+import ClientCinDocuments, { hasClientCinDocuments } from "./ClientCinDocuments";
 import { clientDisplayCompany } from "./ClientQuickContactActions";
 import ClientTabSection from "./ClientTabSection";
 import {
@@ -33,6 +34,17 @@ function MetaRow({ label, value }: { label: string; value?: string | null }) {
       <span className={detailClientInfoLabel}>{label}</span>
       <span className={detailClientInfoValue}>{value}</span>
     </div>
+  );
+}
+
+function hasCinFields(client: Client): boolean {
+  return Boolean(
+    client.firstName ||
+      client.lastName ||
+      client.cinNumber ||
+      client.cinValidUntil ||
+      client.cinDocumentUrl ||
+      client.cinDocumentBackUrl
   );
 }
 
@@ -118,6 +130,26 @@ export default function ClientProfileOverview({ client }: ClientProfileOverviewP
           </div>
         )}
       </div>
+
+      {hasCinFields(client) && (
+        <div className={detailClientProfileAdmin}>
+          <h3 className={detailClientProfileBlockTitle}>Carte d&apos;identité</h3>
+          <div className="mt-2 grid gap-x-6 gap-y-0.5 sm:grid-cols-2">
+            <MetaRow label="Prénom" value={client.firstName} />
+            <MetaRow label="Nom" value={client.lastName} />
+            <MetaRow label="N° CIN" value={client.cinNumber} />
+            <MetaRow
+              label="Validité CIN"
+              value={client.cinValidUntil ? formatDate(client.cinValidUntil) : null}
+            />
+          </div>
+          {hasClientCinDocuments(client) && (
+            <div className="mt-4">
+              <ClientCinDocuments client={client} />
+            </div>
+          )}
+        </div>
+      )}
 
       {hasAdminFields(client) && (
         <div className={detailClientProfileAdmin}>

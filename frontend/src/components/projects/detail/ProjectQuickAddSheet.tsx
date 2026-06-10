@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Calendar, CheckSquare, HardHat, Users, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Calendar, CheckSquare, FileText, HardHat, ImagePlus, Users, X } from "lucide-react";
 import { toLocalDateInput } from "@/lib/dates";
+import { CHANTIER_PHASE_OPTIONS } from "@/lib/chantier-phases";
 import {
   filterChipActive,
   filterChipInactive,
@@ -11,8 +12,10 @@ import {
   glassBtnSecondary,
   glassInput,
   glassPanel,
+  glassSelect,
 } from "@/lib/glass-styles";
 import { modalOverlay } from "@/lib/theme-classes";
+import { uploadProjectFile } from "@/lib/project-upload";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
 import type { ProjectQuickAddMode } from "./project-detail-types";
 import { cn } from "@/lib/utils";
@@ -42,15 +45,34 @@ export default function ProjectQuickAddSheet({
   const [date, setDate] = useState(toLocalDateInput(new Date()));
   const [startTime, setStartTime] = useState("09:00");
   const [location, setLocation] = useState("");
+  const [siteVisit, setSiteVisit] = useState("");
+  const [chantierPhase, setChantierPhase] = useState("");
   const [description, setDescription] = useState("");
   const [progress, setProgress] = useState("");
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+  const [reportFile, setReportFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+  const reportInputRef = useRef<HTMLInputElement>(null);
 
   const mutations = useProjectDetailMutations(projectId);
+
+  const resetForm = () => {
+    setTitle("");
+    setSiteVisit("");
+    setChantierPhase("");
+    setDescription("");
+    setProgress("");
+    setPhotoFiles([]);
+    setReportFile(null);
+    setLocation("");
+  };
 
   useEffect(() => {
     if (open) {
       setMode(initialMode);
       setDate(toLocalDateInput(new Date()));
+      resetForm();
     }
   }, [open, initialMode]);
 
@@ -60,7 +82,8 @@ export default function ProjectQuickAddSheet({
     mutations.createTask.isPending ||
     mutations.createDeadline.isPending ||
     mutations.createMeeting.isPending ||
-    mutations.createChantierLog.isPending;
+    mutations.createChantierLog.isPending ||
+    uploading;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,21 +104,43 @@ export default function ProjectQuickAddSheet({
         });
       } else {
         if (!description.trim()) return;
+        setUploading(true);
+
+        const photoUrls: string[] = [];
+        for (const file of photoFiles) {
+          const uploaded = await uploadProjectFile(projectId, file, "images");
+          photoUrls.push(uploaded.url);
+        }
+
+        let reportUrl: string | undefined;
+        let reportName: string | undefined;
+        if (reportFile) {
+          const uploaded = await uploadProjectFile(projectId, reportFile, "documents");
+          reportUrl = uploaded.url;
+          reportName = uploaded.originalName || reportFile.name;
+        }
+
         await mutations.createChantierLog.mutateAsync({
           date,
+          siteVisit: siteVisit.trim() || undefined,
+          chantierPhase: chantierPhase || undefined,
           description: description.trim(),
           progress: progress ? Number(progress) : undefined,
+          photos: photoUrls.length ? photoUrls : undefined,
+          reportUrl,
+          reportName,
         });
+        setUploading(false);
       }
-      setTitle("");
-      setDescription("");
+      resetForm();
       onClose();
     } catch {
-      /* toast in mutation */
+      setUploading(false);
     }
   };
 
   const inputClass = cn(glassInput, "px-3");
+  const selectClass = cn(glassSelect, "w-full px-3 py-2.5");
 
   return (
     <div
@@ -107,7 +152,7 @@ export default function ProjectQuickAddSheet({
       <div
         role="dialog"
         aria-modal="true"
-        className={cn(glassPanel, "w-full max-w-md overflow-hidden")}
+        className={cn(glassPanel, "max-h-[90vh] w-full max-w-md overflow-hidden")}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-app px-5 py-4">
@@ -122,7 +167,10 @@ export default function ProjectQuickAddSheet({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
+        <form
+          onSubmit={handleSubmit}
+          className="max-h-[calc(90vh-4.5rem)] space-y-4 overflow-y-auto px-5 py-4"
+        >
           <div className="grid grid-cols-2 gap-2">
             {MODES.map((m) => (
               <button
@@ -152,17 +200,45 @@ export default function ProjectQuickAddSheet({
               />
             </div>
           ) : (
-            <div className="space-y-1.5">
-              <span className={formFieldLabel}>Description</span>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description du jour de chantier…"
-                rows={3}
-                className={cn(inputClass, "min-h-[88px] resize-y")}
-                required
-              />
-            </div>
+            <>
+              <div className="space-y-1.5">
+                <span className={formFieldLabel}>Visite du chantier</span>
+                <input
+                  value={siteVisit}
+                  onChange={(e) => setSiteVisit(e.target.value)}
+                  placeholder="Ex. Visite de contrôle, réunion de chantier…"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <span className={formFieldLabel}>Phase du chantier</span>
+                <select
+                  value={chantierPhase}
+                  onChange={(e) => setChantierPhase(e.target.value)}
+                  className={cn(selectClass, !chantierPhase && "text-glass-muted")}
+                >
+                  <option value="">Sélectionner…</option>
+                  {CHANTIER_PHASE_OPTIONS.map((phase) => (
+                    <option key={phase} value={phase} className="bg-[#101014]">
+                      {phase}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <span className={formFieldLabel}>Description</span>
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Description du jour de chantier…"
+                  rows={3}
+                  className={cn(inputClass, "min-h-[88px] resize-y")}
+                  required
+                />
+              </div>
+            </>
           )}
 
           <div className="space-y-1.5">
@@ -199,18 +275,96 @@ export default function ProjectQuickAddSheet({
           )}
 
           {mode === "chantier" && (
-            <div className="space-y-1.5">
-              <span className={formFieldLabel}>Avancement % (optionnel)</span>
-              <input
-                type="number"
-                min={0}
-                max={100}
-                value={progress}
-                onChange={(e) => setProgress(e.target.value)}
-                placeholder="0 – 100"
-                className={inputClass}
-              />
-            </div>
+            <>
+              <div className="space-y-1.5">
+                <span className={formFieldLabel}>Avancement % (optionnel)</span>
+                <input
+                  type="number"
+                  min={0}
+                  max={100}
+                  value={progress}
+                  onChange={(e) => setProgress(e.target.value)}
+                  placeholder="0 – 100"
+                  className={inputClass}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <span className={formFieldLabel}>Ajouter des photos</span>
+                <input
+                  ref={photoInputRef}
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = Array.from(e.target.files ?? []);
+                    if (files.length) {
+                      setPhotoFiles((prev) => [...prev, ...files]);
+                    }
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => photoInputRef.current?.click()}
+                  className={cn(
+                    glassBtnSecondary,
+                    "flex w-full items-center justify-center gap-2 py-2.5 text-[12px]"
+                  )}
+                >
+                  <ImagePlus className="h-4 w-4" />
+                  Choisir des photos
+                </button>
+                {photoFiles.length > 0 && (
+                  <ul className="space-y-1 text-[11px] text-glass-muted">
+                    {photoFiles.map((file, index) => (
+                      <li key={`${file.name}-${index}`} className="flex items-center justify-between gap-2">
+                        <span className="truncate">{file.name}</span>
+                        <button
+                          type="button"
+                          className="shrink-0 text-rose-300/80 hover:text-rose-200"
+                          onClick={() =>
+                            setPhotoFiles((prev) => prev.filter((_, i) => i !== index))
+                          }
+                        >
+                          Retirer
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+
+              <div className="space-y-1.5">
+                <span className={formFieldLabel}>Ajouter PV de chantier</span>
+                <input
+                  ref={reportInputRef}
+                  type="file"
+                  accept=".pdf,.doc,.docx,image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0] ?? null;
+                    setReportFile(file);
+                    e.target.value = "";
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => reportInputRef.current?.click()}
+                  className={cn(
+                    glassBtnSecondary,
+                    "flex w-full items-center justify-center gap-2 py-2.5 text-[12px]"
+                  )}
+                >
+                  <FileText className="h-4 w-4" />
+                  {reportFile ? "Remplacer le PV" : "Choisir un PV (PDF, Word…)"}
+                </button>
+                {reportFile && (
+                  <p className="truncate text-[11px] text-glass-muted">{reportFile.name}</p>
+                )}
+              </div>
+            </>
           )}
 
           <div className="flex justify-end gap-2 border-t border-app pt-4">

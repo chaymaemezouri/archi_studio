@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
 import {
   ArrowUpRight,
   CalendarClock,
@@ -34,7 +33,7 @@ interface DashboardTodayPanelProps {
   tasks: Task[];
   deadlines: Deadline[];
   onCompleteTask: (taskId: string) => void;
-  isCompletingTask?: boolean;
+  completingTaskIds?: Set<string>;
   className?: string;
 }
 
@@ -68,7 +67,7 @@ function TodaySection({
           <ArrowUpRight className="h-3 w-3" />
         </Link>
       </div>
-      <div className="max-h-none space-y-0.5 overflow-visible px-1.5 pb-2 sm:max-h-36 sm:overflow-y-auto">
+      <div className="max-h-none space-y-0.5 overflow-visible px-1.5 pb-2 sm:max-h-48 sm:overflow-y-auto">
         {children}
       </div>
     </div>
@@ -118,15 +117,9 @@ export default function DashboardTodayPanel({
   tasks,
   deadlines,
   onCompleteTask,
-  isCompletingTask,
+  completingTaskIds = new Set(),
   className,
 }: DashboardTodayPanelProps) {
-  const [checkedIds, setCheckedIds] = useState<Set<string>>(() => new Set());
-
-  const handleComplete = (taskId: string) => {
-    setCheckedIds((prev) => new Set(prev).add(taskId));
-    onCompleteTask(taskId);
-  };
 
   return (
     <section className={cn(dashboardPanel, className)}>
@@ -158,13 +151,14 @@ export default function DashboardTodayPanel({
         ) : (
           tasks.map((task) => {
             const href = task.projectId ? `/projects/${task.projectId}?tab=tasks` : "/tasks";
-            const checked = task.status === "DONE" || checkedIds.has(task.id);
+            const checked = task.status === "DONE";
+            const isCompleting = completingTaskIds.has(task.id);
             return (
               <div key={task.id} className={row}>
                 <TaskCheckbox
                   checked={checked}
-                  disabled={isCompletingTask || checkedIds.has(task.id)}
-                  onToggle={() => handleComplete(task.id)}
+                  disabled={isCompleting}
+                  onToggle={() => onCompleteTask(task.id)}
                 />
                 <Link href={href} className="min-w-0 flex-1">
                   <p
@@ -192,18 +186,31 @@ export default function DashboardTodayPanel({
         )}
       </TodaySection>
 
-      <TodaySection icon={CalendarClock} label="Deadlines du jour" href="/calendar" linkLabel="Voir tout">
+      <TodaySection
+        icon={CalendarClock}
+        label="Deadlines de la semaine"
+        href="/calendar"
+        linkLabel="Voir tout"
+      >
         {deadlines.length === 0 ? (
-          <EmptyLine>Aucune deadline aujourd&apos;hui.</EmptyLine>
+          <EmptyLine>Aucune deadline cette semaine.</EmptyLine>
         ) : (
           deadlines.map((deadline) => (
             <div key={deadline.id} className={row}>
               <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-orange-500" aria-hidden />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[12px] font-medium text-glass">{deadline.title}</p>
-                <Badge variant="warning" className="mt-0.5">
-                  {formatDate(deadline.date, "HH:mm")}
-                </Badge>
+                <div className="mt-0.5 flex flex-wrap items-center gap-1">
+                  <Badge variant="warning">{formatDate(deadline.date, "EEE d MMM")}</Badge>
+                  <span className="text-[10px] tabular-nums text-glass-muted">
+                    {formatDate(deadline.date, "HH:mm")}
+                  </span>
+                  {deadline.project?.name && (
+                    <span className="truncate text-[10px] text-glass-muted">
+                      {deadline.project.name}
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
           ))

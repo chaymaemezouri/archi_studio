@@ -1,17 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import puppeteer from 'puppeteer';
 import { amountToFrenchWords } from '../common/utils/amount-words.util';
+import { ClientsService } from '../clients/clients.service';
 import { DevisService } from '../devis/devis.service';
 import { InvoicesService } from '../invoices/invoices.service';
 import { PaymentsService } from '../payments/payments.service';
 import { SettingsService } from '../settings/settings.service';
 import { UploadsService } from '../uploads/uploads.service';
+import { buildArchitectContractHtml } from './pdf-architect-contract.template';
 import { settingsToPdfBranding } from './pdf-branding';
 import { buildProfessionalDocumentHtml } from './pdf-document.template';
 
 @Injectable()
 export class PdfService {
   constructor(
+    private clientsService: ClientsService,
     private devisService: DevisService,
     private invoicesService: InvoicesService,
     private paymentsService: PaymentsService,
@@ -50,12 +53,13 @@ export class PdfService {
   private async settingsForDocument(
     client?: { studioId: string } | null,
     project?: { studioId: string } | null,
+    studioId?: string | null,
   ) {
-    const studioId = client?.studioId ?? project?.studioId;
-    if (!studioId) {
+    const resolvedStudioId = client?.studioId ?? project?.studioId ?? studioId;
+    if (!resolvedStudioId) {
       throw new NotFoundException('Studio not found for document');
     }
-    const settings = await this.settingsService.get(studioId);
+    const settings = await this.settingsService.get(resolvedStudioId);
     return settingsToPdfBranding(settings, this.uploadsService);
   }
 
@@ -73,7 +77,7 @@ export class PdfService {
 
   async generateDevisPdf(id: string): Promise<Buffer> {
     const devis = await this.devisService.findOne(id);
-    const branding = await this.settingsForDocument(devis.client, devis.project);
+    const branding = await this.settingsForDocument(devis.client, devis.project, devis.studioId);
     const html = buildProfessionalDocumentHtml({
       kind: 'devis',
       branding,
@@ -81,8 +85,8 @@ export class PdfService {
       numberLabel: 'Devis n°',
       number: devis.number,
       date: devis.createdAt,
-      clientName: devis.client?.name,
-      object: devis.object ?? devis.project?.name ?? null,
+      clientName: devis.clientName ?? devis.client?.name ?? undefined,
+      object: devis.object ?? devis.projectName ?? devis.project?.name ?? null,
       items: devis.items,
       totalHT: devis.totalHT,
       totalTTC: devis.totalTTC,
@@ -99,6 +103,7 @@ export class PdfService {
     const branding = await this.settingsForDocument(
       invoice.client,
       invoice.project,
+      invoice.studioId,
     );
     const html = buildProfessionalDocumentHtml({
       kind: 'invoice',
@@ -107,8 +112,8 @@ export class PdfService {
       numberLabel: 'Facture n°',
       number: invoice.number,
       date: invoice.issueDate,
-      clientName: invoice.client?.name,
-      object: invoice.object ?? invoice.project?.name ?? null,
+      clientName: invoice.clientName ?? invoice.client?.name ?? undefined,
+      object: invoice.object ?? invoice.projectName ?? invoice.project?.name ?? null,
       paymentMethod: this.paymentMethodLabel(invoice.paymentMethod),
       bankTransferBy: invoice.bankTransferBy,
       items: invoice.items,
@@ -155,6 +160,36 @@ export class PdfService {
       tva: 0,
       notes: payment.notes,
       amountInWords: amountToFrenchWords(payment.amount),
+    });
+    return this.renderPdf(html);
+  }
+
+  async generateArchitectContractPdf(
+    clientId: string,
+    studioId: string,
+    projectId?: string,
+  ): Promise<Buffer> {
+    const client = await this.clientsService.findOne(clientId, studioId);
+    const branding = await this.settingsForDocument(client);
+    let projectName: string | null = null;
+    if (projectId) {
+      const project = client.projects?.find((p) => p.id === projectId);
+      projectName = project?.name ?? null;
+    }
+    const html = buildArchitectContractHtml({
+      branding,
+      contractDate: new Date(),
+      clientName: client.name,
+      firstName: client.firstName,
+      lastName: client.lastName,
+      cinNumber: client.cinNumber,
+      cinValidUntil: client.cinValidUntil,
+      address: client.address,
+      city: client.city,
+      country: client.country,
+      phone: client.phone,
+      email: client.email,
+      projectName,
     });
     return this.renderPdf(html);
   }

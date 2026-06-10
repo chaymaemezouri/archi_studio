@@ -11,6 +11,11 @@ enum Role {
   USER
 }
 
+enum ProjectVisibility {
+  STUDIO
+  PERSONAL
+}
+
 enum ProjectPhase {
   ESQUISSE
   CONSULTATION
@@ -125,6 +130,8 @@ enum NotifType {
   TASK_TODAY
   TASK_TOMORROW
   TASK_OVERDUE
+  TASK_URGENT
+  TASK_HIGH
   MEETING_TODAY
   MEETING_SOON
   DEADLINE_7D
@@ -154,6 +161,8 @@ model Studio {
   tasks         Task[]
   documents     Document[]
   planRenders   PlanRender[]
+  devis         Devis[]
+  invoices      Invoice[]
 }
 
 model User {
@@ -169,6 +178,8 @@ model User {
   tasks         Task[]
   meetings      Meeting[]
   projects      Project[]
+  ownedProjects Project[]      @relation("ProjectOwner")
+  projectCollaborations ProjectCollaborator[]
   notifications Notification[]
   activityLogs  ActivityLog[]
 }
@@ -178,6 +189,14 @@ model Client {
   studioId       String
   studio         Studio           @relation(fields: [studioId], references: [id])
   name           String
+  firstName      String?
+  lastName       String?
+  cinNumber      String?
+  cinValidUntil  DateTime?
+  cinDocumentUrl String?
+  cinDocumentName String?
+  cinDocumentBackUrl String?
+  cinDocumentBackName String?
   company        String?
   type           String?
   email          String?
@@ -280,10 +299,24 @@ model Project {
   id            String          @id @default(cuid())
   studioId      String
   studio        Studio          @relation(fields: [studioId], references: [id])
+  visibility    ProjectVisibility @default(STUDIO)
+  ownerId       String?
+  owner         User?           @relation("ProjectOwner", fields: [ownerId], references: [id])
   name          String
   address       String?
   city          String?
   country       String?
+  province      String?
+  prefecture    String?
+  commune       String?
+  arrondissement String?
+  coordinateX   Float?
+  coordinateY   Float?
+  latitude      Float?
+  longitude     Float?
+  useTopoCoordinates Boolean @default(false)
+  mapsUrl       String?
+  driveUrl      String?
   url           String?
   type            String?
   projectNature   String?
@@ -294,6 +327,9 @@ model Project {
   intakeDate      DateTime?
   deadline        DateTime?
   budget          Float?
+  totalProjectAmount Float?
+  contractArchitectFees Float?
+  actualFeesToCollect Float?
   surface         Float?
   titleSurface    Float?
   description   String?
@@ -322,6 +358,19 @@ model Project {
   planRenders     PlanRender[]
   checklistItems  ProjectChecklistItem[]
   projectNotes    ProjectNote[]
+  collaborators   ProjectCollaborator[]
+}
+
+model ProjectCollaborator {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([projectId, userId])
+  @@index([userId])
 }
 
 model ProjectNote {
@@ -426,16 +475,20 @@ model Meeting {
 }
 
 model ChantierLog {
-  id          String   @id @default(cuid())
-  date        DateTime
-  description String
-  progress    Int?
-  issues      String?
-  nextSteps   String?
-  photos      String[]
-  projectId   String
-  project     Project  @relation(fields: [projectId], references: [id])
-  createdAt   DateTime @default(now())
+  id            String   @id @default(cuid())
+  date          DateTime
+  siteVisit     String?
+  chantierPhase String?
+  description   String
+  progress      Int?
+  issues        String?
+  nextSteps     String?
+  photos        String[]
+  reportUrl     String?
+  reportName    String?
+  projectId     String
+  project       Project  @relation(fields: [projectId], references: [id])
+  createdAt     DateTime @default(now())
 }
 
 model CalendarEvent {
@@ -475,13 +528,17 @@ model Tender {
 }
 
 model Devis {
-  id         String      @id @default(cuid())
-  number     String      @unique
-  status     DevisStatus @default(DRAFT)
-  clientId   String?
-  client     Client?     @relation(fields: [clientId], references: [id])
-  projectId  String?
-  project    Project?    @relation(fields: [projectId], references: [id])
+  id           String      @id @default(cuid())
+  number       String      @unique
+  status       DevisStatus @default(DRAFT)
+  studioId     String?
+  studio       Studio?     @relation(fields: [studioId], references: [id])
+  clientId     String?
+  client       Client?     @relation(fields: [clientId], references: [id])
+  clientName   String?
+  projectId    String?
+  project      Project?    @relation(fields: [projectId], references: [id])
+  projectName  String?
   items      DevisItem[]
   tva        Float       @default(20)
   totalHT    Float       @default(0)
@@ -507,13 +564,17 @@ model DevisItem {
 }
 
 model Invoice {
-  id            String              @id @default(cuid())
-  number        String              @unique
-  status        InvoiceStatus       @default(DRAFT)
-  clientId      String?
-  client        Client?             @relation(fields: [clientId], references: [id])
-  projectId     String?
-  project       Project?            @relation(fields: [projectId], references: [id])
+  id             String              @id @default(cuid())
+  number         String              @unique
+  status         InvoiceStatus       @default(DRAFT)
+  studioId       String?
+  studio         Studio?             @relation(fields: [studioId], references: [id])
+  clientId       String?
+  client         Client?             @relation(fields: [clientId], references: [id])
+  clientName     String?
+  projectId      String?
+  project        Project?            @relation(fields: [projectId], references: [id])
+  projectName    String?
   devisId       String?
   devis         Devis?              @relation(fields: [devisId], references: [id], onDelete: SetNull)
   phase         String?

@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/api-errors";
+import { invalidateFinanceQueries } from "@/lib/finance-query";
 import type { Invoice, InvoiceItem } from "@/types";
 
 export type InvoiceItemInput = Pick<
@@ -67,12 +69,11 @@ export function useCreateInvoice() {
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      invalidateFinanceQueries(queryClient);
       toast.success("Facture créée");
     },
-    onError: () => toast.error("Erreur lors de la création"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la création")),
   });
 }
 
@@ -85,13 +86,12 @@ export function useUpdateInvoice() {
       return data;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      invalidateFinanceQueries(queryClient);
       queryClient.invalidateQueries({ queryKey: ["invoices", variables.id] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
       toast.success("Facture mise à jour");
     },
-    onError: () => toast.error("Erreur lors de la mise à jour"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la mise à jour")),
   });
 }
 
@@ -103,9 +103,7 @@ export function useDeleteInvoice() {
       await api.delete(`/invoices/${id}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["invoices"] });
-      queryClient.invalidateQueries({ queryKey: ["clients"] });
-      queryClient.invalidateQueries({ queryKey: ["projects"] });
+      invalidateFinanceQueries(queryClient);
       toast.success("Facture supprimée");
     },
     onError: () => toast.error("Erreur lors de la suppression"),

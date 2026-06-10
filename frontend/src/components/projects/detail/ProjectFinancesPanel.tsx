@@ -23,8 +23,14 @@ import {
   detailLinkHover,
 } from "./project-detail-ui";
 import { useDialog } from "@/components/providers/DialogProvider";
+import { usePayments } from "@/hooks/usePayments";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
 import { getInvoiceFinanceHref } from "@/lib/payment-utils";
+import {
+  getProjectGlobalAmount,
+  getProjectRemainingToCollect,
+  sumPaymentsForProject,
+} from "@/lib/project-finance";
 import {
   DEVIS_STATUS_LABELS,
   INVOICE_STATUS_LABELS,
@@ -41,13 +47,14 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
   const { updateInvoice } = useProjectDetailMutations(project.id);
   const devis = project.devis ?? [];
   const invoices = project.invoices ?? [];
-  const payments = invoices.flatMap((inv) =>
-    (inv.payments ?? []).map((p) => ({ ...p, invoiceNumber: inv.number }))
-  );
+  const { data: projectPayments = [] } = usePayments({ projectId: project.id });
+  const totalPaidOnProject = sumPaymentsForProject(project.id, projectPayments);
+  const globalAmount = getProjectGlobalAmount(project);
+  const remainingToCollect = getProjectRemainingToCollect(project, totalPaidOnProject);
 
   const totalInvoiced = invoices.reduce((s, i) => s + (i.totalTTC ?? 0), 0);
-  const totalPaid = invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0);
-  const remaining = Math.max(0, totalInvoiced - totalPaid);
+  const totalPaidInvoices = invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0);
+  const remainingInvoices = Math.max(0, totalInvoiced - totalPaidInvoices);
 
   const markPaid = async (invoiceId: string) => {
     const ok = await confirm({
@@ -61,6 +68,12 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
 
   const quotesUrl = `/finances/quotes-invoices?projectId=${project.id}&new=devis`;
   const invoiceUrl = `/finances/quotes-invoices?projectId=${project.id}&new=invoice`;
+  const paymentParams = new URLSearchParams({
+    new: "payment",
+    projectId: project.id,
+  });
+  if (project.clientId) paymentParams.set("clientId", project.clientId);
+  const paymentsUrl = `/payments?${paymentParams.toString()}`;
 
   return (
     <div className="space-y-6">
@@ -68,20 +81,44 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
         <ProjectTabSectionHeader title="Finances" />
         <div className={detailFinanceStatGrid}>
           <div>
+            <p className={detailFinanceStatLabel}>Montant global du projet</p>
+            <p className={detailFinanceStatValue}>
+              {globalAmount != null ? formatCurrency(globalAmount) : "—"}
+            </p>
+          </div>
+          <div>
+            <p className={detailFinanceStatLabel}>Honoraires déclarés (contrat)</p>
+            <p className={detailFinanceStatValue}>
+              {project.contractArchitectFees != null
+                ? formatCurrency(project.contractArchitectFees)
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <p className={detailFinanceStatLabel}>Honoraires réels à encaisser</p>
+            <p className={detailFinanceStatValue}>
+              {project.actualFeesToCollect != null
+                ? formatCurrency(project.actualFeesToCollect)
+                : "—"}
+            </p>
+          </div>
+          <div>
+            <p className={detailFinanceStatLabel}>Total encaissé</p>
+            <p className={cn(detailFinanceStatValue, detailFinanceStatValueSuccess)}>
+              {formatCurrency(totalPaidOnProject)}
+            </p>
+          </div>
+          <div>
+            <p className={detailFinanceStatLabel}>Reste à encaisser</p>
+            <p className={cn(detailFinanceStatValue, detailFinanceStatValueWarning)}>
+              {project.actualFeesToCollect != null
+                ? formatCurrency(remainingToCollect)
+                : formatCurrency(remainingInvoices)}
+            </p>
+          </div>
+          <div>
             <p className={detailFinanceStatLabel}>Total facturé</p>
             <p className={detailFinanceStatValue}>{formatCurrency(totalInvoiced)}</p>
-          </div>
-          <div>
-            <p className={detailFinanceStatLabel}>Total payé</p>
-            <p className={cn(detailFinanceStatValue, detailFinanceStatValueSuccess)}>
-              {formatCurrency(totalPaid)}
-            </p>
-          </div>
-          <div>
-            <p className={detailFinanceStatLabel}>Reste à payer</p>
-            <p className={cn(detailFinanceStatValue, detailFinanceStatValueWarning)}>
-              {formatCurrency(remaining)}
-            </p>
           </div>
         </div>
       </section>
@@ -171,19 +208,29 @@ export default function ProjectFinancesPanel({ project }: ProjectFinancesPanelPr
       </section>
 
       <section className={detailChecklistSection}>
-        <ProjectTabSectionHeader title="Paiements" count={payments.length} />
-        {payments.length === 0 ? (
+        <ProjectTabSectionHeader
+          title="Paiements"
+          count={projectPayments.length}
+          action={{
+            label: "Ajouter un paiement",
+            icon: Plus,
+            href: paymentsUrl,
+          }}
+        />
+        {projectPayments.length === 0 ? (
           <p className={detailChecklistEmpty}>Aucun paiement enregistré.</p>
         ) : (
           <ul className={detailChecklistList}>
-            {payments.map((p) => (
+            {projectPayments.map((p) => (
               <li key={p.id} className={detailChecklistItem}>
                 <div className="min-w-0 flex-1">
                   <p className={detailChecklistItemTitle}>
                     {formatCurrency(p.amount)}
                   </p>
                   <p className={detailChecklistDate}>
-                    Facture {p.invoiceNumber} · {formatDate(p.date)}
+                    {p.invoice?.number
+                      ? `Facture ${p.invoice.number} · ${formatDate(p.date)}`
+                      : formatDate(p.date)}
                   </p>
                 </div>
                 <span

@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsDateString, IsEmail, IsEnum, IsOptional, IsString } from 'class-validator';
 import { ClientStatus } from '@prisma/client';
 
 export class UpdateClientDto {
@@ -13,6 +13,38 @@ export class UpdateClientDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsString()
+  cinNumber?: string;
+
+  @IsOptional()
+  @IsDateString()
+  cinValidUntil?: string;
+
+  @IsOptional()
+  @IsString()
+  cinDocumentUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  cinDocumentName?: string;
+
+  @IsOptional()
+  @IsString()
+  cinDocumentBackUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  cinDocumentBackName?: string;
 
   @IsOptional()
   @IsString()

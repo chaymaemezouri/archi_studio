@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, Role } from '@prisma/client';
+import { projectListWhere } from '../common/utils/project-access.util';
+import type { AuthUser } from '../common/types/auth-user';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class SearchService {
   constructor(private prisma: PrismaService) {}
 
-  async search(studioId: string, query: string) {
+  async search(user: Pick<AuthUser, 'studioId' | 'id' | 'role'>, query: string) {
     const q = query.trim();
     if (!q) {
       return {
@@ -23,13 +25,17 @@ export class SearchService {
       mode: 'insensitive',
     };
 
-    const projectScope = { studioId };
+    const projectScope = projectListWhere({
+      studioId: user.studioId,
+      userId: user.id,
+      role: user.role as Role,
+    });
 
     const [projects, clients, documents, tasks, devisList, invoices] =
       await Promise.all([
         this.prisma.project.findMany({
           where: {
-            studioId,
+            ...projectScope,
             OR: [
               { name: contains },
               { city: contains },
@@ -37,13 +43,20 @@ export class SearchService {
               { address: contains },
             ],
           },
-          select: { id: true, name: true, city: true, country: true, phase: true },
+          select: {
+            id: true,
+            name: true,
+            city: true,
+            country: true,
+            phase: true,
+            visibility: true,
+          },
           take: 8,
           orderBy: { updatedAt: 'desc' },
         }),
         this.prisma.client.findMany({
           where: {
-            studioId,
+            studioId: user.studioId,
             OR: [{ name: contains }, { company: contains }, { email: contains }],
           },
           select: { id: true, name: true, company: true, email: true },
@@ -82,7 +95,7 @@ export class SearchService {
           where: {
             OR: [
               { project: projectScope },
-              { client: { studioId } },
+              { client: { studioId: user.studioId } },
             ],
             number: contains,
           },
@@ -92,7 +105,7 @@ export class SearchService {
         }),
         this.prisma.invoice.findMany({
           where: {
-            client: { studioId },
+            client: { studioId: user.studioId },
             number: contains,
           },
           select: { id: true, number: true },

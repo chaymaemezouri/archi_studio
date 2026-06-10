@@ -6,9 +6,14 @@ import {
   Param,
   Patch,
   Post,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/decorators/current-user.decorator';
+import { CinOcrService } from './cin-ocr.service';
 import { ClientsService } from './clients.service';
 import { CreateClientDocumentDto } from './dto/client-document.dto';
 import {
@@ -20,7 +25,21 @@ import { UpdateClientDto } from './dto/update-client.dto';
 
 @Controller('clients')
 export class ClientsController {
-  constructor(private clientsService: ClientsService) {}
+  constructor(
+    private clientsService: ClientsService,
+    private cinOcrService: CinOcrService,
+  ) {}
+
+  @Post('ocr/cin')
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: memoryStorage(),
+      limits: { fileSize: 10 * 1024 * 1024 },
+    }),
+  )
+  ocrCin(@UploadedFile() file: Express.Multer.File) {
+    return this.cinOcrService.extractFromImage(file);
+  }
 
   @Get()
   findAll(@CurrentUser() user: AuthUser) {

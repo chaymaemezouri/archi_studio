@@ -18,6 +18,7 @@ export type ProjectScale = "SMALL" | "LARGE";
 export type ChecklistItemStatus = "MISSING" | "UPLOADED" | "VALIDATED";
 
 export type ProjectStatus = "ACTIVE" | "ARCHIVED";
+export type ProjectVisibility = "STUDIO" | "PERSONAL";
 export type TaskStatus = "TODO" | "IN_PROGRESS" | "DONE" | "CANCELLED";
 export type Priority = "LOW" | "MEDIUM" | "HIGH" | "URGENT";
 export type InvoiceStatus =
@@ -89,6 +90,14 @@ export interface ClientFinancialSummary {
 export interface Client {
   id: string;
   name: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  cinNumber?: string | null;
+  cinValidUntil?: string | null;
+  cinDocumentUrl?: string | null;
+  cinDocumentName?: string | null;
+  cinDocumentBackUrl?: string | null;
+  cinDocumentBackName?: string | null;
   company?: string | null;
   type?: ClientType | string | null;
   email?: string | null;
@@ -180,12 +189,33 @@ export interface ProjectChecklistItem {
   updatedAt: string;
 }
 
+export interface ProjectCollaborator {
+  id: string;
+  projectId: string;
+  userId: string;
+  createdAt: string;
+  user: User & {
+    studio?: Pick<Studio, "id" | "name" | "slug">;
+  };
+}
+
 export interface Project {
   id: string;
   name: string;
   address?: string | null;
   city?: string | null;
   country?: string | null;
+  province?: string | null;
+  prefecture?: string | null;
+  commune?: string | null;
+  arrondissement?: string | null;
+  coordinateX?: number | null;
+  coordinateY?: number | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  useTopoCoordinates?: boolean | null;
+  mapsUrl?: string | null;
+  driveUrl?: string | null;
   url?: string | null;
   type?: string | null;
   projectNature?: string | null;
@@ -196,6 +226,9 @@ export interface Project {
   intakeDate?: string | null;
   deadline?: string | null;
   budget?: number | null;
+  totalProjectAmount?: number | null;
+  contractArchitectFees?: number | null;
+  actualFeesToCollect?: number | null;
   surface?: number | null;
   titleSurface?: number | null;
   description?: string | null;
@@ -203,6 +236,12 @@ export interface Project {
   imageUrl?: string | null;
   progress: number;
   isFavorite: boolean;
+  visibility?: ProjectVisibility;
+  ownerId?: string | null;
+  owner?: User | null;
+  studioId?: string;
+  studio?: Pick<Studio, "id" | "name" | "slug">;
+  collaborators?: ProjectCollaborator[];
   clientId?: string | null;
   client?: Client | null;
   managerId?: string | null;
@@ -227,11 +266,15 @@ export interface Project {
 export interface ChantierLog {
   id: string;
   date: string;
+  siteVisit?: string | null;
+  chantierPhase?: string | null;
   description: string;
   progress?: number | null;
   issues?: string | null;
   nextSteps?: string | null;
   photos?: string[];
+  reportUrl?: string | null;
+  reportName?: string | null;
   projectId: string;
   createdAt: string;
 }
@@ -467,8 +510,10 @@ export interface Devis {
   number: string;
   status: DevisStatus;
   clientId?: string | null;
+  clientName?: string | null;
   client?: Client | null;
   projectId?: string | null;
+  projectName?: string | null;
   project?: Project | null;
   items?: DevisItem[];
   tva: number;
@@ -496,8 +541,10 @@ export interface Payment {
   id: string;
   invoiceId?: string | null;
   clientId?: string | null;
+  clientName?: string | null;
   client?: Client | null;
   projectId?: string | null;
+  projectName?: string | null;
   project?: Project | null;
   amount: number;
   date: string;
@@ -515,8 +562,10 @@ export interface Invoice {
   number: string;
   status: InvoiceStatus;
   clientId?: string | null;
+  clientName?: string | null;
   client?: Client | null;
   projectId?: string | null;
+  projectName?: string | null;
   project?: Project | null;
   devisId?: string | null;
   phase?: string | null;

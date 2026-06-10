@@ -83,6 +83,7 @@ export default function DashboardPage() {
   const updateTask = useUpdateDashboardTask();
   const { data, isLoading, isError, refetch } = useDashboardOverview();
   const today = new Date();
+  const [completingTaskId, setCompletingTaskId] = useState<string | null>(null);
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
   const [quickAddMode, setQuickAddMode] = useState<QuickAddMode>("deadline");
@@ -121,18 +122,10 @@ export default function DashboardPage() {
   }, [data?.todayTasks]);
 
   const deadlinesPreview = useMemo(() => {
-    const seen = new Set<string>();
-    const items = [
-      ...(data?.upcomingDeadlines ?? []),
-      ...(data?.calendarDeadlines ?? []),
-    ].filter((d) => {
-      if (d.done || !isSameDay(new Date(d.date), today)) return false;
-      if (seen.has(d.id)) return false;
-      seen.add(d.id);
-      return true;
-    });
-    return items.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-  }, [data?.upcomingDeadlines, data?.calendarDeadlines, today]);
+    return (data?.upcomingDeadlines ?? [])
+      .filter((d) => !d.done)
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  }, [data?.upcomingDeadlines]);
 
   const todayAgenda = useMemo(() => {
     const items = [
@@ -197,6 +190,19 @@ export default function DashboardPage() {
       },
     ];
   }, [data?.stats, openTodayTasksCount]);
+
+  const handleCompleteTask = (id: string) => {
+    setCompletingTaskId(id);
+    updateTask.mutate(
+      { id, status: "DONE" },
+      { onSettled: () => setCompletingTaskId(null) }
+    );
+  };
+
+  const completingTaskIds = useMemo(
+    () => (completingTaskId ? new Set([completingTaskId]) : new Set<string>()),
+    [completingTaskId]
+  );
 
   const handleWeeklyPdf = async () => {
     setPdfLoading(true);
@@ -276,8 +282,8 @@ export default function DashboardPage() {
               agenda={todayAgenda}
               tasks={tasksPreview}
               deadlines={deadlinesPreview}
-              onCompleteTask={(id) => updateTask.mutate({ id, status: "DONE" })}
-              isCompletingTask={updateTask.isPending}
+              onCompleteTask={handleCompleteTask}
+              completingTaskIds={completingTaskIds}
             />
           </div>
 
@@ -290,8 +296,8 @@ export default function DashboardPage() {
                 agenda={todayAgenda}
                 tasks={tasksPreview}
                 deadlines={deadlinesPreview}
-                onCompleteTask={(id) => updateTask.mutate({ id, status: "DONE" })}
-                isCompletingTask={updateTask.isPending}
+                onCompleteTask={handleCompleteTask}
+                completingTaskIds={completingTaskIds}
               />
             </div>
           </div>

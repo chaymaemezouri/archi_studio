@@ -14,6 +14,13 @@ export const headerSearchInput = cn(
   "focus:border-studio-border/50 focus:outline-none focus:ring-0"
 );
 
+/** Champ recherche mobile — fond visible, lisible sur petit écran */
+export const headerSearchInputMobile = cn(
+  "max-md:h-10 max-md:w-full max-md:rounded-lg max-md:border max-md:border-[color:var(--glass-input-border)] max-md:bg-[color:var(--glass-input-bg)] max-md:pl-9 max-md:pr-9 max-md:text-[13px] max-md:text-glass",
+  "max-md:shadow-[var(--glass-input-shadow)] max-md:placeholder:text-[color:var(--glass-placeholder)] max-md:transition",
+  "max-md:focus:border-studio-border/50 max-md:focus:outline-none max-md:focus:ring-1 max-md:focus:ring-studio-border/25"
+);
+
 export const headerSearchKbd =
   "pointer-events-none absolute right-0 top-1/2 hidden -translate-y-1/2 text-[10px] font-medium text-glass-muted md:inline";
 

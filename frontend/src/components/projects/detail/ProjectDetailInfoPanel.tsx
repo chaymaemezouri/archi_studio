@@ -4,6 +4,7 @@ import { Calendar, Pencil, Share2, Star } from "lucide-react";
 import toast from "react-hot-toast";
 import ProjectDetailMenu from "./ProjectDetailMenu";
 import ProjectDetailQuickAddMenu from "./ProjectDetailQuickAddMenu";
+import ProjectCollaboratorsSection from "./ProjectCollaboratorsSection";
 import { ProjectStatusBadge } from "../card/ProjectCardParts";
 import DeadlineStatusBadge from "@/components/dashboard/DeadlineStatusBadge";
 import {
@@ -25,6 +26,7 @@ import {
   detailTextStrong,
 } from "./project-detail-ui";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import {
   getProjectDisplayStatus,
   getProjectProgressRingStroke,
@@ -37,6 +39,12 @@ import {
 } from "@/lib/project-phases";
 import type { Project, ProjectPhase } from "@/types";
 import { cn, formatCurrency, formatDate } from "@/lib/utils";
+import {
+  getProjectGlobalAmount,
+  getProjectRemainingToCollect,
+  sumPaymentsForProject,
+} from "@/lib/project-finance";
+import { buildProjectLocationQuery } from "@/lib/project-location";
 import { isOverdueDeadline, isUrgentDeadline } from "@/lib/dates";
 import type { ProjectQuickAddMode, ProjectUploadKind } from "./project-detail-types";
 import type { ProjectTabId } from "./ProjectDetailTabs";
@@ -78,12 +86,18 @@ export default function ProjectDetailInfoPanel({
 }: ProjectDetailInfoPanelProps) {
   const { updateProjectMeta } = useProjectDetailMutations(project.id);
   const displayStatus = getProjectDisplayStatus(project);
-  const progress = project.progress ?? 0;
+  const progress = computeProjectOverallProgress(project);
   const progressColor = getProjectProgressRingStroke(progress);
   const clientLabel = project.client?.company || project.client?.name;
-  const location = [project.address, project.city, project.country]
+  const location = buildProjectLocationQuery(project);
+  const adminLine = [
+    project.arrondissement,
+    project.commune,
+    project.prefecture,
+    project.province,
+  ]
     .filter(Boolean)
-    .join(", ");
+    .join(" · ");
   const deadlineUrgent =
     project.deadline &&
     (isOverdueDeadline(project.deadline) || isUrgentDeadline(project.deadline));
@@ -91,6 +105,17 @@ export default function ProjectDetailInfoPanel({
   const nextDeadline = (project.deadlines ?? [])
     .filter((d) => !d.done)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())[0];
+
+  const paymentRecords = (project.invoices ?? []).flatMap((inv) =>
+    (inv.payments ?? []).map((p) => ({
+      amount: p.amount,
+      projectId: p.projectId ?? project.id,
+      invoice: { projectId: inv.projectId ?? project.id },
+    }))
+  );
+  const totalPaidOnProject = sumPaymentsForProject(project.id, paymentRecords);
+  const remainingToCollect = getProjectRemainingToCollect(project, totalPaidOnProject);
+  const globalAmount = getProjectGlobalAmount(project);
 
   const share = async () => {
     const url = window.location.href;
@@ -156,6 +181,45 @@ export default function ProjectDetailInfoPanel({
         <div className={detailInfoGroupGrid}>
           <InfoField label="Client" value={clientLabel || "—"} />
           <InfoField label="Localisation" value={location || "—"} />
+          {adminLine ? (
+            <InfoField label="Découpage admin." value={adminLine} className="sm:col-span-2" />
+          ) : null}
+          {project.coordinateX != null && project.coordinateY != null ? (
+            <InfoField
+              label="Coord. topo X/Y"
+              value={`${project.coordinateX} / ${project.coordinateY}`}
+            />
+          ) : null}
+          {project.mapsUrl ? (
+            <InfoField
+              label="Carte"
+              value={
+                <a
+                  href={project.mapsUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={detailLink}
+                >
+                  Ouvrir Maps
+                </a>
+              }
+            />
+          ) : null}
+          {project.driveUrl ? (
+            <InfoField
+              label="Drive"
+              value={
+                <a
+                  href={project.driveUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className={detailLink}
+                >
+                  Ouvrir Drive
+                </a>
+              }
+            />
+          ) : null}
           <InfoField label="Nature" value={project.projectNature || "—"} />
           <InfoField
             label="Catégorie"
@@ -180,6 +244,45 @@ export default function ProjectDetailInfoPanel({
       <div className={detailGroupDivider} />
 
       <div className={detailInfoGroup}>
+        <h2 className={detailInfoGroupTitle}>Informations financières</h2>
+        <div className={detailInfoGroupGrid}>
+          <InfoField
+            label="Montant global du projet"
+            value={globalAmount != null ? formatCurrency(globalAmount) : "—"}
+          />
+          <InfoField
+            label="Honoraires déclarés (contrat)"
+            value={
+              project.contractArchitectFees != null
+                ? formatCurrency(project.contractArchitectFees)
+                : "—"
+            }
+          />
+          <InfoField
+            label="Honoraires réels à encaisser"
+            value={
+              project.actualFeesToCollect != null
+                ? formatCurrency(project.actualFeesToCollect)
+                : "—"
+            }
+          />
+          <InfoField
+            label="Reste à encaisser"
+            value={
+              project.actualFeesToCollect != null
+                ? formatCurrency(remainingToCollect)
+                : "—"
+            }
+          />
+        </div>
+        <p className="mt-1 text-[10px] text-glass-muted">
+          Le reste à encaisser est calculé automatiquement (honoraires réels − paiements enregistrés).
+        </p>
+      </div>
+
+      <div className={detailGroupDivider} />
+
+      <div className={detailInfoGroup}>
         <h2 className={detailInfoGroupTitle}>Données techniques</h2>
         <div className={detailInfoGroupGrid}>
           <InfoField label="Type" value={project.type || "—"} />
@@ -192,10 +295,6 @@ export default function ProjectDetailInfoPanel({
             value={
               project.titleSurface != null ? `${project.titleSurface} m²` : "—"
             }
-          />
-          <InfoField
-            label="Budget estimé"
-            value={project.budget != null ? formatCurrency(project.budget) : "—"}
           />
           <InfoField
             label="Date de prise"
@@ -316,6 +415,10 @@ export default function ProjectDetailInfoPanel({
           </div>
         </div>
       </div>
+
+      <div className={detailGroupDivider} />
+
+      <ProjectCollaboratorsSection project={project} />
     </div>
   );
 }

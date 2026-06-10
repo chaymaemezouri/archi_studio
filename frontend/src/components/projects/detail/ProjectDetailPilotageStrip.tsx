@@ -21,6 +21,7 @@ import {
 } from "./project-detail-ui";
 import { ProjectStatusBadge } from "../card/ProjectCardParts";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
+import { computeProjectOverallProgress } from "@/lib/project-progress";
 import {
   getNextTaskForProject,
   getProjectDisplayStatus,
@@ -128,7 +129,7 @@ export default function ProjectDetailPilotageStrip({
 }: ProjectDetailPilotageStripProps) {
   const { updateProjectMeta } = useProjectDetailMutations(project.id);
   const displayStatus = getProjectDisplayStatus(project);
-  const progress = project.progress ?? 0;
+  const progress = computeProjectOverallProgress(project);
   const phases = getPhaseOptionsForCategory(
     project.projectCategory ?? "PRIVATE",
     project.phase
