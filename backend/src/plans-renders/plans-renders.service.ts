@@ -50,7 +50,12 @@ export class PlansRendersService {
     isFavorite: boolean;
     createdAt: Date;
     updatedAt: Date;
-    project?: { id: string; name: string; clientId: string | null } | null;
+    project?: {
+      id: string;
+      name: string;
+      clientId: string | null;
+      imageUrl?: string | null;
+    } | null;
     client?: { id: string; name: string } | null;
   }) {
     const clientId = row.clientId ?? row.project?.clientId ?? null;
@@ -236,6 +241,29 @@ export class PlansRendersService {
   async remove(id: string, studioId: string, userId?: string) {
     const asset = await this.findOne(id, studioId);
     await this.prisma.planRender.delete({ where: { id } });
+
+    // A deleted asset must not stay as the project cover
+    if (asset.projectId && asset.project?.imageUrl === asset.url) {
+      const fallback = await this.prisma.planRender.findFirst({
+        where: { projectId: asset.projectId, kind: 'RENDER', studioId },
+        orderBy: { createdAt: 'desc' },
+      });
+      if (fallback) {
+        await this.applyMainImage(
+          fallback.id,
+          asset.projectId,
+          studioId,
+          userId,
+          false,
+        );
+      } else {
+        await this.prisma.project.update({
+          where: { id: asset.projectId },
+          data: { imageUrl: null },
+        });
+      }
+    }
+
     await this.logActivity(
       asset,
       asset.kind === 'PLAN' ? 'plan_deleted' : 'render_deleted',

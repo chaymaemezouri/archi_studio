@@ -115,7 +115,9 @@ DATABASE_URL=postgresql://architecture:architecture_password@postgres:5432/archi
 sed -i 's/"3000:3000"/"3002:3000"/g' docker-compose.yml
 
 docker compose up -d --build
-docker compose exec backend node prisma/seed.prod.js
+# Crée/renouvelle uniquement Demo 1, Demo 2 et Demo 3.
+# Ne lancez pas seed.prod.js ni prisma db seed sur une base déjà utilisée.
+docker compose exec backend npm run prisma:seed-demo
 
 # Nginx système → Docker
 sudo cp deploy/nginx-host-docker.conf /etc/nginx/sites-available/a2workspace.studio
@@ -140,16 +142,22 @@ Tester : **http://a2workspace.studio** → page de connexion.
 
 ---
 
-## 7. Créer les comptes admin (une fois)
+## 7. Créer ou renouveler uniquement les comptes démo
 
 ```bash
-docker compose -f docker-compose.prod.yml exec backend node prisma/seed.prod.js
+docker compose -f docker-compose.prod.yml exec backend npm run prisma:seed-demo
 ```
 
-Comptes :
+Cette commande ne modifie pas les studios, paramètres, utilisateurs ou données
+d’Amini et Maouni. Elle crée ou remplit uniquement les trois studios démo et
+renouvelle leur expiration à 14 jours.
 
-- `admin@amini.architects` / `Archi2026!`
-- `admin@maouni.architecture` / `Archi2026!`
+- `demo1@archi.studio` / `Demo2026!`
+- `demo2@archi.studio` / `Demo2026!`
+- `demo3@archi.studio` / `Demo2026!`
+
+> Ne lancez pas `node prisma/seed.prod.js`, `npx prisma db seed` ou
+> `prisma migrate reset` sur la base de production existante.
 
 ---
 

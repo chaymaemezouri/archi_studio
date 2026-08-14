@@ -40,8 +40,17 @@ export class ProjectFilesService {
   }
 
   async remove(id: string) {
-    await this.findOne(id);
+    const file = await this.findOne(id);
     await this.prisma.projectFile.delete({ where: { id } });
+
+    // A deleted file must not stay as the project cover
+    if (file.project?.imageUrl === file.url) {
+      await this.prisma.project.update({
+        where: { id: file.projectId },
+        data: { imageUrl: null },
+      });
+    }
+
     return { deleted: true };
   }
 }

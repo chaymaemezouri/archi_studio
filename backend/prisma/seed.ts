@@ -4,6 +4,11 @@ import * as bcrypt from 'bcrypt';
 import { Pool } from 'pg';
 import { PrismaClient } from '@prisma/client';
 import { DEMO_PASSWORD, STUDIO_CONFIGS, type StudioSeedConfig } from './seed-data';
+import {
+  DEMO_ACCOUNT_PASSWORD,
+  DEMO_EXPIRY_DAYS,
+  seedDemoStudios,
+} from './seed-demo';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -17,12 +22,15 @@ async function upsertCoreStudio(config: StudioSeedConfig, password: string) {
     update: {
       name: config.name,
       logoUrl: config.logoUrl,
+      // Never set demoExpiresAt on real studios
+      demoExpiresAt: null,
     },
     create: {
       id: config.id,
       slug: config.slug,
       name: config.name,
       logoUrl: config.logoUrl,
+      demoExpiresAt: null,
     },
   });
 
@@ -55,16 +63,26 @@ async function upsertCoreStudio(config: StudioSeedConfig, password: string) {
 }
 
 async function main() {
-  const password = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const realPassword = await bcrypt.hash(DEMO_PASSWORD, 12);
+  const demoPassword = await bcrypt.hash(DEMO_ACCOUNT_PASSWORD, 12);
 
   for (const config of STUDIO_CONFIGS) {
-    await upsertCoreStudio(config, password);
+    await upsertCoreStudio(config, realPassword);
   }
 
-  console.log('\n✅ Seed completed — comptes administrateurs uniquement\n');
+  const demos = await seedDemoStudios(prisma, demoPassword);
+
+  console.log('\n✅ Seed completed\n');
+  console.log('Comptes réels (permanents, sans expiration) :');
   console.log('  admin@amini.architects / Archi2026!');
   console.log('  admin@maouni.architecture / Archi2026!');
-  console.log('\nLes administrateurs peuvent changer email et mot de passe dans Paramètres.\n');
+  console.log('\nComptes démo isolés (expiration ' + DEMO_EXPIRY_DAYS + ' jours) :');
+  for (const demo of demos) {
+    console.log(
+      `  ${demo.email} / ${DEMO_ACCOUNT_PASSWORD}  — expire ${demo.expiresAt.toISOString().slice(0, 10)}`,
+    );
+  }
+  console.log('');
 }
 
 main()

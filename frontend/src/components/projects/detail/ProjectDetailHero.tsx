@@ -9,6 +9,7 @@ import {
   Expand,
   Layers,
   Star,
+  Trash2,
   X,
 } from "lucide-react";
 import Tooltip from "@/components/ui/Tooltip";
@@ -50,6 +51,7 @@ import { cn } from "@/lib/utils";
 import type { ProjectTabId } from "./ProjectDetailTabs";
 import type { ProjectQuickAddMode, ProjectUploadKind } from "./project-detail-types";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
+import { useProjectVisualDelete } from "@/hooks/useProjectVisualDelete";
 
 interface ProjectDetailHeroProps {
   project: Project;
@@ -67,6 +69,7 @@ export default function ProjectDetailHero({
   onTabChange,
 }: ProjectDetailHeroProps) {
   const { updateProjectMeta } = useProjectDetailMutations(project.id);
+  const { deleteVisual } = useProjectVisualDelete(project);
   const items = useMemo(() => getProjectVisualPreviewItems(project, 12), [project]);
   const gallerySlides = useMemo(
     () =>
@@ -201,23 +204,35 @@ export default function ProjectDetailHero({
 
             <div className={detailHeroGalleryStack}>
               {mainSrc ? (
-                <button
-                  type="button"
-                  onClick={() => openLightbox(safeIndex)}
-                  className={detailHeroMainImage}
-                  aria-label="Agrandir l'image"
-                >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    key={mainSrc}
-                    src={mainSrc}
-                    alt=""
-                    className={detailHeroMainImageImg}
-                  />
-                  <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover/preview:opacity-100">
-                    <Expand className="h-4 w-4 text-white/90" />
-                  </span>
-                </button>
+                <div className="group/preview relative w-full shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => openLightbox(safeIndex)}
+                    className={detailHeroMainImage}
+                    aria-label="Agrandir l'image"
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      key={mainSrc}
+                      src={mainSrc}
+                      alt=""
+                      className={detailHeroMainImageImg}
+                    />
+                    <span className="absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 transition group-hover/preview:opacity-100">
+                      <Expand className="h-4 w-4 text-white/90" />
+                    </span>
+                  </button>
+                  <Tooltip label="Supprimer l'image">
+                    <button
+                      type="button"
+                      onClick={() => deleteVisual(gallerySlides[safeIndex].id)}
+                      className="absolute right-2 top-2 z-10 rounded-lg bg-black/60 p-1.5 text-white/70 opacity-0 transition hover:bg-red-500/80 hover:text-white group-hover/preview:opacity-100"
+                      aria-label="Supprimer l'image"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </Tooltip>
+                </div>
               ) : (
                 <button
                   type="button"
@@ -236,20 +251,29 @@ export default function ProjectDetailHero({
                 <div className={detailHeroGalleryThumbRow}>
                   <div className={cn(detailHeroThumbStack, detailHeroThumbStackScroll)}>
                     {gallerySlides.map((slide, i) => (
-                      <button
-                        key={slide.id}
-                        type="button"
-                        onClick={() => selectThumb(i)}
-                        className={cn(
-                          detailHeroThumbBtn,
-                          i === safeIndex && detailHeroThumbActive
-                        )}
-                        aria-label={`Aperçu ${i + 1}`}
-                        aria-current={i === safeIndex ? "true" : undefined}
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={slide.url} alt="" className="h-full w-full object-cover" />
-                      </button>
+                      <div key={slide.id} className="group/thumb relative shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => selectThumb(i)}
+                          className={cn(
+                            detailHeroThumbBtn,
+                            i === safeIndex && detailHeroThumbActive
+                          )}
+                          aria-label={`Aperçu ${i + 1}`}
+                          aria-current={i === safeIndex ? "true" : undefined}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={slide.url} alt="" className="h-full w-full object-cover" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => deleteVisual(slide.id)}
+                          className="absolute right-0.5 top-0.5 rounded-md bg-black/65 p-0.5 text-white/70 opacity-0 transition hover:bg-red-500/85 hover:text-white group-hover/thumb:opacity-100"
+                          aria-label={`Supprimer l'image ${i + 1}`}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </button>
+                      </div>
                     ))}
                   </div>
                   <div className="flex shrink-0 flex-col items-end gap-1">

@@ -478,34 +478,34 @@ export default function ProjectTabPanels({
                     rel="noopener noreferrer"
                   />
                   {!isCover && (
-                    <>
-                      <IconActionButton
-                        label="Image principale"
-                        icon={Star}
-                        tone="upload"
-                        onClick={() => {
-                          if (project.planRenders?.some((a) => a.id === f.id)) {
-                            mutations.setPlanRenderMainImage.mutate(f.id);
-                          } else {
-                            const url = resolveMediaUrl(f.url);
-                            if (url) mutations.setProjectCover.mutate(url);
-                          }
-                        }}
-                      />
-                      <IconActionButton
-                        label="Supprimer"
-                        icon={Trash2}
-                        tone="danger"
-                        onClick={() => {
-                          if (project.planRenders?.some((a) => a.id === f.id)) {
-                            mutations.deletePlanRender.mutate(f.id);
-                          } else {
-                            mutations.deleteFile.mutate(f.id);
-                          }
-                        }}
-                      />
-                    </>
+                    <IconActionButton
+                      label="Image principale"
+                      icon={Star}
+                      tone="upload"
+                      onClick={() => {
+                        if (project.planRenders?.some((a) => a.id === f.id)) {
+                          mutations.setPlanRenderMainImage.mutate(f.id);
+                        } else {
+                          const url = resolveMediaUrl(f.url);
+                          if (url) mutations.setProjectCover.mutate(url);
+                        }
+                      }}
+                    />
                   )}
+                  <IconActionButton
+                    label="Supprimer"
+                    icon={Trash2}
+                    tone="danger"
+                    onClick={() => {
+                      if (isCover) {
+                        mutations.clearProjectCover.mutate();
+                      } else if (project.planRenders?.some((a) => a.id === f.id)) {
+                        mutations.deletePlanRender.mutate(f.id);
+                      } else {
+                        mutations.deleteFile.mutate(f.id);
+                      }
+                    }}
+                  />
                 </>
               );
             })}

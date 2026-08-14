@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import type { AuthUser } from '../../common/types/auth-user';
+import { assertDemoStudioActive } from '../../common/utils/demo-expiration.util';
 import { PrismaService } from '../../prisma/prisma.service';
 
 export interface JwtPayload {
@@ -40,6 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             slug: true,
             name: true,
             logoUrl: true,
+            demoExpiresAt: true,
           },
         },
       },
@@ -47,6 +49,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     if (!user) {
       throw new UnauthorizedException();
     }
-    return user;
+    assertDemoStudioActive(user.studio.demoExpiresAt);
+    const { demoExpiresAt: _, ...studio } = user.studio;
+    return { ...user, studio };
   }
 }

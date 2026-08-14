@@ -8,6 +8,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { resolveStudioIdByInvite } from '../common/constants/studio-invites';
+import { assertDemoStudioActive } from '../common/utils/demo-expiration.util';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadsService } from '../uploads/uploads.service';
 import { ChangePasswordDto } from './dto/change-password.dto';
@@ -31,6 +32,7 @@ const userWithStudioSelect = {
       slug: true,
       name: true,
       logoUrl: true,
+      demoExpiresAt: true,
     },
   },
 } as const;
@@ -49,6 +51,12 @@ export class AuthService {
     if (!studioId) {
       throw new UnauthorizedException('Invalid invite code');
     }
+
+    const studio = await this.prisma.studio.findUnique({
+      where: { id: studioId },
+      select: { demoExpiresAt: true },
+    });
+    assertDemoStudioActive(studio?.demoExpiresAt);
 
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
@@ -92,6 +100,8 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
+    assertDemoStudioActive(user.studio.demoExpiresAt);
+
     const { password: _, ...safeUser } = user;
 
     return {
@@ -108,6 +118,7 @@ export class AuthService {
     if (!user) {
       throw new UnauthorizedException();
     }
+    assertDemoStudioActive(user.studio.demoExpiresAt);
     return user;
   }
 

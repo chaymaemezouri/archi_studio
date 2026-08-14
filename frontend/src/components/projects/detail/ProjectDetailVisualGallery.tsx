@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Building2, Expand, ImagePlus, Layers, X } from "lucide-react";
+import { Building2, Expand, ImagePlus, Layers, Trash2, X } from "lucide-react";
 import { getProjectVisualPreviewItems } from "@/lib/project-detail";
 import { resolveMediaUrl } from "@/lib/assets";
 import type { Project } from "@/types";
@@ -14,6 +14,7 @@ import {
 } from "./project-detail-ui";
 import type { ProjectTabId } from "./ProjectDetailTabs";
 import type { ProjectUploadKind } from "./project-detail-types";
+import { useProjectVisualDelete } from "@/hooks/useProjectVisualDelete";
 
 interface ProjectDetailVisualGalleryProps {
   project: Project;
@@ -27,6 +28,7 @@ export default function ProjectDetailVisualGallery({
   onUpload,
 }: ProjectDetailVisualGalleryProps) {
   const items = useMemo(() => getProjectVisualPreviewItems(project, 8), [project]);
+  const { deleteVisual } = useProjectVisualDelete(project);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
 
@@ -78,28 +80,40 @@ export default function ProjectDetailVisualGallery({
           </div>
         ) : (
           <>
-            <button
-              type="button"
-              onClick={openLightbox}
-              className="group/preview relative block w-full overflow-hidden"
-              aria-label="Agrandir l'image"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={mainSrc}
-                alt=""
-                className={cn(
-                  "w-full object-cover transition duration-300 group-hover/preview:opacity-92",
-                  showThumbRow
-                    ? "h-[200px] max-h-[280px] sm:h-[220px] lg:h-[260px] xl:max-h-[300px]"
-                    : "h-[200px] max-h-[240px] sm:max-h-[280px]"
-                )}
-              />
-              <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md border border-glass bg-black/50 px-1.5 py-0.5 text-[10px] text-glass-secondary opacity-0 backdrop-blur-sm transition group-hover/preview:opacity-100">
-                <Expand className="h-3 w-3" />
-                Agrandir
-              </span>
-            </button>
+            <div className="group/preview relative w-full">
+              <button
+                type="button"
+                onClick={openLightbox}
+                className="relative block w-full overflow-hidden"
+                aria-label="Agrandir l'image"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={mainSrc}
+                  alt=""
+                  className={cn(
+                    "w-full object-cover transition duration-300 group-hover/preview:opacity-92",
+                    showThumbRow
+                      ? "h-[200px] max-h-[280px] sm:h-[220px] lg:h-[260px] xl:max-h-[300px]"
+                      : "h-[200px] max-h-[240px] sm:max-h-[280px]"
+                  )}
+                />
+                <span className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md border border-glass bg-black/50 px-1.5 py-0.5 text-[10px] text-glass-secondary opacity-0 backdrop-blur-sm transition group-hover/preview:opacity-100">
+                  <Expand className="h-3 w-3" />
+                  Agrandir
+                </span>
+              </button>
+              {mainItem && (
+                <button
+                  type="button"
+                  onClick={() => deleteVisual(mainItem.id)}
+                  className="absolute right-2 top-2 z-10 rounded-lg bg-black/60 p-1.5 text-white/70 opacity-0 transition hover:bg-red-500/80 hover:text-white group-hover/preview:opacity-100"
+                  aria-label="Supprimer l'image"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              )}
+            </div>
 
             {showThumbRow && (
               <div className="grid grid-cols-4 gap-1.5 p-2">
@@ -108,23 +122,32 @@ export default function ProjectDetailVisualGallery({
                   if (!src) return null;
                   const isActive = i === safeIndex;
                   return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setActiveIndex(i)}
-                      className={cn(
-                        detailThumb,
-                        "h-[72px] w-full overflow-hidden rounded-lg transition sm:h-[80px]",
-                        isActive
-                          ? "ring-2 ring-studio-light/50 ring-offset-1 ring-offset-[#07070b]"
-                          : "opacity-80 hover:opacity-100"
-                      )}
-                      aria-label={`Aperçu image ${i + 1}`}
-                      aria-current={isActive}
-                    >
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={src} alt="" className="h-full w-full object-cover" />
-                    </button>
+                    <div key={item.id} className="group/thumb relative">
+                      <button
+                        type="button"
+                        onClick={() => setActiveIndex(i)}
+                        className={cn(
+                          detailThumb,
+                          "h-[72px] w-full overflow-hidden rounded-lg transition sm:h-[80px]",
+                          isActive
+                            ? "ring-2 ring-studio-light/50 ring-offset-1 ring-offset-[#07070b]"
+                            : "opacity-80 hover:opacity-100"
+                        )}
+                        aria-label={`Aperçu image ${i + 1}`}
+                        aria-current={isActive}
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={src} alt="" className="h-full w-full object-cover" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => deleteVisual(item.id)}
+                        className="absolute right-0.5 top-0.5 rounded-md bg-black/65 p-0.5 text-white/70 opacity-0 transition hover:bg-red-500/85 hover:text-white group-hover/thumb:opacity-100"
+                        aria-label={`Supprimer l'image ${i + 1}`}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </button>
+                    </div>
                   );
                 })}
               </div>

@@ -348,6 +348,20 @@ export function useProjectDetailMutations(projectId: string) {
     onError: () => toast.error("Impossible de définir l'image principale"),
   });
 
+  const clearProjectCover = useMutation({
+    mutationFn: async () => {
+      const { data } = await api.patch(`/projects/${projectId}`, {
+        imageUrl: null,
+      });
+      return data;
+    },
+    onSuccess: () => {
+      invalidate();
+      toast.success("Photo de couverture supprimée");
+    },
+    onError: () => toast.error("Impossible de supprimer la photo"),
+  });
+
   const updateInvoice = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       const { data } = await api.patch(`/invoices/${id}`, { status });
@@ -477,6 +491,7 @@ export function useProjectDetailMutations(projectId: string) {
     updateDocument,
     setPlanRenderMainImage,
     setProjectCover,
+    clearProjectCover,
     updateInvoice,
     updateProjectMeta,
     updateProjectNotes,

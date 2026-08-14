@@ -146,17 +146,19 @@ enum NotifType {
 }
 
 model Studio {
-  id        String     @id @default(cuid())
-  slug      String     @unique
-  name      String
-  logoUrl   String?
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
-  users     User[]
-  settings  Settings?
-  projects  Project[]
-  clients   Client[]
-  tenders   Tender[]
+  id            String     @id @default(cuid())
+  slug          String     @unique
+  name          String
+  logoUrl       String?
+  /// null = permanent studio (Amini/Maouni). Set only for isolated demo tenants.
+  demoExpiresAt DateTime?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  users         User[]
+  settings      Settings?
+  projects      Project[]
+  clients       Client[]
+  tenders       Tender[]
   calendarEvents CalendarEvent[]
   tasks         Task[]
   documents     Document[]
@@ -164,6 +166,8 @@ model Studio {
   devis         Devis[]
   invoices      Invoice[]
   payments      Payment[]
+
+  @@index([demoExpiresAt])
 }
 
 model User {

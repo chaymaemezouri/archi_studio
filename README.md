@@ -23,16 +23,28 @@ docker compose up --build
 | Backend   | http://localhost:3001/api    |
 | PostgreSQL| localhost:5435               |
 
-### Comptes admin (2 studios séparés)
+### Comptes admin (2 studios réels — permanents)
 
 | Studio | Email | Mot de passe |
 |--------|-------|--------------|
 | **Amini Architects** | `admin@amini.architects` | `Archi2026!` |
 | **Maouni Architecture** | `admin@maouni.architecture` | `Archi2026!` |
 
-Chaque compte a son propre dashboard, logo et données isolées. Les admins peuvent changer email et mot de passe dans Paramètres.
+Chaque compte a son propre dashboard, logo et données isolées. Les admins peuvent changer email et mot de passe dans Paramètres. **Aucune expiration** sur ces studios.
 
-Le seed crée **uniquement** ces 2 comptes (pas de données de démo).
+### Comptes démo (3 studios isolés — expire après 14 jours)
+
+Données fictives très remplies pour présentation client. **Séparés** d’Amini/Maouni (aucune donnée réelle partagée). En production, exécuter uniquement `npm run prisma:seed-demo` pour créer ou renouveler les démos sans modifier les comptes réels.
+
+| Studio | Email | Mot de passe |
+|--------|-------|--------------|
+| **Demo 1** | `demo1@archi.studio` | `Demo2026!` |
+| **Demo 2** | `demo2@archi.studio` | `Demo2026!` |
+| **Demo 3** | `demo3@archi.studio` | `Demo2026!` |
+
+Après expiration : message *« Ce compte démo a expiré »* au login (Amini/Maouni restent accessibles).
+
+Le seed crée les 2 comptes réels (structure seule) **et** les 3 comptes démo riches.
 
 ## Déploiement production (VPS + domaine)
 
