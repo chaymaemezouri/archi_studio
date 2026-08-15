@@ -22,7 +22,7 @@
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:seed": "prisma db seed",
-    "prisma:seed-demo": "ts-node prisma/seed-demo-only.ts"
+    "prisma:seed-demo": "ts-node --project tsconfig.seed.json --transpile-only prisma/seed-demo-only.ts"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
