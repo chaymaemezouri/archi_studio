@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { Download, ExternalLink, Eye, Pencil, Trash2 } from "lucide-react";
+import ShareNoteButton from "@/components/shared/ShareNoteButton";
+import { refFromDocument } from "@/hooks/useSharedNotes";
 import { FileIcon } from "@/components/projects/detail/FileTypeIcon";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
 import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
@@ -161,6 +163,7 @@ export default function DocumentRow({
           href={href}
           download
         />
+        <ShareNoteButton item={refFromDocument(doc)} />
         <IconActionButton
           label="Modifier"
           icon={Pencil}

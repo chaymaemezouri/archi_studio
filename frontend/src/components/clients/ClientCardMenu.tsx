@@ -12,6 +12,7 @@ import {
   MoreVertical,
   Pencil,
   Receipt,
+  Share2,
   Trash2,
 } from "lucide-react";
 import { useDialog } from "@/components/providers/DialogProvider";
@@ -20,12 +21,13 @@ import {
   useDeleteClient,
 } from "@/hooks/useClients";
 import { portalMenuStyle, usePortalRowMenu } from "@/hooks/usePortalRowMenu";
+import { draftFromClient, useCreateSharedNote } from "@/hooks/useSharedNotes";
 import type { Client } from "@/types";
 import { glassBtnIcon, glassMenu } from "@/lib/glass-styles";
 import { cn } from "@/lib/utils";
 
 const MENU_WIDTH = 208;
-const MENU_ESTIMATED_HEIGHT = 320;
+const MENU_ESTIMATED_HEIGHT = 360;
 
 interface ClientCardMenuProps {
   client: Client;
@@ -73,6 +75,7 @@ export default function ClientCardMenu({ client, onEdit, className }: ClientCard
   const { confirm } = useDialog();
   const archiveClient = useArchiveClient();
   const deleteClient = useDeleteClient();
+  const shareClient = useCreateSharedNote();
 
   const handleArchive = async () => {
     if (
@@ -119,6 +122,15 @@ export default function ClientCardMenu({ client, onEdit, className }: ClientCard
       >
         <MenuItem href={`/clients/${client.id}`} onClick={closeMenu}>
           <ExternalLink className="h-4 w-4" /> Ouvrir
+        </MenuItem>
+        <MenuItem
+          onClick={(e) => {
+            e.preventDefault();
+            if (shareClient.isPending) return;
+            shareClient.mutate(draftFromClient(client), { onSuccess: closeMenu });
+          }}
+        >
+          <Share2 className="h-4 w-4" /> Partager dans les notes
         </MenuItem>
         <MenuItem
           onClick={(e) => {

@@ -1,11 +1,10 @@
-import type { Priority, TaskStatus } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
+import type { TaskStatus } from "@/types";
+import { TASK_STATUS_LABELS } from "@/types";
 import { dashboardTaskChip } from "@/components/dashboard/dashboard-ui";
 import { cn } from "@/lib/utils";
 
 interface DashboardTaskMetaProps {
   status: TaskStatus;
-  priority: Priority;
   projectName?: string | null;
   className?: string;
 }
@@ -29,17 +28,6 @@ const STATUS_CHIP: Record<TaskStatus, string> = {
   ),
 };
 
-const PRIORITY_CHIP: Partial<Record<Priority, string>> = {
-  URGENT: cn(
-    dashboardTaskChip,
-    "bg-[color:var(--badge-danger-bg)] text-[color:var(--badge-danger-text)]"
-  ),
-  HIGH: cn(
-    dashboardTaskChip,
-    "bg-[color:var(--badge-warning-bg)] text-[color:var(--badge-warning-text)]"
-  ),
-};
-
 const projectChip = cn(
   dashboardTaskChip,
   "max-w-[9.5rem] truncate bg-[color:var(--glass-bg)]/90 text-glass-muted"
@@ -48,12 +36,9 @@ const projectChip = cn(
 /** Méta tâche — mini pastilles douces */
 export default function DashboardTaskMeta({
   status,
-  priority,
   projectName,
   className,
 }: DashboardTaskMetaProps) {
-  const showPriority = priority === "URGENT" || priority === "HIGH";
-
   return (
     <div
       className={cn(
@@ -62,12 +47,6 @@ export default function DashboardTaskMeta({
       )}
     >
       <span className={STATUS_CHIP[status]}>{TASK_STATUS_LABELS[status]}</span>
-
-      {showPriority && (
-        <span className={PRIORITY_CHIP[priority]}>
-          {PRIORITY_LABELS[priority]}
-        </span>
-      )}
 
       {projectName?.trim() && (
         <span className={projectChip} title={projectName.trim()}>

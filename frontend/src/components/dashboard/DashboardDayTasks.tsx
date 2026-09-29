@@ -6,7 +6,7 @@ import { ArrowUpRight, ListTodo, Plus } from "lucide-react";
 import DashboardTaskCheckbox from "@/components/dashboard/DashboardTaskCheckbox";
 import { useCreateDashboardTask, useUpdateDashboardTask } from "@/hooks/useDashboard";
 import { toLocalDateInput } from "@/lib/dates";
-import type { Priority, Project, Task } from "@/types";
+import type { Project, Task } from "@/types";
 import { cn } from "@/lib/utils";
 import { accentBar, glassInput, glassSelect } from "@/lib/glass-styles";
 import DashboardTaskMeta from "@/components/dashboard/DashboardTaskMeta";
@@ -37,7 +37,7 @@ export default function DashboardDayTasks({
 }: DashboardDayTasksProps) {
   const [titleInput, setTitleInput] = useState("");
   const [projectId, setProjectId] = useState("");
-  const [priority, setPriority] = useState<Priority>("MEDIUM");
+  const [realizeDate, setRealizeDate] = useState(toLocalDateInput(defaultDate));
 
   const createTask = useCreateDashboardTask();
   const updateTask = useUpdateDashboardTask();
@@ -47,8 +47,9 @@ export default function DashboardDayTasks({
       [...tasks]
         .filter((t) => t.status !== "DONE")
         .sort((a, b) => {
-          const order = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-          return (order[a.priority] ?? 2) - (order[b.priority] ?? 2);
+          const ad = new Date(a.scheduledAt ?? a.dueDate ?? 0).getTime();
+          const bd = new Date(b.scheduledAt ?? b.dueDate ?? 0).getTime();
+          return ad - bd;
         }),
     [tasks]
   );
@@ -61,17 +62,16 @@ export default function DashboardDayTasks({
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!titleInput.trim()) return;
-    const dateStr = toLocalDateInput(defaultDate);
+    const dateStr = realizeDate || toLocalDateInput(defaultDate);
     await createTask.mutateAsync({
       title: titleInput.trim(),
       dueDate: dateStr,
       scheduledAt: dateStr,
       projectId: projectId || undefined,
-      priority,
     });
     setTitleInput("");
     setProjectId("");
-    setPriority("MEDIUM");
+    setRealizeDate(toLocalDateInput(defaultDate));
   };
 
   const inputClass = cn(
@@ -104,7 +104,7 @@ export default function DashboardDayTasks({
           <input
             value={titleInput}
             onChange={(e) => setTitleInput(e.target.value)}
-            placeholder="Nouvelle tâche pour aujourd'hui…"
+            placeholder="Nouvelle tâche…"
             className={cn(inputClass, "flex-1")}
           />
           <button
@@ -131,16 +131,16 @@ export default function DashboardDayTasks({
               ))}
             </select>
           )}
-          <select
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Priority)}
-            className={selectClass}
-          >
-            <option value="LOW">Basse</option>
-            <option value="MEDIUM">Moyenne</option>
-            <option value="HIGH">Haute</option>
-            <option value="URGENT">Urgent</option>
-          </select>
+          <label className="flex flex-col gap-1">
+            <span className="text-[10px] font-medium text-glass-muted">Date de réalisation</span>
+            <input
+              type="date"
+              value={realizeDate}
+              onChange={(e) => setRealizeDate(e.target.value)}
+              className={selectClass}
+              required
+            />
+          </label>
         </div>
       </form>
 
@@ -172,7 +172,6 @@ export default function DashboardDayTasks({
                     <p className="truncate text-[13px] text-glass">{task.title}</p>
                     <DashboardTaskMeta
                       status={task.status}
-                      priority={task.priority}
                       projectName={task.project?.name}
                     />
                   </Link>

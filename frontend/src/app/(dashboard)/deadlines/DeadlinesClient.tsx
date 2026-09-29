@@ -44,7 +44,6 @@ const FILTER_OPTIONS: { id: DeadlineFilter; label: string }[] = [
 
 const SORT_OPTIONS: { id: DeadlineSort; label: string }[] = [
   { id: "date", label: "Date proche" },
-  { id: "priority", label: "Priorité élevée" },
   { id: "recent", label: "Plus récentes" },
 ];
 

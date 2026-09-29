@@ -28,7 +28,7 @@ import {
   TASK_DEADLINE_BADGE_LABELS,
 } from "@/lib/tasks-list";
 import type { Task } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
+import { TASK_STATUS_LABELS } from "@/types";
 import {
   taskDeadlineBadgeVariant,
   tasksListHeader,
@@ -53,7 +53,6 @@ export function TaskListHeader() {
       <span>Projet</span>
       <span>Client</span>
       <span>Deadline</span>
-      <span>Priorité</span>
       <span>Statut</span>
       <span />
     </div>
@@ -204,12 +203,6 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
       <span className="text-glass-secondary">
         <span className="text-[10px] text-glass-muted md:hidden">Deadline · </span>
         {task.dueDate ? formatDate(task.dueDate) : TASK_DEADLINE_BADGE_LABELS.none}
-      </span>
-
-      <span>
-        <Badge variant={task.priority === "URGENT" ? "danger" : "default"}>
-          {PRIORITY_LABELS[task.priority]}
-        </Badge>
       </span>
 
       <span>

@@ -11,11 +11,13 @@ import {
   Pencil,
   Share2,
   Star,
+  StickyNote,
   Trash2,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { useCreateProject, useDeleteProject, useUpdateProject } from "@/hooks/useProjects";
+import { refFromProject, useCreateSharedNote } from "@/hooks/useSharedNotes";
 import { useAuthStore } from "@/store/authStore";
 import { canDeleteProject } from "@/lib/permissions";
 import type { Project } from "@/types";
@@ -41,6 +43,7 @@ export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenu
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
   const createProject = useCreateProject();
+  const shareNote = useCreateSharedNote();
   const canDelete = canDeleteProject(user, project);
 
   useEffect(() => {
@@ -160,6 +163,18 @@ export default function ProjectDetailMenu({ project, onEdit }: ProjectDetailMenu
           <button type="button" role="menuitem" onClick={share} className={detailMenuItem}>
             <Share2 className="h-4 w-4" />
             Partager
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => {
+              shareNote.mutate({ content: "", refs: [refFromProject(project)] });
+              setOpen(false);
+            }}
+            className={detailMenuItem}
+          >
+            <StickyNote className="h-4 w-4" />
+            Partager dans les notes
           </button>
           <button type="button" role="menuitem" onClick={toggleFavorite} className={detailMenuItem}>
             <Star

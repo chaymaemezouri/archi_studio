@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
+import { rollOpenAgendaToToday } from '../common/utils/agenda-rollover';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateDeadlineDto } from './dto/create-deadline.dto';
 import { UpdateDeadlineDto } from './dto/update-deadline.dto';
@@ -7,7 +8,8 @@ import { UpdateDeadlineDto } from './dto/update-deadline.dto';
 export class DeadlinesService {
   constructor(private prisma: PrismaService) {}
 
-  findAll(projectId?: string) {
+  async findAll(projectId?: string) {
+    await rollOpenAgendaToToday(this.prisma);
     return this.prisma.deadline.findMany({
       where: projectId ? { projectId } : undefined,
       orderBy: { date: 'asc' },

@@ -1,6 +1,7 @@
 "use client";
 
-import { Download, Eye, Pencil } from "lucide-react";
+import { Download, Eye, Pencil, Share2 } from "lucide-react";
+import { refFromDocument, useCreateSharedNote } from "@/hooks/useSharedNotes";
 import { FileIcon } from "@/components/projects/detail/FileTypeIcon";
 import Badge from "@/components/ui/Badge";
 import { documentsGridCard, documentsGridThumb } from "./documents-list-ui";
@@ -42,6 +43,7 @@ function DocumentCard({
   onEdit: (doc: Document) => void;
   onPreview: (doc: Document) => void;
 }) {
+  const shareNote = useCreateSharedNote();
   const href = resolveMediaUrl(doc.url) ?? doc.url;
   const previewable = canPreviewDocument(doc);
   const isImage = doc.mimeType.startsWith("image/");
@@ -73,6 +75,14 @@ function DocumentCard({
           >
             <Download className="h-4 w-4" />
           </a>
+          <button
+            type="button"
+            onClick={() => shareNote.mutate({ content: "", refs: [refFromDocument(doc)] })}
+            className="rounded-lg bg-white/90 p-2 text-stone-800"
+            aria-label="Partager dans les notes"
+          >
+            <Share2 className="h-4 w-4" />
+          </button>
           <button
             type="button"
             onClick={() => onEdit(doc)}

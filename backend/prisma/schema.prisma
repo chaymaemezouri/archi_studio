@@ -143,6 +143,7 @@ enum NotifType {
   PAYMENT_RECEIVED
   DOCUMENT_ADDED
   PROJECT_UPDATED
+  SHARED_NOTE
 }
 
 model Studio {
@@ -166,6 +167,7 @@ model Studio {
   devis         Devis[]
   invoices      Invoice[]
   payments      Payment[]
+  sharedNotes   SharedNote[]
 
   @@index([demoExpiresAt])
 }
@@ -188,6 +190,53 @@ model User {
   notifications       Notification[]
   notificationPrefs   Json?
   activityLogs        ActivityLog[]
+  sharedNotes         SharedNote[]
+}
+
+model SharedNote {
+  id           String           @id @default(cuid())
+  studioId     String
+  studio       Studio           @relation(fields: [studioId], references: [id], onDelete: Cascade)
+  authorId     String
+  author       User             @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content      String           @default("")
+  contactName  String?
+  contactPhone String?
+  contactEmail String?
+  files        SharedNoteFile[]
+  refs         SharedNoteRef[]
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  @@index([studioId, createdAt])
+}
+
+model SharedNoteRef {
+  id        String     @id @default(cuid())
+  noteId    String
+  note      SharedNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  kind      String
+  entityId  String
+  title     String
+  subtitle  String?
+  href      String
+  url       String?
+  createdAt DateTime   @default(now())
+
+  @@index([noteId])
+}
+
+model SharedNoteFile {
+  id        String     @id @default(cuid())
+  noteId    String
+  note      SharedNote @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  name      String
+  url       String
+  mimeType  String
+  size      Int
+  createdAt DateTime   @default(now())
+
+  @@index([noteId])
 }
 
 model Client {

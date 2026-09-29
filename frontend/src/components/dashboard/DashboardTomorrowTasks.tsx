@@ -37,10 +37,11 @@ export default function DashboardTomorrowTasks({
     () =>
       tasks
         .filter((t) => t.status !== "DONE")
-        .sort((a, b) => {
-          const order = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
-          return (order[a.priority] ?? 2) - (order[b.priority] ?? 2);
-        }),
+        .sort(
+          (a, b) =>
+            new Date(a.scheduledAt ?? a.dueDate ?? 0).getTime() -
+            new Date(b.scheduledAt ?? b.dueDate ?? 0).getTime()
+        ),
     [tasks]
   );
 
@@ -126,7 +127,6 @@ export default function DashboardTomorrowTasks({
                     <p className="truncate text-[12px] text-glass">{task.title}</p>
                     <DashboardTaskMeta
                       status={task.status}
-                      priority={task.priority}
                       projectName={task.projectName ?? task.project?.name}
                     />
                   </Link>

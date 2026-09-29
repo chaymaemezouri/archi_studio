@@ -34,8 +34,8 @@ import {
   type TaskMainFilter,
   type TaskSort,
 } from "@/lib/tasks-list";
-import type { Priority, Task, TaskStatus } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
+import type { Task, TaskStatus } from "@/types";
+import { TASK_STATUS_LABELS } from "@/types";
 import {
   accentBar,
   dropdownItem,
@@ -59,7 +59,6 @@ const MAIN_FILTERS: { id: TaskMainFilter; label: string }[] = [
   { id: "tomorrow", label: "Demain" },
   { id: "week", label: "Cette semaine" },
   { id: "overdue", label: "En retard" },
-  { id: "urgent", label: "Urgentes" },
   { id: "done", label: "Terminées" },
 ];
 
@@ -67,7 +66,6 @@ const SORT_OPTIONS: { id: TaskSort; label: string }[] = [
   { id: "deadline", label: "Deadline proche" },
   { id: "recent", label: "Plus récentes" },
   { id: "oldest", label: "Plus anciennes" },
-  { id: "priority", label: "Priorité élevée" },
   { id: "status", label: "Statut" },
 ];
 
@@ -85,7 +83,6 @@ export default function TasksPage() {
   const debouncedSearch = useDebouncedValue(search, 300);
   const [mainFilter, setMainFilter] = useState<TaskMainFilter>("all");
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
-  const [priorityFilter, setPriorityFilter] = useState<Priority | "all">("all");
   const [projectFilter, setProjectFilter] = useState<string | "all" | "personal">("all");
   const [clientFilter, setClientFilter] = useState<string | "all">("all");
   const [sort, setSort] = useState<TaskSort>("deadline");
@@ -130,7 +127,6 @@ export default function TasksPage() {
     setSearch("");
     setMainFilter("all");
     setStatusFilter("all");
-    setPriorityFilter("all");
     setProjectFilter("all");
     setClientFilter("all");
     setShowDone(false);
@@ -142,7 +138,6 @@ export default function TasksPage() {
         query: debouncedSearch,
         mainFilter,
         statusFilter,
-        priorityFilter,
         projectFilter,
         clientFilter,
         sort,
@@ -153,7 +148,6 @@ export default function TasksPage() {
       debouncedSearch,
       mainFilter,
       statusFilter,
-      priorityFilter,
       projectFilter,
       clientFilter,
       sort,
@@ -170,7 +164,6 @@ export default function TasksPage() {
     search.trim() !== "" ||
     mainFilter !== "all" ||
     statusFilter !== "all" ||
-    priorityFilter !== "all" ||
     projectFilter !== "all" ||
     clientFilter !== "all" ||
     showDone;
@@ -334,31 +327,6 @@ export default function TasksPage() {
                     ))}
                   </select>
                 </div>
-
-                <p className={cn(dropdownSectionLabel, "mt-1")}>Priorité</p>
-                <button
-                  type="button"
-                  onClick={() => setPriorityFilter("all")}
-                  className={cn(
-                    dropdownItem,
-                    priorityFilter === "all" ? dropdownItemActive : dropdownItemInactive
-                  )}
-                >
-                  Toutes
-                </button>
-                {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
-                  <button
-                    key={value}
-                    type="button"
-                    onClick={() => setPriorityFilter(value as Priority)}
-                    className={cn(
-                      dropdownItem,
-                      priorityFilter === value ? dropdownItemActive : dropdownItemInactive
-                    )}
-                  >
-                    {label}
-                  </button>
-                ))}
 
                 <p className={cn(dropdownSectionLabel, "mt-1")}>Statut</p>
                 <button

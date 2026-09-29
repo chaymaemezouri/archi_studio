@@ -8,6 +8,7 @@ import {
   projectRelationWhere,
   toProjectAccessContext,
 } from '../common/utils/project-access.util';
+import { rollOpenAgendaToToday } from '../common/utils/agenda-rollover';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
@@ -98,7 +99,7 @@ export class TasksService {
     return project;
   }
 
-  findAll(
+  async findAll(
     user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
     filters?: {
       projectId?: string;
@@ -109,6 +110,7 @@ export class TasksService {
       to?: string;
     },
   ) {
+    await rollOpenAgendaToToday(this.prisma);
     const ctx = toProjectAccessContext(user);
     const conditions: Record<string, unknown>[] = [this.studioScope(user)];
 

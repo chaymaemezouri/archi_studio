@@ -470,6 +470,42 @@ export interface Deadline {
   createdAt: string;
 }
 
+export interface SharedNoteFile {
+  id: string;
+  name: string;
+  url: string;
+  mimeType: string;
+  size: number;
+  createdAt?: string;
+}
+
+export type SharedNoteRefKind = "CLIENT" | "PROJECT" | "DOCUMENT" | "PLAN" | "RENDER";
+
+export interface SharedNoteRef {
+  id?: string;
+  kind: SharedNoteRefKind;
+  entityId: string;
+  title: string;
+  subtitle?: string | null;
+  href: string;
+  url?: string | null;
+}
+
+export interface SharedNote {
+  id: string;
+  content: string;
+  contactName?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  studioId?: string;
+  authorId?: string;
+  author?: { id: string; name: string } | null;
+  files?: SharedNoteFile[];
+  refs?: SharedNoteRef[];
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Meeting {
   id: string;
   title: string;

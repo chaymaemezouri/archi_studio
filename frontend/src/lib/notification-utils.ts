@@ -30,6 +30,7 @@ const PRIORITY: Record<string, number> = {
   INVOICE_DUE: 12,
   PAYMENT_RECEIVED: 13,
   DOCUMENT_ADDED: 14,
+  SHARED_NOTE: 14,
   PROJECT_UPDATED: 15,
 };
 

@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import {
   DevisStatus,
   InvoiceStatus,
-  Priority,
   ProjectStatus,
   Role,
   TaskStatus,
 } from '@prisma/client';
+import {
+  agendaDateFilter,
+  rollOpenAgendaToToday,
+} from '../common/utils/agenda-rollover';
 import {
   projectListWhere,
   projectRelationWhere,
@@ -33,6 +36,7 @@ export class DashboardService {
   ) {}
 
   async getOverview(studioId: string, userId: string, userRole?: string) {
+    await rollOpenAgendaToToday(this.prisma);
     await this.smartAlerts.syncForUser(userId, studioId);
     const smartAlerts = await this.smartAlerts.buildSmartAlerts(studioId, userId, userRole as Role);
     const access = {
@@ -68,34 +72,11 @@ export class DashboardService {
       InvoiceStatus.OVERDUE,
     ];
 
-    const taskDayFilter = (start: Date, end: Date) => ({
-      AND: [
-        studioScope,
-        {
-          OR: [
-            { scheduledAt: { gte: start, lte: end } },
-            { dueDate: { gte: start, lte: end } },
-          ],
-        },
-      ],
-    });
+    const openTask = { status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] } };
 
-    const todayTaskFilter = {
-      AND: [
-        studioScope,
-        {
-          OR: [
-            {
-              OR: [
-                { scheduledAt: { gte: todayStart, lte: todayEnd } },
-                { dueDate: { gte: todayStart, lte: todayEnd } },
-              ],
-            },
-            { priority: Priority.URGENT },
-          ],
-        },
-      ],
-    };
+    const taskDayFilter = (start: Date, end: Date) => ({
+      AND: [studioScope, openTask, agendaDateFilter(start, end)],
+    });
 
     const [
       activeProjectsCount,
@@ -171,29 +152,23 @@ export class DashboardService {
         include: { project: { select: { id: true, name: true } } },
       }),
       this.prisma.task.findMany({
-        where: {
-          ...todayTaskFilter,
-          status: { not: TaskStatus.DONE },
-        },
-        orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
+        where: taskDayFilter(todayStart, todayEnd),
+        orderBy: [{ scheduledAt: 'asc' }, { dueDate: 'asc' }],
+        take: 30,
+        include: { project: { select: { id: true, name: true } } },
+      }),
+      this.prisma.task.findMany({
+        where: taskDayFilter(tomorrowStart, tomorrowEnd),
+        orderBy: [{ scheduledAt: 'asc' }, { dueDate: 'asc' }],
         take: 30,
         include: { project: { select: { id: true, name: true } } },
       }),
       this.prisma.task.findMany({
         where: {
-          ...taskDayFilter(tomorrowStart, tomorrowEnd),
-          status: { not: TaskStatus.DONE },
-        },
-        orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
-        take: 30,
-        include: { project: { select: { id: true, name: true } } },
-      }),
-      this.prisma.task.findMany({
-        where: {
-          project: projectScope,
-          OR: [
-            { dueDate: { gte: calendarStart, lte: calendarEnd } },
-            { scheduledAt: { gte: calendarStart, lte: calendarEnd } },
+          AND: [
+            studioScope,
+            openTask,
+            agendaDateFilter(calendarStart, calendarEnd),
           ],
         },
         orderBy: { dueDate: 'asc' },

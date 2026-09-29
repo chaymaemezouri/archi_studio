@@ -17,8 +17,7 @@ import {
   useCreateDeadline,
   useCreateMeeting,
 } from "@/hooks/useDashboard";
-import type { Priority, Project } from "@/types";
-import { PRIORITY_LABELS } from "@/types";
+import type { Project } from "@/types";
 import {
   quickAddFieldLabel,
   quickAddInput,
@@ -33,8 +32,6 @@ const MODES: { id: QuickAddMode; label: string }[] = [
   { id: "task", label: "Tâche" },
   { id: "meeting", label: "Réunion" },
 ];
-
-const PRIORITIES: Priority[] = ["LOW", "MEDIUM", "HIGH", "URGENT"];
 
 interface QuickAddModalProps {
   open: boolean;
@@ -60,32 +57,6 @@ function QuickAddField({
   );
 }
 
-function PriorityChips({
-  value,
-  onChange,
-}: {
-  value: Priority;
-  onChange: (p: Priority) => void;
-}) {
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {PRIORITIES.map((p) => (
-        <button
-          key={p}
-          type="button"
-          onClick={() => onChange(p)}
-          className={cn(
-            "rounded-lg px-2.5 py-1 text-[11px] font-medium transition",
-            value === p ? filterChipActive : filterChipInactive
-          )}
-        >
-          {PRIORITY_LABELS[p]}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 export default function QuickAddModal({
   open,
   onClose,
@@ -101,7 +72,6 @@ export default function QuickAddModal({
   const [endTime, setEndTime] = useState("10:00");
   const [taskTime, setTaskTime] = useState("");
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
-  const [priority, setPriority] = useState<Priority>("MEDIUM");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
 
@@ -116,7 +86,6 @@ export default function QuickAddModal({
     setEndTime("10:00");
     setTaskTime("");
     setProjectId(defaultProjectId ?? "");
-    setPriority("MEDIUM");
     setLocation("");
     setNotes("");
   }, [defaultDate, defaultProjectId]);
@@ -147,7 +116,6 @@ export default function QuickAddModal({
         title: title.trim(),
         date,
         projectId: projectId || undefined,
-        priority,
       });
     } else if (type === "meeting") {
       await createMeeting.mutateAsync({
@@ -160,13 +128,12 @@ export default function QuickAddModal({
         projectId: projectId || undefined,
       });
     } else {
-      const scheduledAt = taskTime ? `${date}T${taskTime}:00` : undefined;
+      const scheduledAt = taskTime ? `${date}T${taskTime}:00` : date;
       await createTask.mutateAsync({
         title: title.trim(),
         dueDate: date,
         scheduledAt,
         projectId: projectId || undefined,
-        priority,
         notes: notes.trim() || undefined,
       });
     }
@@ -249,7 +216,15 @@ export default function QuickAddModal({
               type === "meeting" || type === "task" ? "grid-cols-2" : "grid-cols-1"
             )}
           >
-            <QuickAddField label="Date">
+            <QuickAddField
+              label={
+                type === "task"
+                  ? "Date de réalisation"
+                  : type === "deadline"
+                    ? "Deadline"
+                    : "Date"
+              }
+            >
               <input
                 type="date"
                 value={date}
@@ -300,12 +275,6 @@ export default function QuickAddModal({
                 placeholder="Bureau, visio, chantier…"
                 className={quickAddInput}
               />
-            </QuickAddField>
-          )}
-
-          {(type === "deadline" || type === "task") && (
-            <QuickAddField label="Priorité">
-              <PriorityChips value={priority} onChange={setPriority} />
             </QuickAddField>
           )}
 

@@ -23,6 +23,7 @@ import { ProjectFilesModule } from './project-files/project-files.module';
 import { ProjectsModule } from './projects/projects.module';
 import { SearchModule } from './search/search.module';
 import { SettingsModule } from './settings/settings.module';
+import { SharedNotesModule } from './shared-notes/shared-notes.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TendersModule } from './tenders/tenders.module';
 import { UploadsModule } from './uploads/uploads.module';
@@ -38,6 +39,7 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     DashboardModule,
     SearchModule,
+    SharedNotesModule,
     ClientsModule,
     ProjectsModule,
     ProjectFilesModule,

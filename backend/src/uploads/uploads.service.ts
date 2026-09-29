@@ -124,4 +124,48 @@ export class UploadsService {
     const buf = readFileSync(filePath);
     return `data:${mime};base64,${buf.toString('base64')}`;
   }
+
+  /** Fichier partagé dans une note de cabinet. */
+  saveSharedNoteFile(
+    file: Express.Multer.File,
+    studioId: string,
+    noteId: string,
+  ) {
+    const blocked = new Set([
+      '.exe',
+      '.bat',
+      '.cmd',
+      '.com',
+      '.msi',
+      '.dll',
+      '.sh',
+      '.ps1',
+      '.js',
+      '.jar',
+    ]);
+    const ext = extname(file.originalname).toLowerCase();
+    if (blocked.has(ext)) {
+      throw new BadRequestException('Ce type de fichier ne peut pas être partagé.');
+    }
+    if (!file.size || file.size > 25 * 1024 * 1024) {
+      throw new BadRequestException('Fichier trop volumineux (25 Mo maximum).');
+    }
+
+    const uploadRoot = this.getUploadRoot();
+    const dir = join(uploadRoot, 'shared-notes', studioId, noteId);
+    if (!existsSync(dir)) mkdirSync(dir, { recursive: true });
+
+    const base = file.originalname
+      .replace(/[^\w.\- ()]/g, '_')
+      .slice(0, 80);
+    const filename = `${Date.now()}-${base || 'fichier'}`;
+    renameSync(file.path, join(dir, filename));
+
+    return {
+      name: file.originalname,
+      mimeType: file.mimetype || 'application/octet-stream',
+      size: file.size,
+      url: this.publicUrl('shared-notes', `${studioId}/${noteId}`, filename),
+    };
+  }
 }

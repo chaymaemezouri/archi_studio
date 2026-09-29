@@ -7,9 +7,11 @@ import {
   Eye,
   MoreVertical,
   Pencil,
+  Share2,
   Star,
   Trash2,
 } from "lucide-react";
+import { refFromPlanRender, useCreateSharedNote } from "@/hooks/useSharedNotes";
 import { FileIcon } from "@/components/projects/detail/FileTypeIcon";
 import Badge from "@/components/ui/Badge";
 import {
@@ -52,6 +54,7 @@ export default function PlanRenderGridCard({
   );
   const { confirm } = useDialog();
   const deleteAsset = useDeletePlanRender();
+  const shareNote = useCreateSharedNote();
   const setMain = useSetMainImage();
   const toggleFav = useToggleFavorite();
   const href = resolveMediaUrl(asset.url) ?? asset.url;
@@ -83,6 +86,14 @@ export default function PlanRenderGridCard({
       >
         <MenuBtn onClick={() => { onEdit(asset); closeMenu(); }}>
           <Pencil className="h-4 w-4" /> Modifier
+        </MenuBtn>
+        <MenuBtn
+          onClick={() => {
+            shareNote.mutate({ content: "", refs: [refFromPlanRender(asset)] });
+            closeMenu();
+          }}
+        >
+          <Share2 className="h-4 w-4" /> Partager dans les notes
         </MenuBtn>
         <MenuBtn
           onClick={() => {

@@ -14,15 +14,9 @@ export type TaskMainFilter =
   | "tomorrow"
   | "week"
   | "overdue"
-  | "urgent"
   | "done";
 
-export type TaskSort =
-  | "deadline"
-  | "recent"
-  | "oldest"
-  | "priority"
-  | "status";
+export type TaskSort = "deadline" | "recent" | "oldest" | "status";
 
 export function isTaskClosed(status: TaskStatus): boolean {
   return status === "DONE" || status === "CANCELLED";
@@ -30,6 +24,11 @@ export function isTaskClosed(status: TaskStatus): boolean {
 
 export function getTaskDeadlineDate(task: Task): string | null {
   return task.dueDate ?? null;
+}
+
+/** Jour où la tâche apparaît dans l'agenda. */
+export function getTaskAgendaDate(task: Task): string | null {
+  return task.scheduledAt ?? task.dueDate ?? null;
 }
 
 export type TaskDeadlineBadge =
@@ -95,17 +94,17 @@ export function applyTaskMainFilter(tasks: Task[], filter: TaskMainFilter): Task
   switch (filter) {
     case "today":
       return tasks.filter((t) => {
-        const d = getTaskDeadlineDate(t);
+        const d = getTaskAgendaDate(t);
         return d && isSameDay(new Date(d), today) && !isTaskClosed(t.status);
       });
     case "tomorrow":
       return tasks.filter((t) => {
-        const d = getTaskDeadlineDate(t);
+        const d = getTaskAgendaDate(t);
         return d && isSameDay(new Date(d), tomorrow) && !isTaskClosed(t.status);
       });
     case "week":
       return tasks.filter((t) => {
-        const d = getTaskDeadlineDate(t);
+        const d = getTaskAgendaDate(t);
         if (!d || isTaskClosed(t.status)) return false;
         const day = startOfDay(new Date(d));
         return day >= today && day <= weekEnd;
@@ -115,12 +114,6 @@ export function applyTaskMainFilter(tasks: Task[], filter: TaskMainFilter): Task
         const d = getTaskDeadlineDate(t);
         return d && startOfDay(new Date(d)) < today && !isTaskClosed(t.status);
       });
-    case "urgent":
-      return tasks.filter(
-        (t) =>
-          !isTaskClosed(t.status) &&
-          (t.priority === "URGENT" || t.priority === "HIGH")
-      );
     case "done":
       return tasks.filter((t) => t.status === "DONE");
     case "all":
@@ -135,14 +128,6 @@ export function applyTaskStatusFilter(
 ): Task[] {
   if (status === "all") return tasks;
   return tasks.filter((t) => t.status === status);
-}
-
-export function applyTaskPriorityFilter(
-  tasks: Task[],
-  priority: string | "all"
-): Task[] {
-  if (priority === "all") return tasks;
-  return tasks.filter((t) => t.priority === priority);
 }
 
 export function applyTaskProjectFilter(
@@ -162,7 +147,6 @@ export function applyTaskClientFilter(
   return tasks.filter((t) => t.clientId === clientId);
 }
 
-const PRIORITY_ORDER = { URGENT: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
 const STATUS_ORDER = { TODO: 0, IN_PROGRESS: 1, DONE: 2, CANCELLED: 3 };
 
 export function sortTasks(tasks: Task[], sort: TaskSort): Task[] {
@@ -172,11 +156,6 @@ export function sortTasks(tasks: Task[], sort: TaskSort): Task[] {
     case "oldest":
       return list.sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      );
-    case "priority":
-      return list.sort(
-        (a, b) =>
-          (PRIORITY_ORDER[a.priority] ?? 9) - (PRIORITY_ORDER[b.priority] ?? 9)
       );
     case "status":
       return list.sort(
@@ -204,7 +183,6 @@ export function filterAndSortTasks(
     query: string;
     mainFilter: TaskMainFilter;
     statusFilter: TaskStatus | "all";
-    priorityFilter: string | "all";
     projectFilter: string | "all" | "personal";
     clientFilter: string | "all";
     sort: TaskSort;
@@ -220,7 +198,6 @@ export function filterAndSortTasks(
   }
 
   list = applyTaskStatusFilter(list, options.statusFilter);
-  list = applyTaskPriorityFilter(list, options.priorityFilter);
   list = applyTaskProjectFilter(list, options.projectFilter);
   list = applyTaskClientFilter(list, options.clientFilter);
 

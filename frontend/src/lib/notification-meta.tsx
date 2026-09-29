@@ -7,6 +7,7 @@ import {
   ClipboardList,
   FileText,
   FolderKanban,
+  StickyNote,
   ReceiptText,
   Users,
   Wallet,
@@ -35,6 +36,7 @@ const META: Record<string, NotificationMeta> = {
   PAYMENT_RECEIVED: { icon: Wallet, label: "Paiement reçu", tone: "info" },
   DOCUMENT_ADDED: { icon: FileText, label: "Document", tone: "info" },
   PROJECT_UPDATED: { icon: FolderKanban, label: "Projet", tone: "info" },
+  SHARED_NOTE: { icon: StickyNote, label: "Note partagée", tone: "info" },
 };
 
 export function getNotificationMeta(type: string): NotificationMeta {

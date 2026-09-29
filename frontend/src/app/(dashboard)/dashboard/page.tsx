@@ -4,8 +4,9 @@ import { useMemo, useState } from "react";
 import { addDays } from "date-fns";
 import DashboardActiveProjects from "@/components/dashboard/DashboardActiveProjects";
 import DashboardDayTasks from "@/components/dashboard/DashboardDayTasks";
+import DashboardDeadlinesBoard from "@/components/dashboard/DashboardDeadlinesBoard";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
-import DashboardPrioritySection from "@/components/dashboard/DashboardPrioritySection";
+import DashboardSharedNotes from "@/components/dashboard/DashboardSharedNotes";
 import DashboardStatsStrip from "@/components/dashboard/DashboardStatsStrip";
 import DashboardTodayMeetings from "@/components/dashboard/DashboardTodayMeetings";
 import DashboardTomorrowTasks from "@/components/dashboard/DashboardTomorrowTasks";
@@ -54,14 +55,6 @@ export default function DashboardPage() {
     setQuickAddDate(date);
     setQuickAddOpen(true);
   };
-
-  const priorityAlerts = useMemo(() => {
-    const alerts = data?.smartAlerts ?? [];
-    const order = { overdue: 0, today: 1, tomorrow: 2, soon: 3 };
-    return [...alerts].sort(
-      (a, b) => (order[a.severity] ?? 4) - (order[b.severity] ?? 4)
-    );
-  }, [data?.smartAlerts]);
 
   const activeProjects = useMemo(() => {
     const list = data?.projectsInProgress ?? [];
@@ -140,7 +133,7 @@ export default function DashboardPage() {
               stats={data.stats}
               todayTasksCount={openTodayTasksCount}
             />
-            <DashboardPrioritySection alerts={priorityAlerts} stats={data.stats} />
+            <DashboardDeadlinesBoard deadlines={allDeadlines} />
           </section>
 
           {/* Journée + semaine */}
@@ -178,6 +171,8 @@ export default function DashboardPage() {
               </aside>
             </div>
           </section>
+
+          <DashboardSharedNotes />
 
           {/* Projets */}
           <section aria-label="Projets actifs" className={dashboardPageZone}>

@@ -52,7 +52,6 @@ import { useDialog } from "@/components/providers/DialogProvider";
 import { useProjectDetailMutations } from "@/hooks/useProjectDetail";
 import {
   DEVIS_STATUS_LABELS,
-  PRIORITY_LABELS,
   TASK_STATUS_LABELS,
   type Project,
   type TaskStatus,
@@ -76,7 +75,7 @@ interface ProjectTabPanelsProps {
   onUpload: (kind: ProjectUploadKind) => void;
 }
 
-type TaskFilter = "all" | TaskStatus | "URGENT";
+type TaskFilter = "all" | TaskStatus;
 type DeadlineFilter = "all" | "upcoming" | "done";
 
 export default function ProjectTabPanels({
@@ -519,7 +518,6 @@ export default function ProjectTabPanels({
     const allTasks = project.tasks ?? [];
     const tasks = allTasks.filter((t) => {
       if (taskFilter === "all") return true;
-      if (taskFilter === "URGENT") return t.priority === "URGENT";
       return t.status === taskFilter;
     });
     return (
@@ -546,7 +544,6 @@ export default function ProjectTabPanels({
                       { id: "TODO", label: TASK_STATUS_LABELS.TODO },
                       { id: "IN_PROGRESS", label: TASK_STATUS_LABELS.IN_PROGRESS },
                       { id: "DONE", label: TASK_STATUS_LABELS.DONE },
-                      { id: "URGENT", label: "Urgentes" },
                     ],
                   },
                 ]}
@@ -574,14 +571,12 @@ export default function ProjectTabPanels({
                     <span
                       className={cn(
                         detailChecklistStatusBadge,
-                        t.priority === "URGENT"
-                          ? detailChecklistStatusMissing
-                          : t.status === "DONE"
-                            ? detailChecklistStatusValidated
-                            : "text-[#8ba4c7]/75"
+                        t.status === "DONE"
+                          ? detailChecklistStatusValidated
+                          : "text-[#8ba4c7]/75"
                       )}
                     >
-                      {PRIORITY_LABELS[t.priority]}
+                      {TASK_STATUS_LABELS[t.status]}
                     </span>
                   </div>
                   {t.dueDate && (
@@ -697,7 +692,7 @@ export default function ProjectTabPanels({
                     </span>
                   </div>
                   <p className={detailChecklistDate}>
-                    {formatDate(d.date, "d MMMM yyyy")} · {PRIORITY_LABELS[d.priority]}
+                    {formatDate(d.date, "d MMMM yyyy")}
                   </p>
                 </div>
               </li>

@@ -7,7 +7,7 @@ import Badge from "@/components/ui/Badge";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { useCompleteTask, useDeleteTask } from "@/hooks/useTasks";
 import type { Task, TaskStatus } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
+import { TASK_STATUS_LABELS } from "@/types";
 import { getTaskDeadlineBadge, TASK_DEADLINE_BADGE_LABELS } from "@/lib/tasks-list";
 import {
   taskBoardDeadlineAccent,
@@ -134,9 +134,6 @@ function BoardCard({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) 
         </p>
       )}
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
-        <Badge variant={task.priority === "URGENT" ? "danger" : "default"}>
-          {PRIORITY_LABELS[task.priority]}
-        </Badge>
         {deadlineBadge !== "none" && (
           <Badge variant={taskDeadlineBadgeVariant(deadlineBadge)}>
             {TASK_DEADLINE_BADGE_LABELS[deadlineBadge]}

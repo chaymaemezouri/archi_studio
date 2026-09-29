@@ -10,6 +10,8 @@ import {
   Star,
   Trash2,
 } from "lucide-react";
+import ShareNoteButton from "@/components/shared/ShareNoteButton";
+import { refFromPlanRender } from "@/hooks/useSharedNotes";
 import { FileIcon } from "@/components/projects/detail/FileTypeIcon";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
 import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
@@ -220,6 +222,7 @@ export default function PlanRenderRow({ asset, onEdit, onPreview }: PlanRenderRo
           href={href}
           download
         />
+        <ShareNoteButton item={refFromPlanRender(asset)} />
         <IconActionButton
           label="Supprimer"
           icon={Trash2}

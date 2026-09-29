@@ -12,7 +12,6 @@ import {
   isDeadlineOverdue,
 } from "@/lib/deadlines-list";
 import type { Deadline } from "@/types";
-import { PRIORITY_COLORS, PRIORITY_LABELS } from "@/types";
 import {
   deadlinesListHeader,
   deadlinesListRow,
@@ -28,7 +27,6 @@ export function DeadlineListHeader() {
     <div className={deadlinesListHeader}>
       <span>Titre</span>
       <span>Date</span>
-      <span>Priorité</span>
       <span>Statut</span>
       <span />
     </div>
@@ -83,12 +81,6 @@ export default function DeadlineRow({ deadline }: DeadlineRowProps) {
       <span className="text-glass-secondary">
         <span className="text-[10px] text-glass-muted md:hidden">Date · </span>
         {formatDate(deadline.date)}
-      </span>
-
-      <span>
-        <Badge className={PRIORITY_COLORS[deadline.priority]}>
-          {PRIORITY_LABELS[deadline.priority]}
-        </Badge>
       </span>
 
       <span>

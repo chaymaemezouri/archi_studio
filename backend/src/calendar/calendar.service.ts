@@ -13,6 +13,10 @@ import {
   projectRelationWhere,
   toProjectAccessContext,
 } from '../common/utils/project-access.util';
+import {
+  agendaDateFilter,
+  rollOpenAgendaToToday,
+} from '../common/utils/agenda-rollover';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   CalendarEventDto,
@@ -53,6 +57,8 @@ export class CalendarService {
     const projectScope = projectRelationWhere(ctx);
     const projectList = projectListWhere(ctx);
     const dateRange = { gte: fromDate, lte: toDate };
+
+    await rollOpenAgendaToToday(this.prisma);
 
     const [
       projects,
@@ -101,8 +107,8 @@ export class CalendarService {
                 { studioId, projectId: null },
               ],
             },
-            { status: { not: TaskStatus.DONE } },
-            { OR: [{ dueDate: dateRange }, { scheduledAt: dateRange }] },
+            { status: { notIn: [TaskStatus.DONE, TaskStatus.CANCELLED] } },
+            agendaDateFilter(fromDate, toDate),
           ],
         },
         include: {

@@ -13,6 +13,7 @@ import {
   Pencil,
   Phone,
   Receipt,
+  Share2,
   Users,
 } from "lucide-react";
 import ClientDetailTabs, {
@@ -41,6 +42,7 @@ import Modal from "@/components/ui/Modal";
 import { cn } from "@/lib/utils";
 import { attachClientCinDocuments, downloadArchitectContractPdf, type ClientCinUploads } from "@/lib/client-cin";
 import { useClient, useUpdateClient } from "@/hooks/useClients";
+import { draftFromClient, useCreateSharedNote } from "@/hooks/useSharedNotes";
 import {
   CLIENT_STATUS_LABELS,
   CLIENT_TYPE_LABELS,
@@ -62,6 +64,7 @@ export default function ClientDetailPage() {
   const searchParams = useSearchParams();
   const { data: client, isLoading, isError, refetch } = useClient(id);
   const updateClient = useUpdateClient();
+  const shareClient = useCreateSharedNote();
 
   const tabParam = searchParams.get("tab");
   const activeTab: ClientTabId =
@@ -183,6 +186,13 @@ export default function ClientDetailPage() {
           </div>
 
           <div className={detailIconActionGroup}>
+            <IconActionButton
+              label="Partager le contact dans les notes"
+              icon={Share2}
+              tone="notes"
+              disabled={shareClient.isPending}
+              onClick={() => shareClient.mutate(draftFromClient(client))}
+            />
             <IconActionButton
               label="Modifier le client"
               icon={Pencil}

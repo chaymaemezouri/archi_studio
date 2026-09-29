@@ -25,7 +25,8 @@ export type NotificationTypeKey =
   | "INVOICE_OVERDUE"
   | "PAYMENT_RECEIVED"
   | "DOCUMENT_ADDED"
-  | "PROJECT_UPDATED";
+  | "PROJECT_UPDATED"
+  | "SHARED_NOTE";
 
 export interface NotificationPreferences {
   enabled: boolean;
@@ -99,11 +100,12 @@ export const NOTIFICATION_PREF_GROUPS: NotificationPrefGroup[] = [
   {
     id: "activity",
     title: "Activité",
-    description: "Documents et mises à jour projet",
+    description: "Notes du cabinet, documents et projets",
     icon: FolderKanban,
     types: [
       { key: "DOCUMENT_ADDED", label: "Nouveaux documents" },
       { key: "PROJECT_UPDATED", label: "Projets mis à jour" },
+      { key: "SHARED_NOTE", label: "Notes, contacts et fichiers partagés" },
     ],
   },
 ];

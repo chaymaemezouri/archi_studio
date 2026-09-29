@@ -16,9 +16,11 @@ import {
   MapPin,
   MoreVertical,
   Pencil,
+  Share2,
   Star,
   Trash2,
 } from "lucide-react";
+import { refFromProject, useCreateSharedNote } from "@/hooks/useSharedNotes";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { useDeleteProject, useUpdateProject } from "@/hooks/useProjects";
 import { useAuthStore } from "@/store/authStore";
@@ -102,6 +104,7 @@ export default function ProjectCardMenu({
   const user = useAuthStore((s) => s.user);
   const updateProject = useUpdateProject();
   const deleteProject = useDeleteProject();
+  const shareNote = useCreateSharedNote();
 
   const canEdit = canEditProject(user, project);
   const canArchive = canArchiveProject(user);
@@ -250,6 +253,16 @@ export default function ProjectCardMenu({
           Ouvrir
         </MenuItem>
       )}
+      <MenuItem
+        onClick={(e) => {
+          e.stopPropagation();
+          shareNote.mutate({ content: "", refs: [refFromProject(project)] });
+          close();
+        }}
+      >
+        <Share2 className="h-4 w-4 text-glass-muted" />
+        Partager dans les notes
+      </MenuItem>
 
       {canShowProjectOnMap(project) && getProjectMapsUrl(project) && (
         <MenuItem

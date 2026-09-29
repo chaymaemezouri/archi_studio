@@ -10,8 +10,8 @@ import {
 import { useProjects } from "@/hooks/useProjects";
 import { useClients } from "@/hooks/useClients";
 import { glassBtnPrimary } from "@/lib/glass-styles";
-import type { Priority, Task, TaskStatus } from "@/types";
-import { PRIORITY_LABELS, TASK_STATUS_LABELS } from "@/types";
+import type { Task, TaskStatus } from "@/types";
+import { TASK_STATUS_LABELS } from "@/types";
 import { cn } from "@/lib/utils";
 
 export type TaskFormValues = {
@@ -20,7 +20,7 @@ export type TaskFormValues = {
   projectId: string;
   clientId: string;
   dueDate: string;
-  priority: Priority;
+  scheduledAt: string;
   status: TaskStatus;
   notes: string;
 };
@@ -32,7 +32,7 @@ export function emptyTaskForm(): TaskFormValues {
     projectId: "",
     clientId: "",
     dueDate: "",
-    priority: "MEDIUM",
+    scheduledAt: "",
     status: "TODO",
     notes: "",
   };
@@ -45,7 +45,7 @@ export function taskToForm(task: Task): TaskFormValues {
     projectId: task.projectId ?? "",
     clientId: task.clientId ?? "",
     dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
-    priority: task.priority,
+    scheduledAt: task.scheduledAt ? task.scheduledAt.split("T")[0] : "",
     status: task.status,
     notes: task.notes ?? "",
   };
@@ -120,7 +120,7 @@ export default function TaskForm({
       projectId: values.projectId || undefined,
       clientId: values.clientId || undefined,
       dueDate: values.dueDate || undefined,
-      priority: values.priority,
+      scheduledAt: values.scheduledAt || undefined,
       status: values.status,
       notes: values.notes.trim() || undefined,
     });
@@ -197,6 +197,15 @@ export default function TaskForm({
       <FinanceFormSection title="Planning">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div>
+            <FinanceFieldLabel>Date de réalisation</FinanceFieldLabel>
+            <input
+              type="date"
+              className={financeFieldClass}
+              value={values.scheduledAt}
+              onChange={(e) => set("scheduledAt", e.target.value)}
+            />
+          </div>
+          <div>
             <FinanceFieldLabel>Deadline</FinanceFieldLabel>
             <input
               type="date"
@@ -204,20 +213,6 @@ export default function TaskForm({
               value={values.dueDate}
               onChange={(e) => set("dueDate", e.target.value)}
             />
-          </div>
-          <div>
-            <FinanceFieldLabel>Priorité</FinanceFieldLabel>
-            <select
-              className={financeSelectClass}
-              value={values.priority}
-              onChange={(e) => set("priority", e.target.value as Priority)}
-            >
-              {Object.entries(PRIORITY_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </select>
           </div>
           <div>
             <FinanceFieldLabel>Statut</FinanceFieldLabel>
