@@ -40,9 +40,9 @@ jobs:
           export GH_TOKEN='${{ secrets.GITHUB_TOKEN }}'
           cd '${VPS_PATH}'
           echo "==> git fetch + reset (pre-deploy)"
-          REPO_PATH="\$(git remote get-url origin | sed -E 's#(https://github.com/|git@github.com:)##; s#\\.git\$##')"
+          REPO_PATH="\$(git remote get-url origin | sed -E 's#.*github.com[:/]##; s#\\.git/?\$##')"
           GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
-            fetch "https://x-access-token:\${GH_TOKEN}@github.com/\${REPO_PATH}.git" main
+            fetch "https://x-access-token:\${GH_TOKEN}@github.com/\${REPO_PATH}.git" "+main:refs/remotes/origin/main"
           git checkout main 2>/dev/null || git checkout -B main origin/main
           git reset --hard origin/main
           bash deploy/deploy.sh
