@@ -2,6 +2,8 @@
 
 import { CheckCircle2, Trash2 } from "lucide-react";
 import IconActionButton from "@/components/projects/detail/IconActionButton";
+import ShareNoteButton from "@/components/shared/ShareNoteButton";
+import { refFromTask } from "@/hooks/useSharedNotes";
 import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
 import Badge from "@/components/ui/Badge";
 import { useDialog } from "@/components/providers/DialogProvider";
@@ -119,6 +121,7 @@ function BoardCard({ task, onEdit }: { task: Task; onEdit: (t: Task) => void }) 
               }}
             />
           )}
+          <ShareNoteButton item={refFromTask(task)} />
           <IconActionButton
             label="Supprimer"
             icon={Trash2}

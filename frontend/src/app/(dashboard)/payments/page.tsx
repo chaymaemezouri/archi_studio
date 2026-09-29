@@ -8,6 +8,8 @@ import FinanceRowActions, {
   FinanceMenuItem,
   FinanceMenuLink,
 } from "@/components/finances/FinanceRowActions";
+import ShareNoteButton from "@/components/shared/ShareNoteButton";
+import { refFromPayment } from "@/hooks/useSharedNotes";
 import PaymentForm from "@/components/finances/PaymentForm";
 import {
   financeDesktopTable,
@@ -701,6 +703,7 @@ export default function PaymentsPage() {
                     id={p.id}
                     onEdit={() => openEdit(p)}
                     onDelete={() => void confirmDeletePayment(p.id)}
+                    extraIcons={<ShareNoteButton item={refFromPayment(p)} />}
                     menuItems={
                       <>
                         {p.invoice?.id && (
@@ -803,6 +806,7 @@ export default function PaymentsPage() {
                         id={p.id}
                         onEdit={() => openEdit(p)}
                         onDelete={() => void confirmDeletePayment(p.id)}
+                        extraIcons={<ShareNoteButton item={refFromPayment(p)} />}
                         menuItems={
                           <>
                             {p.invoice?.id && (

@@ -9,6 +9,8 @@ import {
   GlassListTable,
   GlassPageShell,
 } from "@/components/ui/GlassPageShell";
+import ShareNoteButton from "@/components/shared/ShareNoteButton";
+import { refFromTender } from "@/hooks/useSharedNotes";
 import api from "@/lib/api";
 import { TENDER_STATUS_LABELS } from "@/types";
 import type { Tender } from "@/types";
@@ -45,7 +47,10 @@ export default function TendersPage() {
             key={t.id}
             className="grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,0.8fr)_minmax(0,0.8fr)_minmax(0,0.7fr)]"
           >
-            <span className="truncate font-medium text-app-primary">{t.name}</span>
+            <span className="flex min-w-0 items-center gap-2">
+              <span className="truncate font-medium text-app-primary">{t.name}</span>
+              <ShareNoteButton item={refFromTender(t)} />
+            </span>
             <span className="truncate">{t.client || "—"}</span>
             <span className="tabular-nums">{t.budget ? formatCurrency(t.budget) : "—"}</span>
             <span>{t.deadline ? formatDate(t.deadline) : "—"}</span>

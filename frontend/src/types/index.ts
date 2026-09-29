@@ -479,7 +479,17 @@ export interface SharedNoteFile {
   createdAt?: string;
 }
 
-export type SharedNoteRefKind = "CLIENT" | "PROJECT" | "DOCUMENT" | "PLAN" | "RENDER";
+export type SharedNoteRefKind =
+  | "CLIENT"
+  | "PROJECT"
+  | "DOCUMENT"
+  | "PLAN"
+  | "RENDER"
+  | "DEVIS"
+  | "INVOICE"
+  | "PAYMENT"
+  | "TASK"
+  | "TENDER";
 
 export interface SharedNoteRef {
   id?: string;

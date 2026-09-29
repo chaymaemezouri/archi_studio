@@ -4,14 +4,19 @@ import { useEffect, useRef, useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
+  CheckSquare,
+  CreditCard,
+  FileSpreadsheet,
   FileText,
   FolderKanban,
+  Gavel,
   Image as ImageIcon,
   Mail,
   Paperclip,
   Pencil,
   PenTool,
   Phone,
+  Receipt,
   Send,
   Share2,
   StickyNote,
@@ -81,6 +86,11 @@ const REF_ICON: Record<SharedNoteRefKind, typeof UserRound> = {
   DOCUMENT: FileText,
   PLAN: PenTool,
   RENDER: ImageIcon,
+  DEVIS: FileSpreadsheet,
+  INVOICE: Receipt,
+  PAYMENT: CreditCard,
+  TASK: CheckSquare,
+  TENDER: Gavel,
 };
 
 function RefChip({ item }: { item: Pick<SharedNoteRef, "kind" | "title" | "subtitle" | "href" | "url"> }) {
@@ -313,7 +323,6 @@ export default function DashboardSharedNotes({ className }: { className?: string
       </div>
 
       <form onSubmit={handleAdd} className="space-y-2 border-t border-app px-3 py-2.5">
-        {pickerOpen && <ShareNotePicker onPick={addRef} />}
         {(draft.refs ?? []).length > 0 && (
           <div className="flex flex-wrap gap-1.5">
             {draft.refs!.map((ref) => (
@@ -360,20 +369,31 @@ export default function DashboardSharedNotes({ className }: { className?: string
           </div>
         )}
         <div className="flex items-end gap-1.5">
-          <button
-            type="button"
-            onClick={() => setPickerOpen((open) => !open)}
-            aria-label="Partager un élément du cabinet"
-            aria-expanded={pickerOpen}
-            className={cn(
-              "flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-glass transition",
-              pickerOpen
-                ? "bg-studio-light text-white dark:text-[#0a0a0f]"
-                : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
-            )}
-          >
-            <Share2 className="h-4 w-4" />
-          </button>
+          <div className="relative shrink-0" data-share-anchor>
+            <button
+              type="button"
+              onClick={() => setPickerOpen((open) => !open)}
+              aria-label="Partager un élément du cabinet"
+              aria-expanded={pickerOpen}
+              aria-haspopup="menu"
+              className={cn(
+                "flex h-10 w-10 items-center justify-center rounded-full border border-glass transition",
+                pickerOpen
+                  ? "bg-studio-light text-white dark:text-[#0a0a0f]"
+                  : "text-glass-muted hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light"
+              )}
+            >
+              <Share2 className="h-4 w-4" />
+            </button>
+            <ShareNotePicker
+              open={pickerOpen}
+              onClose={() => setPickerOpen(false)}
+              onPick={(item) => {
+                addRef(item);
+                setPickerOpen(false);
+              }}
+            />
+          </div>
           <label className="flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full border border-glass text-glass-muted transition hover:bg-[color:var(--glass-bg-hover)] hover:text-studio-light">
             <Paperclip className="h-4 w-4" />
             <span className="sr-only">Joindre un fichier</span>

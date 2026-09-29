@@ -20,8 +20,28 @@ const noteInclude = {
   refs: { orderBy: { createdAt: 'asc' as const } },
 };
 
-const REF_KINDS = ['CLIENT', 'PROJECT', 'DOCUMENT', 'PLAN', 'RENDER'] as const;
+const REF_KINDS = [
+  'CLIENT',
+  'PROJECT',
+  'DOCUMENT',
+  'PLAN',
+  'RENDER',
+  'DEVIS',
+  'INVOICE',
+  'PAYMENT',
+  'TASK',
+  'TENDER',
+] as const;
 type RefKind = (typeof REF_KINDS)[number];
+
+function moneyLabel(amount: number) {
+  return new Intl.NumberFormat('fr-FR', {
+    style: 'currency',
+    currency: 'MAD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
 
 @Injectable()
 export class SharedNotesService {
@@ -166,11 +186,19 @@ export class SharedNotesService {
   }) {
     const ref = note.refs?.[0];
     if (ref && !note.content.trim()) {
-      if (ref.kind === 'CLIENT') return 'Contact partagé';
-      if (ref.kind === 'PROJECT') return 'Projet partagé';
-      if (ref.kind === 'DOCUMENT') return 'Document partagé';
-      if (ref.kind === 'PLAN') return 'Plan partagé';
-      if (ref.kind === 'RENDER') return 'Image partagée';
+      const titles: Record<string, string> = {
+        CLIENT: 'Contact partagé',
+        PROJECT: 'Projet partagé',
+        DOCUMENT: 'Document partagé',
+        PLAN: 'Plan partagé',
+        RENDER: 'Image partagée',
+        DEVIS: 'Devis partagé',
+        INVOICE: 'Facture partagée',
+        PAYMENT: 'Paiement partagé',
+        TASK: 'Tâche partagée',
+        TENDER: "Appel d'offres partagé",
+      };
+      if (titles[ref.kind]) return titles[ref.kind];
     }
     if (note.contactName && !note.content.trim()) return 'Contact partagé';
     if ((note.files?.length ?? 0) > 0 && !note.content.trim() && !note.contactName) {
@@ -272,7 +300,7 @@ export class SharedNotesService {
           href: '/documents',
           url: row.url,
         });
-      } else {
+      } else if (item.kind === 'PLAN' || item.kind === 'RENDER') {
         const row = await this.prisma.planRender.findFirst({
           where: { id: item.entityId, studioId, kind: item.kind },
           select: { id: true, name: true, url: true, kind: true },
@@ -289,6 +317,95 @@ export class SharedNotesService {
           subtitle: row.kind === 'PLAN' ? 'Plan' : 'Image',
           href: '/plans-renders',
           url: row.url,
+        });
+      } else if (item.kind === 'DEVIS') {
+        const row = await this.prisma.devis.findFirst({
+          where: {
+            id: item.entityId,
+            OR: [{ studioId }, { client: { studioId } }, { project: { studioId } }],
+          },
+          select: { id: true, number: true, clientName: true, object: true, totalTTC: true },
+        });
+        if (!row) throw new BadRequestException('Devis introuvable.');
+        resolved.push({
+          kind: 'DEVIS',
+          entityId: row.id,
+          title: row.number,
+          subtitle: [row.object, row.clientName, moneyLabel(row.totalTTC)].filter(Boolean).join(' · ') || null,
+          href: `/devis/${row.id}`,
+          url: null,
+        });
+      } else if (item.kind === 'INVOICE') {
+        const row = await this.prisma.invoice.findFirst({
+          where: {
+            id: item.entityId,
+            OR: [{ studioId }, { client: { studioId } }, { project: { studioId } }],
+          },
+          select: { id: true, number: true, clientName: true, object: true, totalTTC: true },
+        });
+        if (!row) throw new BadRequestException('Facture introuvable.');
+        resolved.push({
+          kind: 'INVOICE',
+          entityId: row.id,
+          title: row.number,
+          subtitle: [row.object, row.clientName, moneyLabel(row.totalTTC)].filter(Boolean).join(' · ') || null,
+          href: `/invoices/${row.id}`,
+          url: null,
+        });
+      } else if (item.kind === 'PAYMENT') {
+        const row = await this.prisma.payment.findFirst({
+          where: {
+            id: item.entityId,
+            OR: [
+              { studioId },
+              { client: { studioId } },
+              { project: { studioId } },
+              { invoice: { studioId } },
+              { invoice: { client: { studioId } } },
+              { invoice: { project: { studioId } } },
+            ],
+          },
+          select: { id: true, reference: true, clientName: true, amount: true, invoiceName: true },
+        });
+        if (!row) throw new BadRequestException('Paiement introuvable.');
+        resolved.push({
+          kind: 'PAYMENT',
+          entityId: row.id,
+          title: row.reference?.trim() || row.invoiceName || 'Paiement',
+          subtitle: [row.clientName, moneyLabel(row.amount)].filter(Boolean).join(' · ') || null,
+          href: '/payments',
+          url: null,
+        });
+      } else if (item.kind === 'TASK') {
+        const row = await this.prisma.task.findFirst({
+          where: {
+            id: item.entityId,
+            OR: [{ studioId }, { project: { studioId } }],
+          },
+          select: { id: true, title: true, project: { select: { name: true } } },
+        });
+        if (!row) throw new BadRequestException('Tâche introuvable.');
+        resolved.push({
+          kind: 'TASK',
+          entityId: row.id,
+          title: row.title,
+          subtitle: row.project?.name ?? null,
+          href: '/tasks',
+          url: null,
+        });
+      } else if (item.kind === 'TENDER') {
+        const row = await this.prisma.tender.findFirst({
+          where: { id: item.entityId, studioId },
+          select: { id: true, name: true, client: true },
+        });
+        if (!row) throw new BadRequestException("Appel d'offres introuvable.");
+        resolved.push({
+          kind: 'TENDER',
+          entityId: row.id,
+          title: row.name,
+          subtitle: row.client,
+          href: '/tenders',
+          url: null,
         });
       }
     }

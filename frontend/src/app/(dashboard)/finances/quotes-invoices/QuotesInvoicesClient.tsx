@@ -15,6 +15,8 @@ import DevisForm, { type DevisFormValues } from "@/components/devis/DevisForm";
 import InvoiceForm, { type InvoiceFormValues } from "@/components/invoices/InvoiceForm";
 import FinanceProjectShell from "@/components/finances/FinanceProjectShell";
 import FinanceRowActions, { FinanceMenuItem } from "@/components/finances/FinanceRowActions";
+import ShareNoteButton from "@/components/shared/ShareNoteButton";
+import { refFromDevis, refFromInvoice } from "@/hooks/useSharedNotes";
 import {
   DevisMobileCard,
   financeDesktopTable,
@@ -965,6 +967,7 @@ export default function QuotesInvoicesPage() {
                       onEdit={() => openEditDevis(d)}
                       onDownloadPdf={() => handleDownloadPdf("devis", d)}
                       onDelete={() => void confirmDeleteDevis(d)}
+                      extraIcons={<ShareNoteButton item={refFromDevis(d)} />}
                       menuItems={
                         <>
                           {d.status === "DRAFT" && (
@@ -1049,6 +1052,7 @@ export default function QuotesInvoicesPage() {
                           onEdit={() => openEditDevis(d)}
                           onDownloadPdf={() => handleDownloadPdf("devis", d)}
                           onDelete={() => void confirmDeleteDevis(d)}
+                          extraIcons={<ShareNoteButton item={refFromDevis(d)} />}
                           menuItems={
                             <>
                               {d.status === "DRAFT" && (
@@ -1144,12 +1148,15 @@ export default function QuotesInvoicesPage() {
                         onDownloadPdf={() => handleDownloadPdf("invoices", inv)}
                         onDelete={() => void confirmDeleteInvoice(inv)}
                         extraIcons={
-                          <IconActionButton
-                            label="Ajouter paiement"
-                            icon={CircleDollarSign}
-                            tone="upload"
-                            onClick={() => setPaymentInvoice(inv)}
-                          />
+                          <>
+                            <ShareNoteButton item={refFromInvoice(inv)} />
+                            <IconActionButton
+                              label="Ajouter paiement"
+                              icon={CircleDollarSign}
+                              tone="upload"
+                              onClick={() => setPaymentInvoice(inv)}
+                            />
+                          </>
                         }
                         menuItems={
                           <>
@@ -1229,12 +1236,15 @@ export default function QuotesInvoicesPage() {
                             onDownloadPdf={() => handleDownloadPdf("invoices", inv)}
                             onDelete={() => void confirmDeleteInvoice(inv)}
                             extraIcons={
-                              <IconActionButton
-                                label="Ajouter paiement"
-                                icon={CircleDollarSign}
-                                tone="upload"
-                                onClick={() => setPaymentInvoice(inv)}
-                              />
+                              <>
+                                <ShareNoteButton item={refFromInvoice(inv)} />
+                                <IconActionButton
+                                  label="Ajouter paiement"
+                                  icon={CircleDollarSign}
+                                  tone="upload"
+                                  onClick={() => setPaymentInvoice(inv)}
+                                />
+                              </>
                             }
                             menuItems={
                               <>

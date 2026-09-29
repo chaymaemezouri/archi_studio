@@ -3,7 +3,20 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
-import type { Client, Document, PlanRender, Project, SharedNote, SharedNoteRefKind } from "@/types";
+import { formatCurrency } from "@/lib/utils";
+import type {
+  Client,
+  Devis,
+  Document,
+  Invoice,
+  Payment,
+  PlanRender,
+  Project,
+  SharedNote,
+  SharedNoteRefKind,
+  Task,
+  Tender,
+} from "@/types";
 
 const notesKey = ["shared-notes"] as const;
 
@@ -64,6 +77,64 @@ export function refFromPlanRender(asset: Pick<PlanRender, "id" | "name" | "kind"
     title: asset.name,
     subtitle: asset.kind === "PLAN" ? "Plan" : "Image",
     href: "/plans-renders",
+  };
+}
+
+export function refFromDevis(
+  devis: Pick<Devis, "id" | "number" | "clientName" | "object" | "totalTTC">
+): SharedNoteRefDraft {
+  return {
+    kind: "DEVIS",
+    entityId: devis.id,
+    title: devis.number,
+    subtitle: [devis.object, devis.clientName, formatCurrency(devis.totalTTC)].filter(Boolean).join(" · "),
+    href: `/devis/${devis.id}`,
+  };
+}
+
+export function refFromInvoice(
+  invoice: Pick<Invoice, "id" | "number" | "clientName" | "object" | "totalTTC">
+): SharedNoteRefDraft {
+  return {
+    kind: "INVOICE",
+    entityId: invoice.id,
+    title: invoice.number,
+    subtitle: [invoice.object, invoice.clientName, formatCurrency(invoice.totalTTC)]
+      .filter(Boolean)
+      .join(" · "),
+    href: `/invoices/${invoice.id}`,
+  };
+}
+
+export function refFromPayment(
+  payment: Pick<Payment, "id" | "reference" | "clientName" | "amount" | "invoiceName">
+): SharedNoteRefDraft {
+  return {
+    kind: "PAYMENT",
+    entityId: payment.id,
+    title: payment.reference?.trim() || payment.invoiceName || "Paiement",
+    subtitle: [payment.clientName, formatCurrency(payment.amount)].filter(Boolean).join(" · "),
+    href: "/payments",
+  };
+}
+
+export function refFromTask(task: Pick<Task, "id" | "title" | "projectName" | "project">): SharedNoteRefDraft {
+  return {
+    kind: "TASK",
+    entityId: task.id,
+    title: task.title,
+    subtitle: task.projectName ?? task.project?.name ?? undefined,
+    href: "/tasks",
+  };
+}
+
+export function refFromTender(tender: Pick<Tender, "id" | "name" | "client">): SharedNoteRefDraft {
+  return {
+    kind: "TENDER",
+    entityId: tender.id,
+    title: tender.name,
+    subtitle: tender.client ?? undefined,
+    href: "/tenders",
   };
 }
 
