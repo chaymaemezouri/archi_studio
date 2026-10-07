@@ -63,6 +63,7 @@ const MAIN_FILTERS: { id: TaskMainFilter; label: string }[] = [
 ];
 
 const SORT_OPTIONS: { id: TaskSort; label: string }[] = [
+  { id: "importance", label: "Mon ordre" },
   { id: "deadline", label: "Deadline proche" },
   { id: "recent", label: "Plus récentes" },
   { id: "oldest", label: "Plus anciennes" },
@@ -85,7 +86,7 @@ export default function TasksPage() {
   const [statusFilter, setStatusFilter] = useState<TaskStatus | "all">("all");
   const [projectFilter, setProjectFilter] = useState<string | "all" | "personal">("all");
   const [clientFilter, setClientFilter] = useState<string | "all">("all");
-  const [sort, setSort] = useState<TaskSort>("deadline");
+  const [sort, setSort] = useState<TaskSort>("importance");
   const [view, setView] = useTasksViewPreference();
   const [showDone, setShowDone] = useTasksShowDonePreference();
   const [filterOpen, setFilterOpen] = useState(false);

@@ -1,10 +1,12 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useAuth } from "@/hooks/useAuth";
 import { accentText } from "./dashboard-ui";
 import DashboardAddMenu, { type QuickAddAction } from "./DashboardAddMenu";
+import { toLocalDateInput } from "@/lib/dates";
 
 function firstName(name?: string | null): string | null {
   if (!name?.trim()) return null;
@@ -24,7 +26,11 @@ export default function DashboardGreetingHeader({
 }: DashboardGreetingHeaderProps) {
   const { user } = useAuth();
   const name = firstName(user?.name);
-  const dateLabel = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
+  // Avoid SSR/client timezone mismatches (hydration error on the date label).
+  const [today, setToday] = useState<Date | null>(null);
+  useEffect(() => {
+    setToday(new Date());
+  }, []);
 
   return (
     <header className="flex flex-col gap-5 pb-1 lg:flex-row lg:items-end lg:justify-between">
@@ -45,12 +51,16 @@ export default function DashboardGreetingHeader({
         </p>
       </div>
       <div className="flex flex-wrap items-center gap-3 sm:justify-end">
-        <time
-          dateTime={new Date().toISOString().split("T")[0]}
-          className="text-xs font-medium capitalize tracking-wide text-stone-400 sm:text-sm"
-        >
-          {dateLabel}
-        </time>
+        {today ? (
+          <time
+            dateTime={toLocalDateInput(today)}
+            className="text-xs font-medium capitalize tracking-wide text-stone-400 sm:text-sm"
+          >
+            {format(today, "EEEE d MMMM yyyy", { locale: fr })}
+          </time>
+        ) : (
+          <span className="min-h-[1.25rem] min-w-[10rem] text-xs sm:text-sm" aria-hidden />
+        )}
         <DashboardAddMenu onQuickAdd={onQuickAdd} disabled={addDisabled} />
       </div>
     </header>

@@ -148,9 +148,15 @@ interface WeekViewProps {
   anchor: Date;
   events: CalendarEvent[];
   onEventClick: (event: CalendarEvent) => void;
+  onDayClick?: (day: Date) => void;
 }
 
-export function CalendarWeekView({ anchor, events, onEventClick }: WeekViewProps) {
+export function CalendarWeekView({
+  anchor,
+  events,
+  onEventClick,
+  onDayClick,
+}: WeekViewProps) {
   const start = startOfWeek(anchor, { weekStartsOn: 1 });
   const days = eachDayOfInterval({
     start,
@@ -163,12 +169,22 @@ export function CalendarWeekView({ anchor, events, onEventClick }: WeekViewProps
         const dayEvents = eventsOnDay(events, day);
         return (
           <div key={dateKey(day)} className={calendarWeekColumn}>
-            <p className="mb-2 text-[11px] font-semibold capitalize text-app-primary/85">
+            <button
+              type="button"
+              onClick={() => onDayClick?.(day)}
+              className="mb-2 w-full rounded-md px-0.5 py-0.5 text-left text-[11px] font-semibold capitalize text-app-primary/85 transition hover:bg-studio-muted/40"
+            >
               {format(day, "EEE d MMM", { locale: fr })}
-            </p>
+            </button>
             <div className="space-y-1">
               {dayEvents.length === 0 ? (
-                <p className="text-[10px] text-glass-muted">—</p>
+                <button
+                  type="button"
+                  onClick={() => onDayClick?.(day)}
+                  className="w-full py-2 text-[10px] text-glass-muted transition hover:text-studio-light"
+                >
+                  —
+                </button>
               ) : (
                 dayEvents.map((ev) => (
                   <CalendarEventChip key={ev.id} event={ev} onClick={onEventClick} />

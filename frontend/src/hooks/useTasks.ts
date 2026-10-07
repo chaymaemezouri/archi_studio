@@ -3,6 +3,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/api-errors";
+import { toTaskApiPayload } from "@/lib/task-payload";
 import type { Task, TaskStatus } from "@/types";
 
 export function useTasks() {
@@ -40,14 +42,15 @@ export function useCreateTask() {
 
   return useMutation({
     mutationFn: async (payload: Partial<Task>) => {
-      const { data } = await api.post<Task>("/tasks", payload);
+      const { data } = await api.post<Task>("/tasks", toTaskApiPayload(payload));
       return data;
     },
     onSuccess: () => {
       invalidateTasks(queryClient);
       toast.success("Tâche créée");
     },
-    onError: () => toast.error("Erreur lors de la création"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la création")),
   });
 }
 
@@ -55,15 +58,40 @@ export function useUpdateTask() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ id, ...payload }: { id: string } & Partial<Task>) => {
-      const { data } = await api.patch<Task>(`/tasks/${id}`, payload);
+    mutationFn: async ({
+      id,
+      silent: _silent,
+      ...payload
+    }: { id: string; silent?: boolean } & Partial<Task>) => {
+      const { data } = await api.patch<Task>(
+        `/tasks/${id}`,
+        toTaskApiPayload(payload)
+      );
+      return data;
+    },
+    onSuccess: (_data, vars) => {
+      invalidateTasks(queryClient);
+      if (!vars.silent) toast.success("Tâche mise à jour");
+    },
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Erreur lors de la mise à jour")),
+  });
+}
+
+export function useReorderTasks() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data } = await api.post<{ reordered: number }>("/tasks/reorder", {
+        ids,
+      });
       return data;
     },
     onSuccess: () => {
       invalidateTasks(queryClient);
-      toast.success("Tâche mise à jour");
     },
-    onError: () => toast.error("Erreur lors de la mise à jour"),
+    onError: () => toast.error("Impossible de réorganiser les tâches"),
   });
 }
 
@@ -118,16 +146,20 @@ export function useDuplicateTask() {
 
   return useMutation({
     mutationFn: async (task: Task) => {
-      const { data } = await api.post<Task>("/tasks", {
-        title: `${task.title} (copie)`,
-        description: task.description,
-        projectId: task.projectId,
-        clientId: task.clientId,
-        dueDate: task.dueDate,
-        priority: task.priority,
-        status: "TODO",
-        notes: task.notes,
-      });
+      const { data } = await api.post<Task>(
+        "/tasks",
+        toTaskApiPayload({
+          title: `${task.title} (copie)`,
+          description: task.description ?? undefined,
+          projectId: task.projectId,
+          clientId: task.clientId,
+          dueDate: task.dueDate ?? undefined,
+          priority: task.priority,
+          status: "TODO",
+          notes: task.notes ?? undefined,
+          color: task.color ?? null,
+        })
+      );
       return data;
     },
     onSuccess: () => {

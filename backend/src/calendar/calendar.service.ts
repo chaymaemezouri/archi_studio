@@ -254,6 +254,8 @@ export class CalendarService {
         priority: mapPriority(t.priority),
         status: t.status === TaskStatus.DONE ? 'DONE' : t.status,
         notes: t.description,
+        color: t.color ?? null,
+        sortOrder: t.sortOrder ?? 0,
         source: 'task',
         sourceId: t.id,
         editable: true,
@@ -358,6 +360,8 @@ export class CalendarService {
         priority: ev.priority,
         status: ev.status,
         notes: ev.notes,
+        color: ev.color ?? null,
+        sortOrder: (ev as { sortOrder?: number }).sortOrder ?? 0,
         source: 'custom',
         sourceId: ev.id,
         editable: true,
@@ -381,7 +385,9 @@ export class CalendarService {
     dto: CreateCalendarEventDto,
     user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
   ) {
-    if (dto.type === CalendarEventType.DEADLINE_TASK) {
+    const eventType = dto.type ?? CalendarEventType.CUSTOM_EVENT;
+
+    if (eventType === CalendarEventType.DEADLINE_TASK) {
       throw new BadRequestException(
         'Créez une tâche depuis le calendrier via l’API /tasks.',
       );
@@ -397,20 +403,25 @@ export class CalendarService {
       }
     }
 
+    const createData: Record<string, unknown> = {
+      studioId: user.studioId,
+      title: dto.title,
+      type: eventType,
+      date: new Date(dto.date),
+      startTime: dto.startTime,
+      endTime: dto.endTime,
+      projectId: dto.projectId,
+      clientId: dto.clientId,
+      priority: dto.priority,
+      status: dto.status,
+      notes: dto.notes,
+    };
+    if (dto.color) createData.color = dto.color;
+
     const event = await this.prisma.calendarEvent.create({
-      data: {
-        studioId: user.studioId,
-        title: dto.title,
-        type: dto.type,
-        date: new Date(dto.date),
-        startTime: dto.startTime,
-        endTime: dto.endTime,
-        projectId: dto.projectId,
-        clientId: dto.clientId,
-        priority: dto.priority,
-        status: dto.status,
-        notes: dto.notes,
-      },
+      data: createData as Parameters<
+        typeof this.prisma.calendarEvent.create
+      >[0]['data'],
       include: {
         project: { select: { id: true, name: true } },
         client: { select: { id: true, name: true } },
@@ -487,6 +498,69 @@ export class CalendarService {
     return { deleted: true };
   }
 
+  /** Réordonne tâches et événements custom d’une même journée. */
+  async reorderDay(
+    items: { source: 'task' | 'custom'; id: string }[],
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
+  ) {
+    const taskIds = [
+      ...new Set(items.filter((i) => i.source === 'task').map((i) => i.id)),
+    ];
+    const eventIds = [
+      ...new Set(items.filter((i) => i.source === 'custom').map((i) => i.id)),
+    ];
+
+    if (taskIds.length) {
+      const owned = await this.prisma.task.findMany({
+        where: {
+          id: { in: taskIds },
+          OR: [
+            { studioId: user.studioId, projectId: null },
+            { project: { studioId: user.studioId } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (owned.length !== taskIds.length) {
+        throw new BadRequestException(
+          'Une ou plusieurs tâches sont inaccessibles.',
+        );
+      }
+    }
+
+    if (eventIds.length) {
+      const owned = await this.prisma.calendarEvent.findMany({
+        where: { id: { in: eventIds }, studioId: user.studioId },
+        select: { id: true },
+      });
+      if (owned.length !== eventIds.length) {
+        throw new BadRequestException(
+          'Un ou plusieurs événements sont inaccessibles.',
+        );
+      }
+    }
+
+    const ops = items.map((item, index) => {
+      if (item.source === 'task') {
+        return this.prisma.task.update({
+          where: { id: item.id },
+          data: { sortOrder: index } as Parameters<
+            typeof this.prisma.task.update
+          >[0]['data'],
+        });
+      }
+      return this.prisma.calendarEvent.update({
+        where: { id: item.id },
+        data: { sortOrder: index } as Parameters<
+          typeof this.prisma.calendarEvent.update
+        >[0]['data'],
+      });
+    });
+
+    await this.prisma.$transaction(ops);
+    return { reordered: items.length };
+  }
+
   private mapCustomEvent(event: {
     id: string;
     title: string;
@@ -499,6 +573,8 @@ export class CalendarService {
     priority: string;
     status: string;
     notes: string | null;
+    color?: string | null;
+    sortOrder?: number;
     createdAt: Date;
     updatedAt: Date;
     project?: { id: string; name: string } | null;
@@ -518,6 +594,8 @@ export class CalendarService {
       priority: event.priority,
       status: event.status,
       notes: event.notes,
+      color: event.color ?? null,
+      sortOrder: event.sortOrder ?? 0,
       source: 'custom',
       sourceId: event.id,
       editable: true,

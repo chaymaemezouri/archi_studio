@@ -30,6 +30,9 @@ export interface CalendarEventDto {
   status?: string;
   notes?: string | null;
   location?: string | null;
+  color?: string | null;
+  /** Ordre d’importance dans la journée (tâches + événements) */
+  sortOrder?: number;
   source: CalendarEventSource;
   sourceId?: string;
   editable: boolean;

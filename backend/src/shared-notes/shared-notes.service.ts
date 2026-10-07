@@ -6,6 +6,7 @@ import {
 import { NotifType } from '@prisma/client';
 import { unlinkSync } from 'fs';
 import { join } from 'path';
+import { resolveSharedNotesStudioIds } from '../common/constants/shared-notes-partners';
 import type { AuthUser } from '../common/types/auth-user';
 import { isNotificationTypeEnabled } from '../notifications/notification-preferences';
 import { NotificationPreferencesService } from '../notifications/notification-preferences.service';
@@ -53,13 +54,17 @@ export class SharedNotesService {
   ) {}
 
   async findAll(user: Pick<AuthUser, 'studioId'>) {
+    const studioIds = await resolveSharedNotesStudioIds(
+      this.prisma,
+      user.studioId,
+    );
     const notes = await this.prisma.sharedNote.findMany({
-      where: { studioId: user.studioId },
+      where: { studioId: { in: studioIds } },
       orderBy: { createdAt: 'desc' },
       take: 100,
       include: noteInclude,
     });
-    await this.ensureNotifications(notes);
+    await this.ensureNotifications(notes, studioIds);
     return notes;
   }
 
@@ -99,7 +104,7 @@ export class SharedNotesService {
       where: { id: note.id },
       include: noteInclude,
     });
-    await this.publish(created, true);
+    await this.publishSafe(created, true);
     return created;
   }
 
@@ -124,7 +129,7 @@ export class SharedNotesService {
       data: fields,
       include: noteInclude,
     });
-    await this.publish(updated, true);
+    await this.publishSafe(updated, true);
     return updated;
   }
 
@@ -149,7 +154,7 @@ export class SharedNotesService {
       where: { id: note.id },
       include: noteInclude,
     });
-    await this.publish(updated, true);
+    await this.publishSafe(updated, true);
     return updated;
   }
 
@@ -165,8 +170,12 @@ export class SharedNotesService {
   }
 
   async remove(id: string, user: Pick<AuthUser, 'studioId'>) {
+    const studioIds = await resolveSharedNotesStudioIds(
+      this.prisma,
+      user.studioId,
+    );
     const note = await this.prisma.sharedNote.findFirst({
-      where: { id, studioId: user.studioId },
+      where: { id, studioId: { in: studioIds } },
       include: { files: true },
     });
     if (!note) throw new NotFoundException('Note introuvable');
@@ -413,7 +422,7 @@ export class SharedNotesService {
     return resolved;
   }
 
-  private async publish(
+  private async publishSafe(
     note: {
       id: string;
       studioId: string;
@@ -426,8 +435,37 @@ export class SharedNotesService {
     },
     refreshUnread: boolean,
   ) {
+    try {
+      await this.publish(note, refreshUnread);
+    } catch {
+      /* La note est déjà enregistrée — ne pas faire échouer l’envoi. */
+    }
+  }
+
+  private async publish(
+    note: {
+      id: string;
+      studioId: string;
+      authorId?: string;
+      content: string;
+      contactName: string | null;
+      contactPhone: string | null;
+      contactEmail: string | null;
+      files?: { id: string }[];
+      author?: { id?: string; name: string } | null;
+    },
+    refreshUnread: boolean,
+  ) {
+    const studioIds = await resolveSharedNotesStudioIds(
+      this.prisma,
+      note.studioId,
+    );
+    const authorId = note.authorId ?? note.author?.id;
     const members = await this.prisma.user.findMany({
-      where: { studioId: note.studioId },
+      where: {
+        studioId: { in: studioIds },
+        ...(authorId ? { id: { not: authorId } } : {}),
+      },
       select: { id: true },
     });
     const title = this.noteTitle(note);
@@ -442,7 +480,7 @@ export class SharedNotesService {
           title,
           message,
           `shared-note:${note.id}:${member.id}`,
-          '/dashboard',
+          '/discussion',
           { refreshUnread },
         );
       }),
@@ -453,50 +491,61 @@ export class SharedNotesService {
     notes: {
       id: string;
       studioId: string;
+      authorId?: string;
       content: string;
       contactName: string | null;
       contactPhone: string | null;
       contactEmail: string | null;
       files?: { id: string }[];
-      author?: { name: string } | null;
+      author?: { id?: string; name: string } | null;
     }[],
+    studioIds: string[],
   ) {
     if (!notes.length) return;
     const members = await this.prisma.user.findMany({
-      where: { studioId: notes[0].studioId },
+      where: { studioId: { in: studioIds } },
       select: { id: true },
     });
-    const keys = notes.flatMap((note) =>
-      members.map((member) => `shared-note:${note.id}:${member.id}`),
-    );
+    const keys = notes.flatMap((note) => {
+      const authorId = note.authorId ?? note.author?.id;
+      return members
+        .filter((member) => member.id !== authorId)
+        .map((member) => `shared-note:${note.id}:${member.id}`);
+    });
     const existing = await this.prisma.notification.findMany({
       where: { uniqueKey: { in: keys } },
       select: { uniqueKey: true },
     });
     const have = new Set(existing.map((item) => item.uniqueKey));
     await Promise.all(
-      notes.flatMap((note) =>
-        members.map(async (member) => {
-          const key = `shared-note:${note.id}:${member.id}`;
-          if (have.has(key)) return;
-          const prefs = await this.notificationPreferences.getForUser(member.id);
-          if (!isNotificationTypeEnabled(prefs, NotifType.SHARED_NOTE)) return;
-          await this.notifications.notifyUser(
-            member.id,
-            NotifType.SHARED_NOTE,
-            this.noteTitle(note),
-            `${note.author?.name ?? 'Cabinet'} — ${this.notePreview(note)}`,
-            key,
-            '/dashboard',
-          );
-        }),
-      ),
+      notes.flatMap((note) => {
+        const authorId = note.authorId ?? note.author?.id;
+        return members
+          .filter((member) => member.id !== authorId)
+          .map(async (member) => {
+            const key = `shared-note:${note.id}:${member.id}`;
+            if (have.has(key)) return;
+            const prefs = await this.notificationPreferences.getForUser(
+              member.id,
+            );
+            if (!isNotificationTypeEnabled(prefs, NotifType.SHARED_NOTE)) return;
+            await this.notifications.notifyUser(
+              member.id,
+              NotifType.SHARED_NOTE,
+              this.noteTitle(note),
+              `${note.author?.name ?? 'Cabinet'} — ${this.notePreview(note)}`,
+              key,
+              '/discussion',
+            );
+          });
+      }),
     );
   }
 
   private async findOwned(id: string, studioId: string) {
+    const studioIds = await resolveSharedNotesStudioIds(this.prisma, studioId);
     const note = await this.prisma.sharedNote.findFirst({
-      where: { id, studioId },
+      where: { id, studioId: { in: studioIds } },
     });
     if (!note) throw new NotFoundException('Note introuvable');
     return note;

@@ -8,6 +8,7 @@ import { ArrowUpRight } from "lucide-react";
 import { calendarWeekColumn } from "@/components/calendar/calendar-ui";
 import type { Deadline, Meeting, Task } from "@/types";
 import { dateKey, isSameLocalDay, isUrgentDeadline } from "@/lib/dates";
+import { taskColorChipStyle } from "@/lib/task-color";
 import { cn } from "@/lib/utils";
 import { accentBar } from "@/lib/glass-styles";
 import {
@@ -28,6 +29,9 @@ type WeekItem = {
   projectName?: string;
   urgent?: boolean;
   href: string;
+  /** Couleur perso hex (#RRGGBB) — tâches uniquement */
+  color?: string | null;
+  sortOrder?: number;
 };
 
 const KIND_CHIP: Record<WeekItem["kind"], string> = {
@@ -59,21 +63,34 @@ function dedupeTasks(tasks: Task[]): Task[] {
 }
 
 function WeekEventChip({ item }: { item: WeekItem }) {
+  const custom = Boolean(item.color);
   return (
     <Link
       href={item.href}
       className={cn(
-        "block w-full rounded-md px-1.5 py-1.5 text-left text-[10px] leading-snug ring-1 ring-inset transition",
-        "hover:brightness-95 dark:hover:brightness-110",
-        KIND_CHIP[item.kind],
-        item.urgent && "!ring-red-500/60"
+        "block w-full rounded-md px-2 py-1.5 text-left text-[10px] leading-snug transition",
+        "hover:brightness-[0.98]",
+        custom
+          ? "border text-[#0f172a]"
+          : cn("ring-1 ring-inset", KIND_CHIP[item.kind]),
+        item.urgent && !custom && "!ring-red-500/60"
       )}
+      style={custom && item.color ? taskColorChipStyle(item.color) : undefined}
     >
-      <span className="block font-semibold leading-tight">{item.title}</span>
-      <span className="mt-0.5 block text-[9px] opacity-85">
-        {KIND_LABEL[item.kind]}
-        {item.time && ` · ${item.time}`}
+      <span className="block truncate font-medium leading-tight text-[#0f172a]">
+        {item.title}
+        {item.urgent && custom && (
+          <span className="ml-1 inline-block rounded-full bg-red-100 px-1.5 py-px text-[8px] font-semibold uppercase tracking-wide text-red-700">
+            Urgent
+          </span>
+        )}
       </span>
+      {!custom && (
+        <span className="mt-0.5 block text-[9px] opacity-85">
+          {KIND_LABEL[item.kind]}
+          {item.time && ` · ${item.time}`}
+        </span>
+      )}
     </Link>
   );
 }
@@ -129,14 +146,22 @@ export default function DashboardWeekCalendar({
           kind: "task",
           title: t.title,
           projectName: t.project?.name,
+          color: t.color,
+          sortOrder: t.sortOrder ?? 0,
           href: t.projectId ? `/projects/${t.projectId}?tab=tasks` : "/tasks",
         });
       }
     }
 
-    return items.sort((a, b) =>
-      a.time && b.time ? a.time.localeCompare(b.time) : 0
-    );
+    return items.sort((a, b) => {
+      if (a.kind === "task" && b.kind === "task") {
+        return (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      }
+      if (a.time && b.time) return a.time.localeCompare(b.time);
+      if (a.kind === "task" && b.kind !== "task") return -1;
+      if (a.kind !== "task" && b.kind === "task") return 1;
+      return 0;
+    });
   };
 
   return (

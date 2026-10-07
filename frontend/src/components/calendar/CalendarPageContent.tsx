@@ -19,6 +19,7 @@ import {
   CalendarMonthView,
   CalendarWeekView,
 } from "./CalendarViews";
+import CalendarDayTasksModal from "./CalendarDayTasksModal";
 import CalendarEventDetailModal, {
   CalendarEventCreateModal,
 } from "./CalendarEventModals";
@@ -91,6 +92,7 @@ export default function CalendarPageContent() {
   const [createOpen, setCreateOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null);
   const [detailEvent, setDetailEvent] = useState<CalendarEvent | null>(null);
+  const [dayPopupOpen, setDayPopupOpen] = useState(false);
 
   const range = useMemo(
     () => getRangeForView(view === "day" ? selectedDay : anchor, view),
@@ -171,6 +173,11 @@ export default function CalendarPageContent() {
         : view === "list"
           ? "Liste"
           : format(anchor, "MMM yy", { locale: fr });
+
+  const openDayPopup = (day: Date) => {
+    setSelectedDay(day);
+    setDayPopupOpen(true);
+  };
 
   const openCreate = (date?: Date) => {
     if (date) setSelectedDay(date);
@@ -459,7 +466,7 @@ export default function CalendarPageContent() {
               anchor={anchor}
               events={filtered}
               selectedDay={selectedDay}
-              onSelectDay={setSelectedDay}
+              onSelectDay={openDayPopup}
               onEventClick={setDetailEvent}
             />
           )}
@@ -468,6 +475,7 @@ export default function CalendarPageContent() {
               anchor={anchor}
               events={filtered}
               onEventClick={setDetailEvent}
+              onDayClick={openDayPopup}
             />
           )}
           {view === "day" && (
@@ -526,6 +534,22 @@ export default function CalendarPageContent() {
         open={!!detailEvent}
         onClose={() => setDetailEvent(null)}
         onEditCustom={(ev) => {
+          setEditingEvent(ev);
+          setCreateOpen(true);
+        }}
+      />
+
+      <CalendarDayTasksModal
+        open={dayPopupOpen}
+        day={selectedDay}
+        events={filtered}
+        onClose={() => setDayPopupOpen(false)}
+        onOpenEvent={(ev) => {
+          setDayPopupOpen(false);
+          setDetailEvent(ev);
+        }}
+        onEditEvent={(ev) => {
+          setDayPopupOpen(false);
           setEditingEvent(ev);
           setCreateOpen(true);
         }}

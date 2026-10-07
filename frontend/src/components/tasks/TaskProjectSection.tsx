@@ -4,6 +4,7 @@ import Link from "next/link";
 import TaskRow, { TaskListHeader } from "./TaskRow";
 import { tasksListTable, tasksShell } from "./tasks-list-ui";
 import type { TaskProjectGroup } from "@/lib/tasks-list";
+import { useReorderTasks } from "@/hooks/useTasks";
 import type { Task } from "@/types";
 import { accentBar } from "@/lib/glass-styles";
 import { cn } from "@/lib/utils";
@@ -16,6 +17,17 @@ interface TaskProjectSectionProps {
 export default function TaskProjectSection({ group, onEdit }: TaskProjectSectionProps) {
   const href = group.projectId ? `/projects/${group.projectId}?tab=tasks` : undefined;
   const count = group.tasks.length;
+  const reorderTasks = useReorderTasks();
+
+  const moveTask = (index: number, direction: -1 | 1) => {
+    const next = index + direction;
+    if (next < 0 || next >= group.tasks.length) return;
+    const ids = group.tasks.map((t) => t.id);
+    const tmp = ids[index];
+    ids[index] = ids[next];
+    ids[next] = tmp;
+    reorderTasks.mutate(ids);
+  };
 
   return (
     <section className={cn(tasksShell, "space-y-3 p-3 sm:p-4")}>
@@ -61,8 +73,17 @@ export default function TaskProjectSection({ group, onEdit }: TaskProjectSection
       ) : (
         <div className={tasksListTable}>
           <TaskListHeader />
-          {group.tasks.map((task) => (
-            <TaskRow key={task.id} task={task} onEdit={onEdit} />
+          {group.tasks.map((task, index) => (
+            <TaskRow
+              key={task.id}
+              task={task}
+              onEdit={onEdit}
+              onMoveUp={() => moveTask(index, -1)}
+              onMoveDown={() => moveTask(index, 1)}
+              canMoveUp={index > 0}
+              canMoveDown={index < group.tasks.length - 1}
+              reorderPending={reorderTasks.isPending}
+            />
           ))}
         </div>
       )}

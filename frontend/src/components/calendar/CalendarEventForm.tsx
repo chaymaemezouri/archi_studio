@@ -7,6 +7,7 @@ import {
   FinanceFieldLabel,
   FinanceFormSection,
 } from "@/components/finances/finance-form-ui";
+import ColorSwatchPicker from "@/components/ui/ColorSwatchPicker";
 import { useProjects } from "@/hooks/useProjects";
 import { useClients } from "@/hooks/useClients";
 import { toLocalDateInput } from "@/lib/dates";
@@ -17,7 +18,9 @@ import { cn } from "@/lib/utils";
 
 export type CalendarEventFormValues = {
   title: string;
-  type: CalendarEventType;
+  /** Vide = pas de type forcé → CUSTOM_EVENT à l'enregistrement */
+  type: CalendarEventType | "";
+  color: string | null;
   date: string;
   startTime: string;
   endTime: string;
@@ -30,7 +33,8 @@ export type CalendarEventFormValues = {
 export function emptyEventForm(defaultDate?: Date): CalendarEventFormValues {
   return {
     title: "",
-    type: "CUSTOM_EVENT",
+    type: "",
+    color: null,
     date: toLocalDateInput(defaultDate ?? new Date()),
     startTime: "",
     endTime: "",
@@ -45,6 +49,7 @@ export function eventToForm(event: CalendarEvent): CalendarEventFormValues {
   return {
     title: event.title,
     type: event.type,
+    color: event.color ?? null,
     date: event.date.split("T")[0],
     startTime: event.startTime ?? "",
     endTime: event.endTime ?? "",
@@ -109,7 +114,8 @@ export default function CalendarEventForm({
     setError(null);
     onSubmit({
       title: values.title.trim(),
-      type: values.type,
+      type: values.type || "CUSTOM_EVENT",
+      color: values.color,
       date: values.date,
       startTime: values.startTime || undefined,
       endTime: values.endTime || undefined,
@@ -132,20 +138,29 @@ export default function CalendarEventForm({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div className="sm:col-span-2">
             <FinanceFieldLabel required>Titre</FinanceFieldLabel>
-            <input
-              className={financeFieldClass}
-              value={values.title}
-              onChange={(e) => set("title", e.target.value)}
-              required
-            />
+            <div className="flex gap-2">
+              <input
+                className={cn(financeFieldClass, "flex-1")}
+                value={values.title}
+                onChange={(e) => set("title", e.target.value)}
+                required
+              />
+              <ColorSwatchPicker
+                value={values.color}
+                onChange={(color) => set("color", color)}
+              />
+            </div>
           </div>
           <div className="sm:col-span-2">
-            <FinanceFieldLabel required>Type</FinanceFieldLabel>
+            <FinanceFieldLabel>Type (optionnel)</FinanceFieldLabel>
             <select
-              className={financeSelectClass}
+              className={cn(financeSelectClass, !values.type && "text-glass-muted")}
               value={values.type}
-              onChange={(e) => set("type", e.target.value as CalendarEventType)}
+              onChange={(e) =>
+                set("type", e.target.value as CalendarEventType | "")
+              }
             >
+              <option value="">Aucun — événement simple</option>
               {typeOptions.map(([value, label]) => (
                 <option key={value} value={value}>
                   {label}

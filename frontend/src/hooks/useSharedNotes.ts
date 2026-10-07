@@ -1,14 +1,17 @@
 "use client";
 
+import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import { getApiErrorMessage } from "@/lib/api-errors";
 import { formatCurrency } from "@/lib/utils";
 import type {
   Client,
   Devis,
   Document,
   Invoice,
+  Notification,
   Payment,
   PlanRender,
   Project,
@@ -142,7 +145,8 @@ export function draftFromClient(client: Pick<Client, "id" | "name" | "phone" | "
   return { content: "", refs: [refFromClient(client)] };
 }
 
-const multipart = { headers: { "Content-Type": "multipart/form-data" } };
+/** Laisse Axios poser le boundary multipart (évite les envois cassés). */
+const multipart = { headers: { "Content-Type": undefined } };
 
 function toFormData(draft: SharedNoteDraft) {
   const form = new FormData();
@@ -165,6 +169,47 @@ export function useSharedNotes() {
       const { data } = await api.get<SharedNote[]>("/shared-notes");
       return data;
     },
+    refetchInterval: 5_000,
+    refetchOnWindowFocus: true,
+  });
+}
+
+/** Nombre de messages discussion non lus (notif SHARED_NOTE). */
+export function useUnreadSharedNotesCount() {
+  const { data: notifications = [] } = useQuery({
+    queryKey: ["notifications"],
+    queryFn: async () => {
+      const { data } = await api.get<Notification[]>("/notifications");
+      return data;
+    },
+    refetchInterval: 12_000,
+    refetchOnWindowFocus: true,
+  });
+
+  return useMemo(
+    () =>
+      notifications.filter((n) => n.type === "SHARED_NOTE" && !n.read).length,
+    [notifications]
+  );
+}
+
+/** Marque les notifs discussion comme lues (à l’ouverture de la page). */
+export function useMarkSharedNotesRead() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async () => {
+      const { data } = await api.get<Notification[]>("/notifications");
+      const unread = data.filter((n) => n.type === "SHARED_NOTE" && !n.read);
+      await Promise.all(
+        unread.map((n) => api.patch(`/notifications/${n.id}/read`))
+      );
+      return unread.length;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
+    },
   });
 }
 
@@ -178,9 +223,11 @@ export function useCreateSharedNote() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notesKey });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
-      toast.success("Partagé avec le cabinet");
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
+      toast.success("Message partagé");
     },
-    onError: () => toast.error("Impossible de partager"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Impossible de partager")),
   });
 }
 
@@ -207,9 +254,11 @@ export function useUpdateSharedNote() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: notesKey });
       queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: ["notifications", "unread-count"] });
       toast.success("Note mise à jour");
     },
-    onError: () => toast.error("Impossible de modifier la note"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Impossible de modifier la note")),
   });
 }
 

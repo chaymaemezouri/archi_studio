@@ -144,6 +144,7 @@ const PAGE_TITLE_OVERRIDES: Record<string, string> = {
   "/finances/quotes-invoices": "Devis & Factures",
   "/finances/payments": "Paiements",
   "/plans-renders": "Plans & Rendus",
+  "/discussion": "Discussion",
 };
 
 export function getPageTitle(pathname: string): string | null {

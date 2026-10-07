@@ -47,6 +47,8 @@ export class TasksService {
     description: string | null;
     status: TaskStatus;
     priority: Priority;
+    color?: string | null;
+    sortOrder?: number;
     dueDate: Date | null;
     scheduledAt: Date | null;
     projectId: string | null;
@@ -149,7 +151,11 @@ export class TasksService {
       .findMany({
         where,
         include: taskInclude,
-        orderBy: [{ dueDate: 'asc' }, { updatedAt: 'desc' }],
+        orderBy: [
+          { sortOrder: 'asc' },
+          { dueDate: 'asc' },
+          { updatedAt: 'desc' },
+        ],
       })
       .then((tasks) => tasks.map((t) => this.mapTask(t)));
   }
@@ -175,19 +181,24 @@ export class TasksService {
       await this.assertProjectAccess(dto.projectId, user);
     }
 
+    const data: Record<string, unknown> = {
+      title: dto.title,
+      description: dto.description,
+      status: dto.status ?? TaskStatus.TODO,
+      priority: dto.priority ?? Priority.MEDIUM,
+      dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
+      scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
+      projectId: dto.projectId,
+      clientId,
+      notes: dto.notes,
+      studioId: user.studioId,
+    };
+    // color / sortOrder si fournis (null autorisé pour effacer la couleur)
+    if (dto.color !== undefined) data.color = dto.color;
+    if (dto.sortOrder !== undefined) data.sortOrder = dto.sortOrder;
+
     const task = await this.prisma.task.create({
-      data: {
-        title: dto.title,
-        description: dto.description,
-        status: dto.status ?? TaskStatus.TODO,
-        priority: dto.priority ?? Priority.MEDIUM,
-        dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-        scheduledAt: dto.scheduledAt ? new Date(dto.scheduledAt) : undefined,
-        projectId: dto.projectId,
-        clientId,
-        notes: dto.notes,
-        studioId: user.studioId,
-      },
+      data: data as Parameters<typeof this.prisma.task.create>[0]['data'],
       include: taskInclude,
     });
 
@@ -229,6 +240,8 @@ export class TasksService {
     if (dto.description !== undefined) data.description = dto.description;
     if (dto.status !== undefined) data.status = dto.status;
     if (dto.priority !== undefined) data.priority = dto.priority;
+    if (dto.color !== undefined) data.color = dto.color;
+    if (dto.sortOrder !== undefined) data.sortOrder = dto.sortOrder;
     if (dto.dueDate !== undefined) {
       data.dueDate = dto.dueDate ? new Date(dto.dueDate) : null;
     }
@@ -279,6 +292,34 @@ export class TasksService {
 
   async complete(id: string, user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {
     return this.updateStatus(id, TaskStatus.DONE, user);
+  }
+
+  /** Réordonne les tâches (ordre = importance personnelle). */
+  async reorder(
+    ids: string[],
+    user: Pick<AuthUser, 'studioId' | 'id' | 'role'>,
+  ) {
+    const uniqueIds = [...new Set(ids)];
+    const owned = await this.prisma.task.findMany({
+      where: { AND: [{ id: { in: uniqueIds } }, this.studioScope(user)] },
+      select: { id: true },
+    });
+    if (owned.length !== uniqueIds.length) {
+      throw new BadRequestException('Une ou plusieurs tâches sont inaccessibles.');
+    }
+
+    await this.prisma.$transaction(
+      uniqueIds.map((id, index) =>
+        this.prisma.task.update({
+          where: { id },
+          data: { sortOrder: index } as Parameters<
+            typeof this.prisma.task.update
+          >[0]['data'],
+        }),
+      ),
+    );
+
+    return { reordered: uniqueIds.length };
   }
 
   async remove(id: string, user: Pick<AuthUser, 'studioId' | 'id' | 'role'>) {

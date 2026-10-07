@@ -7,6 +7,7 @@ import {
   FinanceFieldLabel,
   FinanceFormSection,
 } from "@/components/finances/finance-form-ui";
+import ColorSwatchPicker from "@/components/ui/ColorSwatchPicker";
 import { useProjects } from "@/hooks/useProjects";
 import { useClients } from "@/hooks/useClients";
 import { glassBtnPrimary } from "@/lib/glass-styles";
@@ -22,6 +23,7 @@ export type TaskFormValues = {
   dueDate: string;
   scheduledAt: string;
   status: TaskStatus;
+  color: string | null;
   notes: string;
 };
 
@@ -34,6 +36,7 @@ export function emptyTaskForm(): TaskFormValues {
     dueDate: "",
     scheduledAt: "",
     status: "TODO",
+    color: null,
     notes: "",
   };
 }
@@ -47,6 +50,7 @@ export function taskToForm(task: Task): TaskFormValues {
     dueDate: task.dueDate ? task.dueDate.split("T")[0] : "",
     scheduledAt: task.scheduledAt ? task.scheduledAt.split("T")[0] : "",
     status: task.status,
+    color: task.color ?? null,
     notes: task.notes ?? "",
   };
 }
@@ -122,6 +126,7 @@ export default function TaskForm({
       dueDate: values.dueDate || undefined,
       scheduledAt: values.scheduledAt || undefined,
       status: values.status,
+      color: values.color,
       notes: values.notes.trim() || undefined,
     });
   };
@@ -137,12 +142,18 @@ export default function TaskForm({
       <FinanceFormSection title="Tâche">
         <div>
           <FinanceFieldLabel required>Titre</FinanceFieldLabel>
-          <input
-            className={financeFieldClass}
-            value={values.title}
-            onChange={(e) => set("title", e.target.value)}
-            required
-          />
+          <div className="flex gap-2">
+            <input
+              className={cn(financeFieldClass, "flex-1")}
+              value={values.title}
+              onChange={(e) => set("title", e.target.value)}
+              required
+            />
+            <ColorSwatchPicker
+              value={values.color}
+              onChange={(color) => set("color", color)}
+            />
+          </div>
         </div>
         <div>
           <FinanceFieldLabel>Description</FinanceFieldLabel>

@@ -16,7 +16,7 @@ export type TaskMainFilter =
   | "overdue"
   | "done";
 
-export type TaskSort = "deadline" | "recent" | "oldest" | "status";
+export type TaskSort = "importance" | "deadline" | "recent" | "oldest" | "status";
 
 export function isTaskClosed(status: TaskStatus): boolean {
   return status === "DONE" || status === "CANCELLED";
@@ -153,6 +153,12 @@ export function sortTasks(tasks: Task[], sort: TaskSort): Task[] {
   const list = [...tasks];
 
   switch (sort) {
+    case "importance":
+      return list.sort((a, b) => {
+        const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+        if (so !== 0) return so;
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      });
     case "oldest":
       return list.sort(
         (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -172,6 +178,8 @@ export function sortTasks(tasks: Task[], sort: TaskSort): Task[] {
         const ad = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
         const bd = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
         if (ad !== bd) return ad - bd;
+        const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+        if (so !== 0) return so;
         return new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
       });
   }

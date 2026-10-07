@@ -2,10 +2,17 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
-import { ArrowUpRight, ListTodo, Plus } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpRight, ListTodo, Plus } from "lucide-react";
 import DashboardTaskCheckbox from "@/components/dashboard/DashboardTaskCheckbox";
-import { useCreateDashboardTask, useUpdateDashboardTask } from "@/hooks/useDashboard";
+import ColorSwatchPicker from "@/components/ui/ColorSwatchPicker";
+import {
+  useCreateDashboardTask,
+  useReorderDashboardTasks,
+  useUpdateDashboardTask,
+} from "@/hooks/useDashboard";
+import { useUpdateTask } from "@/hooks/useTasks";
 import { toLocalDateInput } from "@/lib/dates";
+import { taskColorChipStyle } from "@/lib/task-color";
 import type { Project, Task } from "@/types";
 import { cn } from "@/lib/utils";
 import { accentBar, glassInput, glassSelect } from "@/lib/glass-styles";
@@ -26,7 +33,19 @@ interface DashboardDayTasksProps {
 }
 
 const row =
-  "flex items-center gap-2 rounded-md px-2 py-1.5 transition hover:bg-studio-muted/40";
+  "flex items-center gap-1.5 rounded-md px-2 py-1.5 transition hover:bg-studio-muted/40";
+
+function sortOpenTasks(tasks: Task[]): Task[] {
+  return [...tasks]
+    .filter((t) => t.status !== "DONE")
+    .sort((a, b) => {
+      const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      if (so !== 0) return so;
+      const ad = new Date(a.scheduledAt ?? a.dueDate ?? 0).getTime();
+      const bd = new Date(b.scheduledAt ?? b.dueDate ?? 0).getTime();
+      return ad - bd;
+    });
+}
 
 export default function DashboardDayTasks({
   tasks,
@@ -38,21 +57,14 @@ export default function DashboardDayTasks({
   const [titleInput, setTitleInput] = useState("");
   const [projectId, setProjectId] = useState("");
   const [realizeDate, setRealizeDate] = useState(toLocalDateInput(defaultDate));
+  const [color, setColor] = useState<string | null>(null);
 
   const createTask = useCreateDashboardTask();
   const updateTask = useUpdateDashboardTask();
+  const patchTask = useUpdateTask();
+  const reorderTasks = useReorderDashboardTasks();
 
-  const openTasks = useMemo(
-    () =>
-      [...tasks]
-        .filter((t) => t.status !== "DONE")
-        .sort((a, b) => {
-          const ad = new Date(a.scheduledAt ?? a.dueDate ?? 0).getTime();
-          const bd = new Date(b.scheduledAt ?? b.dueDate ?? 0).getTime();
-          return ad - bd;
-        }),
-    [tasks]
-  );
+  const openTasks = useMemo(() => sortOpenTasks(tasks), [tasks]);
 
   const doneToday = useMemo(
     () => tasks.filter((t) => t.status === "DONE"),
@@ -63,15 +75,31 @@ export default function DashboardDayTasks({
     e.preventDefault();
     if (!titleInput.trim()) return;
     const dateStr = realizeDate || toLocalDateInput(defaultDate);
-    await createTask.mutateAsync({
-      title: titleInput.trim(),
-      dueDate: dateStr,
-      scheduledAt: dateStr,
-      projectId: projectId || undefined,
-    });
-    setTitleInput("");
-    setProjectId("");
-    setRealizeDate(toLocalDateInput(defaultDate));
+    try {
+      await createTask.mutateAsync({
+        title: titleInput.trim(),
+        dueDate: dateStr,
+        scheduledAt: dateStr,
+        projectId: projectId || undefined,
+        ...(color ? { color } : {}),
+      });
+      setTitleInput("");
+      setProjectId("");
+      setColor(null);
+      setRealizeDate(toLocalDateInput(defaultDate));
+    } catch {
+      /* toast géré par le hook */
+    }
+  };
+
+  const moveTask = (index: number, direction: -1 | 1) => {
+    const next = index + direction;
+    if (next < 0 || next >= openTasks.length) return;
+    const ids = openTasks.map((t) => t.id);
+    const tmp = ids[index];
+    ids[index] = ids[next];
+    ids[next] = tmp;
+    reorderTasks.mutate(ids);
   };
 
   const inputClass = cn(
@@ -107,6 +135,7 @@ export default function DashboardDayTasks({
             placeholder="Nouvelle tâche…"
             className={cn(inputClass, "flex-1")}
           />
+          <ColorSwatchPicker value={color} onChange={setColor} />
           <button
             type="submit"
             disabled={createTask.isPending || !titleInput.trim()}
@@ -154,18 +183,55 @@ export default function DashboardDayTasks({
           </div>
         ) : (
           <ul className="space-y-0.5">
-            {openTasks.map((task) => {
+            {openTasks.map((task, index) => {
               const href = task.projectId
                 ? `/projects/${task.projectId}?tab=tasks`
                 : "/tasks";
               const isCompleting = completingTaskIds.has(task.id);
               return (
-                <li key={task.id} className={row}>
+                <li
+                  key={task.id}
+                  className={cn(row, task.color && "border")}
+                  style={
+                    task.color ? taskColorChipStyle(task.color) : undefined
+                  }
+                >
+                  <div className="flex shrink-0 flex-col gap-0.5">
+                    <button
+                      type="button"
+                      onClick={() => moveTask(index, -1)}
+                      disabled={index === 0 || reorderTasks.isPending}
+                      className="rounded p-0.5 text-glass-muted transition hover:bg-studio-muted hover:text-studio-light disabled:opacity-25"
+                      aria-label="Monter (plus important)"
+                      title="Monter"
+                    >
+                      <ArrowUp className="h-3 w-3" strokeWidth={2} />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => moveTask(index, 1)}
+                      disabled={
+                        index === openTasks.length - 1 || reorderTasks.isPending
+                      }
+                      className="rounded p-0.5 text-glass-muted transition hover:bg-studio-muted hover:text-studio-light disabled:opacity-25"
+                      aria-label="Descendre (moins important)"
+                      title="Descendre"
+                    >
+                      <ArrowDown className="h-3 w-3" strokeWidth={2} />
+                    </button>
+                  </div>
                   <DashboardTaskCheckbox
                     checked={false}
                     disabled={isCompleting}
                     onToggle={() =>
                       updateTask.mutate({ id: task.id, status: "DONE" })
+                    }
+                  />
+                  <ColorSwatchPicker
+                    compact
+                    value={task.color}
+                    onChange={(c) =>
+                      patchTask.mutate({ id: task.id, color: c, silent: true })
                     }
                   />
                   <Link href={href} className="min-w-0 flex-1">

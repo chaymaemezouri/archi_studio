@@ -12,6 +12,7 @@ import { Priority, TaskStatus } from '@prisma/client';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { AuthUser } from '../common/decorators/current-user.decorator';
 import { CreateTaskDto } from './dto/create-task.dto';
+import { ReorderTasksDto } from './dto/reorder-tasks.dto';
 import { UpdateTaskDto } from './dto/update-task.dto';
 import { TasksService } from './tasks.service';
 
@@ -37,6 +38,11 @@ export class TasksController {
       from,
       to,
     });
+  }
+
+  @Post('reorder')
+  reorder(@Body() dto: ReorderTasksDto, @CurrentUser() user: AuthUser) {
+    return this.tasksService.reorder(dto.ids, user);
   }
 
   @Get(':id')

@@ -8,6 +8,7 @@ import ThemeScript from "@/components/providers/ThemeScript";
 
 const inter = Inter({
   subsets: ["latin"],
+  display: "swap",
   variable: "--font-inter",
 });
 
@@ -22,12 +23,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" className="dark" suppressHydrationWarning>
+    <html
+      lang="fr"
+      className={`${inter.variable} dark`}
+      suppressHydrationWarning
+    >
       <head>
         <ThemeScript />
       </head>
       <body
-        className={`${inter.variable} min-h-screen bg-dark-base text-text-primary antialiased`}
+        className={`${inter.className} min-h-screen bg-dark-base font-sans text-text-primary antialiased`}
       >
         <ThemeProvider>
           <QueryProvider>

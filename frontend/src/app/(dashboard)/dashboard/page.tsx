@@ -1,12 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { addDays } from "date-fns";
+import { addDays, startOfDay } from "date-fns";
 import DashboardActiveProjects from "@/components/dashboard/DashboardActiveProjects";
 import DashboardDayTasks from "@/components/dashboard/DashboardDayTasks";
 import DashboardDeadlinesBoard from "@/components/dashboard/DashboardDeadlinesBoard";
 import DashboardPageHeader from "@/components/dashboard/DashboardPageHeader";
-import DashboardSharedNotes from "@/components/dashboard/DashboardSharedNotes";
 import DashboardStatsStrip from "@/components/dashboard/DashboardStatsStrip";
 import DashboardTodayMeetings from "@/components/dashboard/DashboardTodayMeetings";
 import DashboardTomorrowTasks from "@/components/dashboard/DashboardTomorrowTasks";
@@ -43,7 +42,8 @@ function dedupeTasks(lists: Task[][]): Task[] {
 
 export default function DashboardPage() {
   const { data, isLoading, isError, refetch } = useDashboardOverview();
-  const today = new Date();
+  // Stable calendar day for the session (avoids new Date() every render).
+  const [today] = useState(() => startOfDay(new Date()));
   const tomorrow = addDays(today, 1);
 
   const [quickAddOpen, setQuickAddOpen] = useState(false);
@@ -171,8 +171,6 @@ export default function DashboardPage() {
               </aside>
             </div>
           </section>
-
-          <DashboardSharedNotes />
 
           {/* Projets */}
           <section aria-label="Projets actifs" className={dashboardPageZone}>

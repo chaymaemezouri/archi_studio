@@ -30,6 +30,8 @@ export function calendarFormToTaskPayload(
     clientId: payload.clientId || undefined,
     notes: payload.notes || undefined,
     priority: calendarPriorityToTask(payload.priority),
+    // Toujours transmettre la couleur (y compris null pour l’effacer)
+    ...("color" in payload ? { color: payload.color ?? null } : {}),
   };
 }
 

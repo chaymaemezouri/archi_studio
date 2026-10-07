@@ -104,7 +104,15 @@ export function groupEventsByDay(events: CalendarEvent[]): Map<string, CalendarE
   for (const key of Array.from(map.keys())) {
     const arr = map.get(key)!;
     arr.sort((a: CalendarEvent, b: CalendarEvent) => {
+      const aTask = a.type === "DEADLINE_TASK" || a.source === "task";
+      const bTask = b.type === "DEADLINE_TASK" || b.source === "task";
+      if (aTask && bTask) {
+        const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+        if (so !== 0) return so;
+      }
       if (a.startTime && b.startTime) return a.startTime.localeCompare(b.startTime);
+      if (aTask && !bTask) return -1;
+      if (!aTask && bTask) return 1;
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
   }

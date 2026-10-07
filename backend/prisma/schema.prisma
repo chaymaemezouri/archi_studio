@@ -489,6 +489,10 @@ model Task {
   description String?
   status      TaskStatus @default(TODO)
   priority    Priority   @default(MEDIUM)
+  /// Couleur personnalisée (hex #RRGGBB), optionnelle
+  color       String?
+  /// Ordre personnel d'importance (plus petit = plus haut)
+  sortOrder   Int        @default(0)
   dueDate     DateTime?
   scheduledAt DateTime?
   projectId   String?
@@ -501,6 +505,8 @@ model Task {
   assignee    User?      @relation(fields: [assignedTo], references: [id])
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
+
+  @@index([studioId, sortOrder])
 }
 
 model Deadline {
@@ -552,6 +558,10 @@ model CalendarEvent {
   studio    Studio                @relation(fields: [studioId], references: [id])
   title     String
   type      CalendarEventType     @default(CUSTOM_EVENT)
+  /// Couleur personnalisée (hex #RRGGBB), optionnelle
+  color     String?
+  /// Ordre d’importance dans la journée
+  sortOrder Int                   @default(0)
   date      DateTime
   startTime String?
   endTime   String?
@@ -564,6 +574,8 @@ model CalendarEvent {
   notes     String?
   createdAt DateTime              @default(now())
   updatedAt DateTime              @updatedAt
+
+  @@index([studioId, sortOrder])
 }
 
 model Tender {

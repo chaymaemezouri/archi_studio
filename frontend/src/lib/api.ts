@@ -17,6 +17,13 @@ api.interceptors.request.use((config) => {
       config.headers.Authorization = `Bearer ${token}`;
     }
   }
+  // FormData : laisser le navigateur définir Content-Type + boundary
+  if (typeof FormData !== "undefined" && config.data instanceof FormData) {
+    if (config.headers && typeof config.headers === "object") {
+      delete (config.headers as Record<string, unknown>)["Content-Type"];
+      delete (config.headers as Record<string, unknown>)["content-type"];
+    }
+  }
   return config;
 });
 

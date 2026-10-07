@@ -3,7 +3,9 @@ import {
   IsEnum,
   IsOptional,
   IsString,
+  Matches,
   MinLength,
+  ValidateIf,
 } from 'class-validator';
 import {
   CalendarEventPriority,
@@ -11,13 +13,22 @@ import {
   CalendarEventType,
 } from '@prisma/client';
 
+const HEX_COLOR = /^#([0-9A-Fa-f]{6})$/;
+
 export class CreateCalendarEventDto {
   @IsString()
   @MinLength(1)
   title!: string;
 
+  /** Optionnel — défaut CUSTOM_EVENT côté service */
+  @IsOptional()
   @IsEnum(CalendarEventType)
-  type!: CalendarEventType;
+  type?: CalendarEventType;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null && v !== undefined)
+  @Matches(HEX_COLOR, { message: 'color must be a hex color (#RRGGBB)' })
+  color?: string | null;
 
   @IsDateString()
   date!: string;
@@ -60,6 +71,11 @@ export class UpdateCalendarEventDto {
   @IsOptional()
   @IsEnum(CalendarEventType)
   type?: CalendarEventType;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Matches(HEX_COLOR, { message: 'color must be a hex color (#RRGGBB)' })
+  color?: string | null;
 
   @IsOptional()
   @IsDateString()

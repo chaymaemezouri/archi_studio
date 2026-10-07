@@ -50,17 +50,45 @@ export function useCreateDashboardTask() {
       scheduledAt?: string;
       projectId?: string;
       priority?: Priority;
+      color?: string | null;
       notes?: string;
       description?: string;
     }) => {
-      const { data } = await api.post<Task>("/tasks", payload);
+      const body: Record<string, unknown> = {
+        title: payload.title,
+      };
+      if (payload.dueDate) body.dueDate = payload.dueDate;
+      if (payload.scheduledAt) body.scheduledAt = payload.scheduledAt;
+      if (payload.projectId) body.projectId = payload.projectId;
+      if (payload.priority) body.priority = payload.priority;
+      if (payload.color) body.color = payload.color;
+      if (payload.notes) body.notes = payload.notes;
+      if (payload.description) body.description = payload.description;
+      const { data } = await api.post<Task>("/tasks", body);
       return data;
     },
     onSuccess: () => {
       invalidateDashboard(queryClient);
       toast.success("Tâche ajoutée");
     },
-    onError: () => toast.error("Impossible d'ajouter la tâche"),
+    onError: (err) =>
+      toast.error(getApiErrorMessage(err, "Impossible d'ajouter la tâche")),
+  });
+}
+
+export function useReorderDashboardTasks() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (ids: string[]) => {
+      const { data } = await api.post<{ reordered: number }>("/tasks/reorder", {
+        ids,
+      });
+      return data;
+    },
+    onSuccess: () => {
+      invalidateDashboard(queryClient);
+    },
+    onError: () => toast.error("Impossible de réorganiser les tâches"),
   });
 }
 

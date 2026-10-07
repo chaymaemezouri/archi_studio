@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { X } from "lucide-react";
+import ColorSwatchPicker from "@/components/ui/ColorSwatchPicker";
 import { cn } from "@/lib/utils";
 import { toLocalDateInput } from "@/lib/dates";
 import {
@@ -74,6 +75,7 @@ export default function QuickAddModal({
   const [projectId, setProjectId] = useState(defaultProjectId ?? "");
   const [location, setLocation] = useState("");
   const [notes, setNotes] = useState("");
+  const [color, setColor] = useState<string | null>(null);
 
   const createDeadline = useCreateDeadline();
   const createMeeting = useCreateMeeting();
@@ -88,6 +90,7 @@ export default function QuickAddModal({
     setProjectId(defaultProjectId ?? "");
     setLocation("");
     setNotes("");
+    setColor(null);
   }, [defaultDate, defaultProjectId]);
 
   useEffect(() => {
@@ -111,34 +114,41 @@ export default function QuickAddModal({
     e.preventDefault();
     if (!title.trim()) return;
 
-    if (type === "deadline") {
-      await createDeadline.mutateAsync({
-        title: title.trim(),
-        date,
-        projectId: projectId || undefined,
-      });
-    } else if (type === "meeting") {
-      await createMeeting.mutateAsync({
-        title: title.trim(),
-        date,
-        startTime,
-        endTime: endTime || undefined,
-        location: location.trim() || undefined,
-        notes: notes.trim() || undefined,
-        projectId: projectId || undefined,
-      });
-    } else {
-      const scheduledAt = taskTime ? `${date}T${taskTime}:00` : date;
-      await createTask.mutateAsync({
-        title: title.trim(),
-        dueDate: date,
-        scheduledAt,
-        projectId: projectId || undefined,
-        notes: notes.trim() || undefined,
-      });
+    try {
+      if (type === "deadline") {
+        await createDeadline.mutateAsync({
+          title: title.trim(),
+          date,
+          projectId: projectId || undefined,
+        });
+      } else if (type === "meeting") {
+        await createMeeting.mutateAsync({
+          title: title.trim(),
+          date,
+          startTime,
+          endTime: endTime || undefined,
+          location: location.trim() || undefined,
+          notes: notes.trim() || undefined,
+          projectId: projectId || undefined,
+        });
+      } else {
+        const scheduledAt = taskTime
+          ? new Date(`${date}T${taskTime}:00`).toISOString()
+          : date;
+        await createTask.mutateAsync({
+          title: title.trim(),
+          dueDate: date,
+          scheduledAt,
+          projectId: projectId || undefined,
+          ...(color ? { color } : {}),
+          notes: notes.trim() || undefined,
+        });
+      }
+      resetForm();
+      onClose();
+    } catch {
+      /* toast géré par le hook */
     }
-    resetForm();
-    onClose();
   };
 
   const isPending =
@@ -200,14 +210,19 @@ export default function QuickAddModal({
           </div>
 
           <QuickAddField label="Titre">
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={titlePlaceholder}
-              className={quickAddInput}
-              required
-              autoFocus
-            />
+            <div className="flex gap-2">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={titlePlaceholder}
+                className={cn(quickAddInput, "flex-1")}
+                required
+                autoFocus
+              />
+              {type === "task" && (
+                <ColorSwatchPicker value={color} onChange={setColor} />
+              )}
+            </div>
           </QuickAddField>
 
           <div

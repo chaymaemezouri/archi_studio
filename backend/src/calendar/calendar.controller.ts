@@ -16,6 +16,7 @@ import {
   CreateCalendarEventDto,
   UpdateCalendarEventDto,
 } from './dto/calendar-event.dto';
+import { ReorderDayDto } from './dto/reorder-day.dto';
 
 @Controller('calendar/events')
 export class CalendarController {
@@ -42,6 +43,11 @@ export class CalendarController {
       to || defaultTo,
       type,
     );
+  }
+
+  @Post('reorder')
+  reorder(@Body() dto: ReorderDayDto, @CurrentUser() user: AuthUser) {
+    return this.calendarService.reorderDay(dto.items, user);
   }
 
   @Post()

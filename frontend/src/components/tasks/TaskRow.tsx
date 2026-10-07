@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { createPortal } from "react-dom";
 import {
+  ArrowDown,
+  ArrowUp,
   CheckCircle2,
   Copy,
   ExternalLink,
@@ -16,14 +18,17 @@ import ShareNoteButton from "@/components/shared/ShareNoteButton";
 import { refFromTask } from "@/hooks/useSharedNotes";
 import { detailIconActionGroup } from "@/components/projects/detail/project-detail-ui";
 import Badge from "@/components/ui/Badge";
+import ColorSwatchPicker from "@/components/ui/ColorSwatchPicker";
 import { useDialog } from "@/components/providers/DialogProvider";
 import { portalMenuStyle, usePortalRowMenu } from "@/hooks/usePortalRowMenu";
 import {
   useCompleteTask,
   useDeleteTask,
   useDuplicateTask,
+  useUpdateTask,
   useUpdateTaskStatus,
 } from "@/hooks/useTasks";
+import { taskColorChipStyle } from "@/lib/task-color";
 import {
   getTaskDeadlineBadge,
   isTaskClosed,
@@ -46,6 +51,11 @@ const MENU_HEIGHT = 280;
 interface TaskRowProps {
   task: Task;
   onEdit: (task: Task) => void;
+  onMoveUp?: () => void;
+  onMoveDown?: () => void;
+  canMoveUp?: boolean;
+  canMoveDown?: boolean;
+  reorderPending?: boolean;
 }
 
 export function TaskListHeader() {
@@ -61,7 +71,15 @@ export function TaskListHeader() {
   );
 }
 
-export default function TaskRow({ task, onEdit }: TaskRowProps) {
+export default function TaskRow({
+  task,
+  onEdit,
+  onMoveUp,
+  onMoveDown,
+  canMoveUp,
+  canMoveDown,
+  reorderPending,
+}: TaskRowProps) {
   const { confirm } = useDialog();
   const { ref, menuRef, menuOpen, menuPos, closeMenu, toggleMenu } = usePortalRowMenu(
     MENU_WIDTH,
@@ -69,6 +87,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
   );
   const completeTask = useCompleteTask();
   const updateStatus = useUpdateTaskStatus();
+  const updateTask = useUpdateTask();
   const deleteTask = useDeleteTask();
   const duplicateTask = useDuplicateTask();
 
@@ -157,12 +176,47 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
       </div>
     ) : null;
 
+  const showReorder = Boolean(onMoveUp || onMoveDown);
+
   return (
-    <div className={cn(tasksListRow, closed && "opacity-65")}>
-      <div className="min-w-0">
+    <div
+      className={cn(
+        tasksListRow,
+        closed && "opacity-65",
+        task.color && "border text-[#0f172a]"
+      )}
+      style={task.color ? taskColorChipStyle(task.color) : undefined}
+    >
+      <div className="flex min-w-0 items-start gap-1.5">
+        {showReorder && (
+          <div className="mt-0.5 flex shrink-0 flex-col gap-0.5">
+            <button
+              type="button"
+              onClick={onMoveUp}
+              disabled={!canMoveUp || reorderPending}
+              className="rounded p-0.5 text-glass-muted transition hover:bg-black/5 hover:text-[#0f172a] disabled:opacity-25"
+              aria-label="Monter (plus important)"
+              title="Monter"
+            >
+              <ArrowUp className="h-3 w-3" strokeWidth={2} />
+            </button>
+            <button
+              type="button"
+              onClick={onMoveDown}
+              disabled={!canMoveDown || reorderPending}
+              className="rounded p-0.5 text-glass-muted transition hover:bg-black/5 hover:text-[#0f172a] disabled:opacity-25"
+              aria-label="Descendre (moins important)"
+              title="Descendre"
+            >
+              <ArrowDown className="h-3 w-3" strokeWidth={2} />
+            </button>
+          </div>
+        )}
+        <div className="min-w-0">
         <p
           className={cn(
-            "font-medium text-glass",
+            "flex items-center gap-2 font-medium",
+            task.color ? "text-[#0f172a]" : "text-glass",
             task.status === "DONE" && "line-through"
           )}
         >
@@ -178,6 +232,7 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
             {TASK_DEADLINE_BADGE_LABELS[deadlineBadge]}
           </Badge>
         )}
+        </div>
       </div>
 
       <span className="min-w-0 text-glass-secondary">
@@ -219,6 +274,13 @@ export default function TaskRow({ task, onEdit }: TaskRowProps) {
         role="group"
         aria-label="Actions tâche"
       >
+        <ColorSwatchPicker
+          compact
+          value={task.color}
+          onChange={(color) =>
+            updateTask.mutate({ id: task.id, color, silent: true })
+          }
+        />
         {canComplete && (
           <IconActionButton
             label="Terminer"

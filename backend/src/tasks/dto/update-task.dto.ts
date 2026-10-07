@@ -1,5 +1,16 @@
-import { IsDateString, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Min,
+  ValidateIf,
+} from 'class-validator';
 import { Priority, TaskStatus } from '@prisma/client';
+
+const HEX_COLOR = /^#([0-9A-Fa-f]{6})$/;
 
 export class UpdateTaskDto {
   @IsOptional()
@@ -17,6 +28,16 @@ export class UpdateTaskDto {
   @IsOptional()
   @IsEnum(Priority)
   priority?: Priority;
+
+  @IsOptional()
+  @ValidateIf((_, v) => v !== null)
+  @Matches(HEX_COLOR, { message: 'color must be a hex color (#RRGGBB)' })
+  color?: string | null;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  sortOrder?: number;
 
   @IsOptional()
   @IsDateString()

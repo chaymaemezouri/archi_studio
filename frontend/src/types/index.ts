@@ -437,6 +437,10 @@ export interface Task {
   description?: string | null;
   status: TaskStatus;
   priority: Priority;
+  /** Couleur perso hex (#RRGGBB) */
+  color?: string | null;
+  /** Ordre d'importance personnelle */
+  sortOrder?: number;
   dueDate?: string | null;
   scheduledAt?: string | null;
   projectId?: string | null;
@@ -927,6 +931,10 @@ export interface CalendarEvent {
   status?: string;
   notes?: string | null;
   location?: string | null;
+  /** Couleur perso hex (#RRGGBB) */
+  color?: string | null;
+  /** Ordre d’importance (tâches) */
+  sortOrder?: number;
   source: CalendarEventSource;
   sourceId?: string;
   editable: boolean;

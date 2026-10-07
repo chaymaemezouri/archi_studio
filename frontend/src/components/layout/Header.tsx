@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { ChevronDown, Menu, User, Settings, LogOut } from "lucide-react";
+import { ChevronDown, Menu, MessagesSquare, User, Settings, LogOut } from "lucide-react";
 import GlobalSearch from "@/components/layout/GlobalSearch";
 import Link from "next/link";
 import { getPageTitle } from "@/lib/sidebar-nav";
@@ -10,8 +10,10 @@ import Avatar from "@/components/ui/Avatar";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 import { useAuth } from "@/hooks/useAuth";
+import { useUnreadSharedNotesCount } from "@/hooks/useSharedNotes";
 import { useStudio } from "@/hooks/useStudio";
 import { cn } from "@/lib/utils";
+import { glassBtnIcon } from "@/lib/glass-styles";
 import { dashboardShellContainer, dashboardShellPadding } from "./dashboard-shell";
 import {
   headerActions,
@@ -28,10 +30,17 @@ interface HeaderProps {
   onMenuClick?: () => void;
 }
 
+const discussionBadge = cn(
+  "absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center",
+  "rounded-full bg-studio-light px-1 text-[10px] font-semibold leading-none tabular-nums text-white",
+  "ring-2 ring-[color:var(--background)] dark:text-[#0a0a0f]"
+);
+
 export default function Header({ title, onMenuClick }: HeaderProps) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
   const studio = useStudio();
+  const unreadDiscussion = useUnreadSharedNotesCount();
   const pageTitle = title ?? getPageTitle(pathname);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [searchExpanded, setSearchExpanded] = useState(false);
@@ -83,6 +92,28 @@ export default function Header({ title, onMenuClick }: HeaderProps) {
             <div className="hidden md:block">
               <ThemeToggle />
             </div>
+            <Link
+              href="/discussion"
+              aria-label={
+                unreadDiscussion > 0
+                  ? `Discussion, ${unreadDiscussion} non lu${unreadDiscussion > 1 ? "s" : ""}`
+                  : "Discussion partagée"
+              }
+              title="Discussion"
+              className={cn(
+                glassBtnIcon,
+                "relative h-10 w-10",
+                pathname === "/discussion" &&
+                  "border-studio-border/50 bg-[color:var(--glass-bg-hover)] text-studio-light"
+              )}
+            >
+              <MessagesSquare className="h-4 w-4" strokeWidth={1.75} />
+              {unreadDiscussion > 0 && (
+                <span className={discussionBadge}>
+                  {unreadDiscussion > 9 ? "9+" : unreadDiscussion}
+                </span>
+              )}
+            </Link>
             <NotificationBell />
 
             <div ref={dropdownRef} className="relative">
