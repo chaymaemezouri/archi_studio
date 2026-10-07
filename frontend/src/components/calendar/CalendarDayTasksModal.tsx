@@ -22,7 +22,13 @@ import {
   useUpdateCalendarEvent,
   type DayReorderItem,
 } from "@/hooks/useCalendar";
-import { eventsOnDay, formatEventTime, isEventDone } from "@/lib/calendar";
+import {
+  eventsOnDay,
+  formatEventTime,
+  isAgendaReorderable,
+  isEventDone,
+  sortDayAgendaEvents,
+} from "@/lib/calendar";
 import {
   getTaskIdFromCalendarEvent,
   isCalendarTaskEvent,
@@ -45,7 +51,7 @@ interface CalendarDayTasksModalProps {
 
 function isReorderableEvent(event: CalendarEvent): boolean {
   if (isCalendarTaskEvent(event) && getTaskIdFromCalendarEvent(event)) return true;
-  return event.source === "custom" && event.editable;
+  return isAgendaReorderable(event);
 }
 
 function canColorEvent(event: CalendarEvent): boolean {
@@ -61,29 +67,6 @@ function reorderItemKey(event: CalendarEvent): DayReorderItem | null {
     return { source: "custom", id: event.id };
   }
   return null;
-}
-
-function sortDayEvents(list: CalendarEvent[]): CalendarEvent[] {
-  return [...list].sort((a, b) => {
-    const ad = isEventDone(a) ? 1 : 0;
-    const bd = isEventDone(b) ? 1 : 0;
-    if (ad !== bd) return ad - bd;
-
-    const aOrd = isReorderableEvent(a);
-    const bOrd = isReorderableEvent(b);
-    if (aOrd && bOrd) {
-      const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-      if (so !== 0) return so;
-      return a.title.localeCompare(b.title, "fr");
-    }
-    if (aOrd && !bOrd) return -1;
-    if (!aOrd && bOrd) return 1;
-
-    const at = a.startTime ?? "";
-    const bt = b.startTime ?? "";
-    if (at || bt) return at.localeCompare(bt);
-    return a.title.localeCompare(b.title, "fr");
-  });
 }
 
 export default function CalendarDayTasksModal({
@@ -105,7 +88,7 @@ export default function CalendarDayTasksModal({
 
   const dayEvents = useMemo(() => {
     if (!day) return [];
-    return sortDayEvents(eventsOnDay(events, day));
+    return sortDayAgendaEvents(eventsOnDay(events, day));
   }, [day, events]);
 
   const openReorderable = useMemo(

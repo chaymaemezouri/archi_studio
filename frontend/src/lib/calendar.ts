@@ -93,6 +93,39 @@ export function filterCalendarEvents(
   return list;
 }
 
+/** Items dont l’ordre est enregistré (tâches + événements custom). */
+export function isAgendaReorderable(event: CalendarEvent): boolean {
+  if (event.type === "DEADLINE_TASK" || event.source === "task") return true;
+  return event.source === "custom" && event.editable !== false;
+}
+
+/**
+ * Ordre unique pour la journée : terminés en bas, puis sortOrder sauvegardé
+ * (tâches + événements), puis heure / titre. Utilisé partout (mois, modal, liste).
+ */
+export function sortDayAgendaEvents(list: CalendarEvent[]): CalendarEvent[] {
+  return [...list].sort((a, b) => {
+    const ad = isEventDone(a) ? 1 : 0;
+    const bd = isEventDone(b) ? 1 : 0;
+    if (ad !== bd) return ad - bd;
+
+    const aOrd = isAgendaReorderable(a);
+    const bOrd = isAgendaReorderable(b);
+    if (aOrd && bOrd) {
+      const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
+      if (so !== 0) return so;
+      return a.title.localeCompare(b.title, "fr");
+    }
+    if (aOrd && !bOrd) return -1;
+    if (!aOrd && bOrd) return 1;
+
+    const at = a.startTime ?? "";
+    const bt = b.startTime ?? "";
+    if (at || bt) return at.localeCompare(bt);
+    return a.title.localeCompare(b.title, "fr");
+  });
+}
+
 export function groupEventsByDay(events: CalendarEvent[]): Map<string, CalendarEvent[]> {
   const map = new Map<string, CalendarEvent[]>();
   for (const e of events) {
@@ -102,26 +135,14 @@ export function groupEventsByDay(events: CalendarEvent[]): Map<string, CalendarE
     map.set(key, arr);
   }
   for (const key of Array.from(map.keys())) {
-    const arr = map.get(key)!;
-    arr.sort((a: CalendarEvent, b: CalendarEvent) => {
-      const aTask = a.type === "DEADLINE_TASK" || a.source === "task";
-      const bTask = b.type === "DEADLINE_TASK" || b.source === "task";
-      if (aTask && bTask) {
-        const so = (a.sortOrder ?? 0) - (b.sortOrder ?? 0);
-        if (so !== 0) return so;
-      }
-      if (a.startTime && b.startTime) return a.startTime.localeCompare(b.startTime);
-      if (aTask && !bTask) return -1;
-      if (!aTask && bTask) return 1;
-      return new Date(a.date).getTime() - new Date(b.date).getTime();
-    });
+    map.set(key, sortDayAgendaEvents(map.get(key)!));
   }
   return map;
 }
 
 export function eventsOnDay(events: CalendarEvent[], day: Date): CalendarEvent[] {
   const key = dateKey(day);
-  return events.filter((e) => dateKey(e.date) === key);
+  return sortDayAgendaEvents(events.filter((e) => dateKey(e.date) === key));
 }
 
 export function isEventDone(event: CalendarEvent): boolean {
@@ -165,7 +186,11 @@ export function groupEventsForList(events: CalendarEvent[]): Record<ListGroup, C
 
   const upcoming = [...events]
     .filter((e) => startOfDay(parseISO(e.date.split("T")[0])) >= today)
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    .sort((a, b) => {
+      const byDate = new Date(a.date).getTime() - new Date(b.date).getTime();
+      if (byDate !== 0) return byDate;
+      return sortDayAgendaEvents([a, b])[0] === a ? -1 : 1;
+    });
 
   for (const e of upcoming) {
     const d = startOfDay(parseISO(e.date.split("T")[0]));
@@ -174,6 +199,10 @@ export function groupEventsForList(events: CalendarEvent[]): Record<ListGroup, C
     else if (isWithinInterval(d, { start: addDays(today, 2), end: weekEnd }))
       groups.week.push(e);
     else groups.later.push(e);
+  }
+
+  for (const g of Object.keys(groups) as ListGroup[]) {
+    groups[g] = sortDayAgendaEvents(groups[g]);
   }
 
   return groups;

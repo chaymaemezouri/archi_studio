@@ -96,6 +96,27 @@ export function useDeleteCalendarEvent() {
 
 export type DayReorderItem = { source: "task" | "custom"; id: string };
 
+function applyDayReorderToEvents(
+  events: CalendarEvent[],
+  items: DayReorderItem[]
+): CalendarEvent[] {
+  const orderMap = new Map(
+    items.map((item, index) => [`${item.source}:${item.id}`, index] as const)
+  );
+  return events.map((ev) => {
+    const key =
+      ev.source === "task" && ev.sourceId
+        ? `task:${ev.sourceId}`
+        : ev.source === "custom"
+          ? `custom:${ev.id}`
+          : null;
+    if (!key) return ev;
+    const sortOrder = orderMap.get(key);
+    if (sortOrder === undefined) return ev;
+    return { ...ev, sortOrder };
+  });
+}
+
 export function useReorderDayAgenda() {
   const queryClient = useQueryClient();
 
@@ -107,11 +128,29 @@ export function useReorderDayAgenda() {
       );
       return data;
     },
-    onSuccess: () => {
+    onMutate: async (items) => {
+      await queryClient.cancelQueries({ queryKey: ["calendar"] });
+      const previous = queryClient.getQueriesData<CalendarEvent[]>({
+        queryKey: ["calendar", "events"],
+      });
+      queryClient.setQueriesData<CalendarEvent[]>(
+        { queryKey: ["calendar", "events"] },
+        (old) => (old ? applyDayReorderToEvents(old, items) : old)
+      );
+      return { previous };
+    },
+    onError: (_err, _items, ctx) => {
+      if (ctx?.previous) {
+        for (const [key, data] of ctx.previous) {
+          queryClient.setQueryData(key, data);
+        }
+      }
+      toast.error("Impossible de réorganiser la journée");
+    },
+    onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["calendar"] });
       queryClient.invalidateQueries({ queryKey: ["tasks"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard", "overview"] });
     },
-    onError: () => toast.error("Impossible de réorganiser la journée"),
   });
 }
