@@ -100,8 +100,8 @@ function applyDayReorderToEvents(
   events: CalendarEvent[],
   items: DayReorderItem[]
 ): CalendarEvent[] {
-  const orderMap = new Map(
-    items.map((item, index) => [`${item.source}:${item.id}`, index] as const)
+  const orderMap = new Map<string, number>(
+    items.map((item, index) => [`${item.source}:${item.id}`, index])
   );
   return events.map((ev) => {
     const key =
